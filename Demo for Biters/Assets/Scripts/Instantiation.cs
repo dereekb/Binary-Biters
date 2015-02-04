@@ -14,6 +14,7 @@ public class Instantiation : MonoBehaviour
 	public List<Monster> InstantiationMonsters { get; set; }
     public int InstantiationNextMonsterId { get; set; }
     public int InstantiationSpawnDelay { get; set; }
+	private float timer = 60.0f; 
 
     public Material Blank;
     public Material EnterZero;
@@ -52,6 +53,7 @@ public class Instantiation : MonoBehaviour
         BiterZero = Resources.Load("BiterZero", typeof(Material)) as Material;
         BiterOne = Resources.Load("BiterOne", typeof(Material)) as Material;
         SelectedMaterial = Or;
+		Time.timeScale = 1.0f; 
 
         LoadLevel("Level1.txt");
     }
@@ -121,7 +123,41 @@ public class Instantiation : MonoBehaviour
 		UpdateSpawnTile();
 		UpdateMonsterAction();
 		// @RCH: Check for win condition
-	}
+
+		timer -= Time.deltaTime; 
+
+		if (timer <= 0) { 
+
+			// PauseGame (); 
+			timer = 0.0f; 
+			
+		} // end if  
+
+	} // end Update 
+
+	void PauseGame() { 
+		
+		Time.timeScale = 0.000001f; 
+		
+	} // end PauseGame  
+
+	void OnGUI () { 
+
+		GUI.Box (new Rect (Screen.width - 50, 0, 50, 20), "" + timer.ToString ("f0")); 
+
+		if (timer <= 0) { 
+			
+			//Time.timeScale = 0.00001f;
+			if (GUI.Button (new Rect (Screen.width - 105, Screen.height - 60, 100, 25), "Try Again?")) {
+				
+				// Time.timeScale = 1.0f; 
+				Application.LoadLevel (Application.loadedLevelName); 
+				
+			} // end inner if 
+			
+		} // end outer if 
+
+	} // end OnGUI
 
 	void GetMouseRays()
 	{
@@ -321,7 +357,7 @@ public class Instantiation : MonoBehaviour
             moveX = -1;
         }
 
-        monster.MonsterGameObject.transform.position += new Vector3(monster.MonsterMovementIncrement * moveX, monster.MonsterMovementIncrement * moveY, 0);
+        monster.MonsterGameObject.transform.position += new Vector3(monster.MonsterMovementIncrement * moveX * Time.timeScale, monster.MonsterMovementIncrement * moveY * Time.timeScale, 0);
 
         if(monster.FinishedMovingTile())
 		{
