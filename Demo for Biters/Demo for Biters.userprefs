@@ -1,21 +1,17 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\StartButton.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Resources/Level1.txt">
     <Files>
-      <File FileName="Assets\Scripts\StartButton.cs" Line="21" Column="1" />
-      <File FileName="Assets\Scripts\Monster.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Instantiation.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\GridSquare.cs" Line="1" Column="1" />
-      <File FileName="Assets\Resources\Level1.txt" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Pause.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Pause.cs" Line="3" Column="1" />
+      <File FileName="Assets/Resources/Level1.txt" Line="1" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
-        <State expanded="True">
+        <State expanded="True" selected="True">
           <Node name="Assembly-CSharp" expanded="True">
-            <Node name="Scripts" expanded="True">
-              <Node name="StartButton.cs" selected="True" />
-            </Node>
+            <Node name="References" expanded="True" />
+            <Node name="Resources" expanded="True" />
+            <Node name="Scripts" expanded="True" />
           </Node>
         </State>
       </Pad>
