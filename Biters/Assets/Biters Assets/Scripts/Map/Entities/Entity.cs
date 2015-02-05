@@ -55,10 +55,6 @@ namespace Biters
 				return this.GameObject.transform;
 			}
 
-			set {
-				this.GameObject.transform = value;
-			}
-
 		}
 
 		#endregion

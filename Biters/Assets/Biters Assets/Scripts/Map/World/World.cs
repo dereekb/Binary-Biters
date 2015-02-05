@@ -6,18 +6,37 @@ namespace Biters
 {
 	#region World
 
-	//Taxicab World that has direction. Contains element T at a coordinate.
-	public class World<T> {
+	/*
+	 * Taxicab World that has direction. Contains element T at a coordinate.
+	 * 
+	 * Used for tiles management.
+	 */
+	public class World<T> where T : WorldElement {
 		
 		private Dictionary<WorldPosition, T> Everything;
 		
 		public World() {
 			Everything = new Dictionary<WorldPosition, T> ();
 		}
-		
+
 		//Element at Position
-		public T GetAtPosition(WorldPosition position) {
-			return Everything [position];
+		public T GetAtPosition(WorldPosition Position) {
+			return Everything [Position];
+		}
+
+		public T SetAtPosition(WorldPosition Position, T Element) {
+			T replaced = this.GetAtPosition (Position);
+			
+			if (Element != null) {
+				Everything[Position] = Element;
+				Element.addedToWorld(this as World<WorldElement>, Position);
+			}
+			
+			if (replaced != null) {
+				replaced.removedFromWorld(this as World<WorldElement>, Position);
+			}
+
+			return replaced;
 		}
 		
 		public T this[WorldPosition position]
@@ -29,13 +48,13 @@ namespace Biters
 			
 			set
 			{
-				Everything[position] = value;
+				this.SetAtPosition(position, value);
 			}
 			
 		}
 		
 		//Elements in Direction
-
+		//TODO: Add function
 
 		//Neighbors for position
 		public Dictionary<WorldDirection, T> GetNeighbors(WorldPosition input) {
@@ -56,6 +75,19 @@ namespace Biters
 		//Vector
 		//TODO: Add functions for World Vector usage.
 		
+	}
+
+	public interface WorldElement {
+
+		/*
+		 * Add/Remove Events
+		 */
+		void addedToWorld(World<WorldElement> World, WorldPosition Position);
+
+		void removedFromWorld(World<WorldElement> World, WorldPosition Position);
+
+		//TODO: Add more events, if necessary.
+
 	}
 	
 	//Complex Position

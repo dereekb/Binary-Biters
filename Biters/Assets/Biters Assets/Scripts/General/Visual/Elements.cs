@@ -41,11 +41,7 @@ namespace Biters
 			get {
 				return element.Transform;
 			}
-			
-			set {
-				element.Transform = value;
-			}
-			
+
 		}
 		
 		/*
@@ -65,7 +61,7 @@ namespace Biters
 	public interface TransformableElement
 	{
 
-		Transform Transform { get; set; }
+		Transform Transform { get; }
 
 	}
 	
