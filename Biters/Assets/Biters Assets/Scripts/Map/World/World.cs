@@ -21,19 +21,21 @@ namespace Biters
 
 		//Element at Position
 		public T GetAtPosition(WorldPosition Position) {
-			return Everything [Position];
+			T result;
+			Everything.TryGetValue (Position, out result);
+			return result;
 		}
 
 		public T SetAtPosition(WorldPosition Position, T Element) {
 			T replaced = this.GetAtPosition (Position);
 			
+			if (replaced != null) {
+				replaced.removedFromWorld(this as World<WorldElement>, Position);
+			}
+
 			if (Element != null) {
 				Everything[Position] = Element;
 				Element.addedToWorld(this as World<WorldElement>, Position);
-			}
-			
-			if (replaced != null) {
-				replaced.removedFromWorld(this as World<WorldElement>, Position);
 			}
 
 			return replaced;
