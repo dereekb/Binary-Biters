@@ -38,13 +38,16 @@ namespace Biters
 
 
 		//Neighbors for position
-		public Dictionary<WorldDirection, T> GetNeighbors(WorldPosition position) {
-			Dictionary<WorldDirection, WorldPosition> positions = position.ValidNeighbors;
+		public Dictionary<WorldDirection, T> GetNeighbors(WorldPosition input) {
+			Dictionary<WorldDirection, WorldPosition> positions = input.ValidNeighbors;
 			Dictionary<WorldDirection, T> neighbors = new Dictionary<WorldDirection, T> ();
 			
-			foreach (WorldPosition neighborPosition in positions) {
-				T neighbor = this.GetAtPosition(neighborPosition);
-				neighbors[neighborPosition] = neighbor;
+			foreach (KeyValuePair<WorldDirection, WorldPosition> pair in positions) {
+				WorldDirection direction = pair.Key;
+				WorldPosition position = pair.Value;
+
+				T neighbor = this.GetAtPosition(position);
+				neighbors[direction] = neighbor;
 			}
 			
 			return neighbors;
@@ -70,8 +73,10 @@ namespace Biters
 			this.Magnitude = Magnitude;
 		}
 		
-		public WorldVector TakeStep() {
+		public WorldVector? TakeStep() {
 			//TODO: Return a WorldVector with the given direction and position. Return nil if the position is invalid.
+
+			return null;
 		}
 		
 	}
@@ -121,9 +126,13 @@ namespace Biters
 		
 		public Dictionary<WorldDirection, WorldPosition> GetValidNeighbors() {
 			Dictionary<WorldDirection, WorldPosition> neighbors = new Dictionary<WorldDirection, WorldPosition> ();
-			
+
 			foreach (WorldDirection direction in WorldDirectionInfo.All) {
-				neighbors[direction] = this.MoveInDirection(direction);
+				WorldPosition? position = this.MoveInDirection(direction);
+
+				if (position.HasValue) {
+					neighbors[direction] = position.Value;
+				}
 			}
 			
 			return neighbors;
