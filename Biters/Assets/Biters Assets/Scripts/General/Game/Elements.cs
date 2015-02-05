@@ -19,6 +19,15 @@ namespace Biters
 	public interface VisibleElement
 	{
 		Material Material { get; set; }
+
+	}
+
+	/*
+	 * A game element that can update itself.
+	 */
+	public interface UpdatingElement
+	{
+		void Update(Time time);
 	}
 
 	#region Moving Element

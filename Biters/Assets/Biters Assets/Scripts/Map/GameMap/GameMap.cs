@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Biters
@@ -10,6 +12,7 @@ namespace Biters
 		where T : MapTile
 		where E : GameMapEntity 
 	{
+		private List<E> entities;
 		private EventSystem<GameMapEvent, GameMapEventInfo> gameMapEvents;
 
 		public GameMap(GameObject GameObject, MapTileFactory<T> TileFactory) : base(GameObject, TileFactory) {
@@ -28,7 +31,23 @@ namespace Biters
 		
 		#endregion
 
-		#region gameMapEvents
+		#region Game
+		
+		#region Update
+
+		public override void Update(Time time) {
+
+			//TODO: Update elements before board pieces.
+
+			base.Update (time);
+		}
+
+		
+		#endregion
+
+		#endregion
+
+		#region Game Map Events
 		
 		protected EventSystem<GameMapEvent, GameMapEventInfo> GameMapEvents {
 			
@@ -65,7 +84,7 @@ namespace Biters
 	 */
 	public interface GameMapEntity : GameElement {
 
-		//TODO: Add anything..?
+		//TODO: Add anything..? Set/Get Map?
 
 	}
 

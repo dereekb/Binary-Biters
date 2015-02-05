@@ -35,6 +35,14 @@ namespace Biters
 
 		#endregion
 
+		#region Update
+
+		public override void Update(Time time) {
+			//TODO: Call update on all tiles.
+		}
+
+		#endregion
+
 		#region mapEvents
 
 		protected EventSystem<MapEvent, MapEventInfo> MapEvents {

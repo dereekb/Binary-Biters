@@ -7,7 +7,7 @@ namespace Biters
 	/*
 	 * Base entity class.
 	 */
-	public abstract class Entity : GameElement, VisibleElement, TransformableElement, MovingElement
+	public abstract class Entity : GameElement, VisibleElement, TransformableElement, MovingElement, UpdatingElement
 	{
 		protected GameObject gameObject;
 		protected Movement movement;
@@ -61,6 +61,7 @@ namespace Biters
 
 		#region Functions
 
+		public abstract void Update (Time time);
 
 		#endregion
 	}
