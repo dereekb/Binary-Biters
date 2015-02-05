@@ -58,7 +58,8 @@ public class Monster
         MonsterMovementIncrement = 0.01F;
 
         MonsterGameObject.transform.position = new Vector3(MonsterXPosition - Instantiation.XOFFSET, Instantiation.YOFFSET - MonsterYPosition, -1);
-        MonsterGameObject.transform.localScale = new Vector3(0.5F, 0.5F, 0.1F);
+		MonsterGameObject.transform.rotation = Quaternion.AngleAxis(180, Vector3.up);
+		MonsterGameObject.transform.localScale = new Vector3(0.5F, 0.5F, 0.1F);
         switch(MonsterNumberType)
         {
             case NumberType.Zero:
@@ -95,5 +96,10 @@ public class Monster
 		{
 			return false;
 		}
+	}
+	public void DestroyEntirely()
+	{
+		MonsterInstantiation.InstantiationMonsters.Remove(this);
+		Instantiation.Destroy(this.MonsterGameObject, 0f);
 	}
 }

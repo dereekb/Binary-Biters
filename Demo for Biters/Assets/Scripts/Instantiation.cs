@@ -27,9 +27,22 @@ public class Instantiation : MonoBehaviour
     public Material BeltRight;
     public Material BeltDown;
     public Material BeltLeft;
+	public Material BeltUpLeft;
+	public Material BeltUpRight;
+	public Material BeltRightUp;
+	public Material BeltRightDown;
+	public Material BeltDownRight;
+	public Material BeltDownLeft;
+	public Material BeltLeftDown;
+	public Material BeltLeftUp;
+	public Material BeltUpT;
+	public Material BeltRightT;
+	public Material BeltDownT;
+	public Material BeltLeftT;
     public Material BiterZero;
     public Material BiterOne;
-    public Material SelectedMaterial;
+	public Material Lose;
+	public Material Win;
 
 	public const int XOFFSET = 4;
 	public const int YOFFSET = 4;
@@ -50,9 +63,22 @@ public class Instantiation : MonoBehaviour
         BeltRight = Resources.Load("BeltRight", typeof(Material)) as Material;
         BeltDown = Resources.Load("BeltDown", typeof(Material)) as Material;
         BeltLeft = Resources.Load("BeltLeft", typeof(Material)) as Material;
+		BeltUpLeft = Resources.Load("BeltUpLeft", typeof(Material)) as Material;
+		BeltUpRight = Resources.Load("BeltUpRight", typeof(Material)) as Material;
+		BeltRightUp = Resources.Load("BeltRightUp", typeof(Material)) as Material;
+		BeltRightDown = Resources.Load("BeltRightDown", typeof(Material)) as Material;
+		BeltDownRight = Resources.Load("BeltDownRight", typeof(Material)) as Material;
+		BeltDownLeft = Resources.Load("BeltDownLeft", typeof(Material)) as Material;
+		BeltLeftDown = Resources.Load("BeltLeftDown", typeof(Material)) as Material;
+		BeltLeftUp = Resources.Load("BeltLeftUp", typeof(Material)) as Material;
+		BeltUpT = Resources.Load("BeltUpT", typeof(Material)) as Material;
+		BeltRightT = Resources.Load("BeltRightT", typeof(Material)) as Material;
+		BeltDownT = Resources.Load("BeltDownT", typeof(Material)) as Material;
+		BeltLeftT = Resources.Load("BeltLeftT", typeof(Material)) as Material;
         BiterZero = Resources.Load("BiterZero", typeof(Material)) as Material;
         BiterOne = Resources.Load("BiterOne", typeof(Material)) as Material;
-        SelectedMaterial = Or;
+		Lose = Resources.Load("Lose", typeof(Material)) as Material;
+		Win = Resources.Load("Win", typeof(Material)) as Material;
 		Time.timeScale = 1.0f; 
 
         LoadLevel("Level1.txt");
@@ -72,7 +98,7 @@ public class Instantiation : MonoBehaviour
                 while(line != null)
                 {
                     string[] entries = line.Split(',');
-                    for(int x = 0; x < entries.Length; x++)
+					for(int x = 0; x < entries.Length; x++)
                     {
 						int intType = Convert.ToInt32(entries[x]);
                         new GridSquare(this, (TileType)intType, x, y);
@@ -119,45 +145,30 @@ public class Instantiation : MonoBehaviour
 	void Update () 
 	{
 		GetMouseRays();
-		GetKeyboard(); // @RCH: Temporary way to change selected gate
 		UpdateSpawnTile();
 		UpdateMonsterAction();
-		// @RCH: Check for win condition
-
 		timer -= Time.deltaTime; 
-
-		if (timer <= 0) { 
-
-			// PauseGame (); 
+		
+		if (timer <= 0) 
+		{ 
 			timer = 0.0f; 
-			
-		} // end if  
-
-	} // end Update 
-
-	void PauseGame() { 
-		
+		} 
+	}
+	void PauseGame() 
+	{ 
 		Time.timeScale = 0.000001f; 
-		
-	} // end PauseGame  
-
-	void OnGUI () { 
-
+	} 
+	void OnGUI () 
+	{
 		GUI.Box (new Rect (Screen.width - 50, 0, 50, 20), "" + timer.ToString ("f0")); 
-
-		if (timer <= 0) { 
-			
-			//Time.timeScale = 0.00001f;
-			if (GUI.Button (new Rect (Screen.width - 105, Screen.height - 60, 100, 25), "Try Again?")) {
-				
-				// Time.timeScale = 1.0f; 
+		if (timer <= 0) 
+		{ 
+			if (GUI.Button (new Rect (Screen.width - 105, Screen.height - 60, 100, 25), "Try Again?")) 
+			{
 				Application.LoadLevel (Application.loadedLevelName); 
-				
-			} // end inner if 
-			
-		} // end outer if 
-
-	} // end OnGUI
+			} 
+		} 
+	}
 
 	void GetMouseRays()
 	{
@@ -169,33 +180,25 @@ public class Instantiation : MonoBehaviour
 			{
 				// All cubes will need a ray layer later so that when you click the monster sprites, it won't interfere with changing gates
 				GameObject pObject = hit.transform.gameObject;
-				pObject.renderer.material = SelectedMaterial;
-                TileType type = TileType.Or;
-				if(SelectedMaterial == Or)
+				if(pObject.renderer.sharedMaterial != And && pObject.renderer.sharedMaterial != Or)
 				{
-					type = TileType.Or;
+					return;
 				}
-				else if(SelectedMaterial == And)
+				TileType tileType = TileType.Or;
+				if(pObject.renderer.sharedMaterial == Or)
 				{
-					type = TileType.And;
+					pObject.renderer.material = And;
+					tileType = TileType.And;
 				}
-                InstantiationGridSquareGrid[XOFFSET + (int)pObject.transform.position.x, YOFFSET - (int)pObject.transform.position.y].GridSquareTileType = type;
+				else if(pObject.renderer.sharedMaterial == And)
+				{
+					pObject.renderer.material = Or;
+					tileType = TileType.Or;
+				}
+                InstantiationGridSquareGrid[XOFFSET + (int)pObject.transform.position.x, YOFFSET - (int)pObject.transform.position.y].GridSquareTileType = tileType;
 			}
 		}
 	}
-
-	void GetKeyboard() // @RCH: Temporary way to change selected gate
-	{
-		if(Input.GetKeyDown(KeyCode.Alpha1))
-		{
-			SelectedMaterial = And;
-		}
-		else if(Input.GetKeyDown(KeyCode.Alpha2))
-		{
-			SelectedMaterial = Or;
-		}
-	}
-
 	void UpdateSpawnTile()
 	{
 		for(int x = 0; x < InstantiationGridWidth; x++) 
@@ -261,24 +264,8 @@ public class Instantiation : MonoBehaviour
 				InstantiationGridSquareGrid[x, y].CalculateNewDirection(monster);
 				break;
             case TileType.ExitZero: // @RCH: Once win condition is set, remove this
-                if(monster.MonsterNumberType == NumberType.Zero)
-                {
-                    PrintMessage("You win!");
-                }
-				else
-				{
-					PrintMessage("You lose!");
-				}
-                break;
 			case TileType.ExitOne: // @RCH: Once win condition is set, remove this
-                if(monster.MonsterNumberType == NumberType.One)
-				{
-					PrintMessage("You win!");
-				}
-				else
-				{
-					PrintMessage("You lose!");
-				}
+				CheckForWin(x,y,monster);
                 break;
             case TileType.And:
             case TileType.Or:
@@ -327,6 +314,18 @@ public class Instantiation : MonoBehaviour
             case TileType.BeltRight:
             case TileType.BeltDown:
             case TileType.BeltLeft:
+			case TileType.BeltUpLeft:
+			case TileType.BeltUpRight:
+			case TileType.BeltRightUp:
+			case TileType.BeltRightDown:
+			case TileType.BeltDownRight:
+			case TileType.BeltDownLeft:
+			case TileType.BeltLeftDown:
+			case TileType.BeltLeftUp:
+			case TileType.BeltUpT:
+			case TileType.BeltRightT:
+			case TileType.BeltDownT:
+			case TileType.BeltLeftT:
 				InstantiationGridSquareGrid[x, y].CalculateNewDirection(monster);
                 break;
             default:
@@ -357,12 +356,77 @@ public class Instantiation : MonoBehaviour
             moveX = -1;
         }
 
-        monster.MonsterGameObject.transform.position += new Vector3(monster.MonsterMovementIncrement * moveX * Time.timeScale, monster.MonsterMovementIncrement * moveY * Time.timeScale, 0);
+		monster.MonsterGameObject.transform.position += new Vector3(monster.MonsterMovementIncrement * moveX * Time.timeScale, monster.MonsterMovementIncrement * moveY * Time.timeScale, 0);
 
         if(monster.FinishedMovingTile())
 		{
             monster.MonsterMovementType = MovementType.Waiting;
         }
+	}
+
+	void CheckForWin(int x, int y, Monster monster)
+	{
+		//assign the current tile to win or lose from blank. cant be assigned unless blank or win.(if you lose you lose)
+		//check all tiles, if any of the end pieces are lose then return you lose
+		//if the amount of winning tiles == the number of end pieces then you win
+		bool PlayerLost = false;
+		int numWinningExits = 0;
+		int totalNumExits = 0;
+
+		if(monster.MonsterNumberType == NumberType.One && InstantiationGridSquareGrid[x,y].GridSquareTileType == TileType.ExitOne || 
+		   monster.MonsterNumberType == NumberType.Zero && InstantiationGridSquareGrid[x,y].GridSquareTileType == TileType.ExitZero)
+		{
+			if(InstantiationGridSquareGrid[x,y].GridSquareHasWinningPiece != WinCondition.Incorrect)
+			{
+				InstantiationGridSquareGrid[x,y].GridSquareHasWinningPiece = WinCondition.Correct;
+			}
+		}
+		else
+		{
+			InstantiationGridSquareGrid[x,y].GridSquareHasWinningPiece = WinCondition.Incorrect;
+		}
+
+		for (int i = 0; i < InstantiationGridSquareGrid.GetLength(0); i++) 
+		{
+			for (int j = 0; j < InstantiationGridSquareGrid.GetLength(1); j++) 
+			{
+				if(InstantiationGridSquareGrid[i,j].GridSquareTileType == TileType.ExitOne ||
+				   InstantiationGridSquareGrid[i,j].GridSquareTileType == TileType.ExitZero)
+				{
+					if(InstantiationGridSquareGrid[i,j].GridSquareHasWinningPiece == WinCondition.Incorrect)
+						PlayerLost = true;
+					if(InstantiationGridSquareGrid[i,j].GridSquareHasWinningPiece == WinCondition.Correct)
+						numWinningExits ++;
+
+					totalNumExits++;
+				}
+			}
+		}
+
+		if (PlayerLost)
+		{
+			PrintMessage ("YOU LOSE!");
+			GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			cube.transform.position = new Vector3(0, 0, 0);
+			cube.transform.localScale = new Vector3(10, 10, 10);
+			cube.transform.rotation = Quaternion.AngleAxis(180, Vector3.up);
+			cube.renderer.material = Lose;
+		}
+		else if (numWinningExits == totalNumExits)
+		{
+			PrintMessage ("YOU WIN!");
+			GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			cube.transform.position = new Vector3(0, 0, 0);
+			cube.transform.localScale = new Vector3(10, 10, 10);
+			cube.transform.rotation = Quaternion.AngleAxis(180, Vector3.up);
+			cube.renderer.material = Win;
+		}
+		else
+		{
+			PrintMessage ("GOOD JOB KEEP GOING!");
+		}
+
+		monster.DestroyEntirely ();
 	}
 
 	public static void PrintMessage(string printStatement)
