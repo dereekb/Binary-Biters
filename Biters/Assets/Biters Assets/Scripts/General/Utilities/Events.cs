@@ -13,7 +13,12 @@ namespace Biters
 	public interface EventListener {
 		
 		void HandleEvent(EventInfo EventInfo);
-		
+
+		/*
+		 * TODO: Add "was unregistered" type function if needed. (Or better yet, extend EventSystem to add that.)
+		 * 
+		 * This design currently assumes that elements unregister themselves and already have that knowledge.
+		 */
 	}
 
 	/*
@@ -23,6 +28,10 @@ namespace Biters
 	 */
 	public sealed class EventSystem<T, I> where I : EventInfo
 	{
+		/*
+		 * Keeps the listeners dictionary clean.
+		 */
+		public bool KeepClean = false;
 
 		private Dictionary<T, HashSet<EventListener>> listeners;
 
@@ -51,16 +60,16 @@ namespace Biters
 			listeners.Add(EventType, set);
 			return set;
 		}
-
+		
 		private void CheckObserverSetRemoval(T EventType) {
 			HashSet<EventListener> set;
-
-			if (this.listeners.TryGetValue (EventType, out set)) {
+			
+			if (this.KeepClean && this.listeners.TryGetValue (EventType, out set)) {
 				if (set.Count == 0) {
 					RemoveObserverSet(EventType);
 				}
 			}
-
+			
 		}
 
 		private void RemoveObserverSet(T EventType) {
@@ -86,13 +95,17 @@ namespace Biters
 			
 			if (this.listeners.TryGetValue (EventType, out set)) {
 				set.Remove(Listener);
-				
-				if (set.Count == 0) {
-					RemoveObserverSet(EventType);
-				}
+				this.CheckObserverSetRemoval(EventType);
 			}
 		}
-		
+
+		public void RemoveObserver(EventListener Listener) {
+			foreach (KeyValuePair<T, HashSet<EventListener>> pair in this.listeners) {
+				HashSet<EventListener> set = pair.Value;
+				set.Remove(Listener);
+			}
+		}
+
 		//Broadcast
 		public void BroadcastEvent(T EventType, I EventInfo) {
 			if (listeners.ContainsKey(EventType)) {

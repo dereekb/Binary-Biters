@@ -5,7 +5,7 @@ namespace Biters
 {
 	public class Map<T> : Entity where T : MapTile
 	{
-		protected EventSystem<MapEvent, MapEventInfo> events;
+		private EventSystem<MapEvent, MapEventInfo> events;
 		protected MapTileFactory<T> TileFactory;
 		protected World<T> World;
 
@@ -17,7 +17,7 @@ namespace Biters
 		#region World
 
 		public void resetWorld() {
-			//Observer event: World Will Reset.
+
 		}
 
 		/* TODO: Set Tile Functions
@@ -41,10 +41,32 @@ namespace Biters
 
 		#region Events
 
+		protected EventSystem<MapEvent, MapEventInfo> Events {
+
+			get {
+				return this.events;
+			}
+
+		}
+
 		/*
 		 * TODO: Add Event Functions
 		 * - Send Event
+		 * - Register for Event
+		 * - Unregister for Event
 		 */
+
+		/*
+		 * Convenience function for broadcasting an event with default arguments. 
+		 */
+		private void BroadcastEvent(MapEvent MapEvent) {
+			MapEventInfo info = this.DefaultMapEventInfo (MapEvent);
+			this.events.BroadcastEvent (MapEvent, info);
+		}
+
+		private MapEventInfo DefaultMapEventInfo(MapEvent MapEvent) {
+			return new MapEventInfo(MapEvent, this as Map<MapTile>);
+		}
 
 		#endregion
 	}
@@ -73,13 +95,6 @@ namespace Biters
 
 		World<T> makeWorld();
 		
-	}
-
-	/*
-	 * 
-	 */
-	public interface MapObserver {
-
 	}
 
 }

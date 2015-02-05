@@ -7,7 +7,7 @@ namespace Biters
 	 */
 	public interface Factory<T> {
 
-		T make();
+		T Make();
 
 	}
 
