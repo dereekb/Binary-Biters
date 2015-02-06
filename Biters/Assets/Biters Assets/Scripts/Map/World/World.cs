@@ -144,7 +144,7 @@ namespace Biters
 
 	#region Position
 	//Position Coordinate (Positive only positions)
-	public struct WorldPosition {
+	public struct WorldPosition : IEquatable<WorldPosition> {
 		
 		//Max position available with Cantor Pairing on 32Bit. More than fine.
 		private static int MIN_POSITION = 0;
@@ -202,7 +202,12 @@ namespace Biters
 			//Cantor Pairing
 			return (X + Y) * (X + Y + 1) / 2 + X;
 		}
-		
+
+		public bool Equals(WorldPosition other)
+		{
+			return (other.X == this.X && other.Y == this.Y);
+		}
+
 	}
 
 	public struct WorldPositionChange {

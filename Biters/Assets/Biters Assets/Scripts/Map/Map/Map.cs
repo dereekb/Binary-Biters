@@ -10,15 +10,17 @@ namespace Biters
 	 * Represents a map made up of tiles.
 	 */
 	public class Map<T> : Entity 
-		where T : IMapTile
+		where T : class, IMapTile
 	{
+		private IWorldPositionMapper positionMapper;
 		private EventSystem<MapEvent, MapEventInfo> mapEvents;
 		protected IFactory<World<T>> WorldFactory;
 
 		protected World<T> World;
 
-		public Map(GameObject GameObject, IFactory<World<T>> WorldFactory) : base(GameObject) {
+		public Map(GameObject GameObject, IFactory<World<T>> WorldFactory, IWorldPositionMapper PositionMapper) : base(GameObject) {
 			this.WorldFactory = WorldFactory;
+			this.positionMapper = PositionMapper;
 			this.mapEvents = new EventSystem<MapEvent, MapEventInfo> ();
 		}
 
@@ -54,6 +56,13 @@ namespace Biters
 		}
 
 		#region World Position Accessors
+
+		public IWorldPositionMapper PositionMapper 
+		{
+			get {
+				return this.positionMapper;
+			}
+		}
 
 		public T this[WorldPosition Position]
 		{

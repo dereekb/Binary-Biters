@@ -13,13 +13,14 @@ namespace Biters
 	 * Game Logic should be handled through available accessors.
 	 */
 	public class GameMap<T, E> : Map<T> 
-		where T : IMapTile
-		where E : IGameMapEntity 
+		where T : class, IMapTile
+		where E : class, IGameMapEntity
 	{
+
 		private HashSet<E> entities;
 		private EventSystem<GameMapEvent, GameMapEventInfo> gameMapEvents;
 
-		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory) : base(GameObject, WorldFactory) {
+		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IWorldPositionMapper PositionMapper) : base(GameObject, WorldFactory, PositionMapper) {
 			this.gameMapEvents = new EventSystem<GameMapEvent, GameMapEventInfo> ();
 			this.entities = new HashSet<E> ();
 		}
@@ -31,6 +32,9 @@ namespace Biters
 		public void AddEntity(E Entity, WorldPosition Position) {
 			if (this.ContainsEntity(Entity) == false) {
 				this.entities.Add(Entity);
+
+				//TODO: Consider other things, such as setting the entity's position parent to the map's game object.
+
 				MoveEntityToPosition(Entity, Position);
 				Entity.AddedToGameMap(this as GameMap<IMapTile, IGameMapEntity>, Position);
 			}
@@ -49,31 +53,58 @@ namespace Biters
 
 		#endregion
 
+		#region World
+
+		public T TileUnderEntity(E Entity) {
+			T tile = null;
+			WorldPosition? position = this.PositionForEntity (Entity);
+
+			if (position.HasValue) {
+				tile = base.GetTile(position.Value);
+			}
+
+			return tile;
+		}
+
+		#endregion
+
 		#region Entity Positions
 
 		protected void MoveEntityToPosition(E Entity, WorldPosition Position) {
-
-			//TODO: Retrieve the tile's position, then apply that position to the entity.
-
+			Vector3 entityPosition = this.PositionMapper.VectorForPosition (Position);
+			Entity.Transform.position = entityPosition;
 		}
 
-		protected WorldPosition? PositionForEntity(E Entity) {
+		/*
+		 * Returns the WorldPosition of an entity.
+		 */
+		public WorldPosition? PositionForEntity(E Entity) {
 			WorldPosition? position;
 
 			if (this.ContainsEntity(Entity)) {
-				//TODO: Retrieve element position...
+				Vector3 entityPosition = Entity.Transform.position;
+				position = this.PositionMapper.PositionForVector(entityPosition);
 			}
 
 			return position;
 		}
 
-		//Get Entities within Position...
+		/*
+		 * Returns all entities at a given WorldPosition.
+		 */
 		public List<E> GetEntitiesAtPosition(WorldPosition Position) {
-			List<E> entities = new List<E> ();
+			List<E> result = new List<E> ();
 
-			//TODO: Retrieve entities within a position.
+			foreach (E entity in this.entities) {
+				Vector3 entityPosition = entity.Transform.position;
+				WorldPosition? position = this.PositionMapper.PositionForVector(entityPosition);
 
-			return entities;
+				if (position.HasValue && Position.Equals(position.Value)) {
+					result.Add(entity);
+				}
+			}
+
+			return result;
 		}
 
 		#endregion	
@@ -139,7 +170,7 @@ namespace Biters
 	/*
 	 * Entity Placed on an Entity Map.
 	 */
-	public interface IGameMapEntity : IGameElement, IUpdatingElement {
+	public interface IGameMapEntity : IGameElement, ITransformableElement, IUpdatingElement {
 
 		void AddedToGameMap(GameMap<IMapTile, IGameMapEntity> Map, WorldPosition Position);
 		

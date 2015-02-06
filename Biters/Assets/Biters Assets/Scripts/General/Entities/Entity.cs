@@ -13,6 +13,7 @@ namespace Biters
 		protected Movement movement;
 
 		#region Constructors
+
 		protected Entity (GameObject GameObject) {
 			this.gameObject = GameObject;
 			this.movement = new Movement (this);

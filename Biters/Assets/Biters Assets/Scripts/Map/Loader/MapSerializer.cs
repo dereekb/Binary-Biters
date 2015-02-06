@@ -6,8 +6,8 @@ namespace Biters
 	/*
 	 * Exports a map.
 	 */
-	public interface IMapExporter<T> 
-		where T : IMapTile 
+	public interface IMapTileExporter<T>
+		where T : class, IMapTile 
 	{
 
 		void Export(Map<T> Map);
@@ -17,13 +17,16 @@ namespace Biters
 	/*
 	 * Imports a map by name.
 	 */
-	public interface IMapImporter<T>
-		where T : IMapTile
+	public interface IMapTileImporter<T>
+		where T : class, IMapTile
 	{
-		
-		Map<T> Import(string map);
+
+		//Returns a factory for recreating the loaded map.
+		IImportedMap<T> Import(string map);
 
 	}
+
+	public interface IImportedMap<T> : IFactory<World<T>> {}
 
 }
 

@@ -19,11 +19,9 @@ namespace Biters
 		
 		public ResourceLoaderItem this[String Filename]
 		{
-			get
-			{
+			get {
 				return new ResourceLoaderItem(Filename);
 			}
-	
 		}
 
 	}
