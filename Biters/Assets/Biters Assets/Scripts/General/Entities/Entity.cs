@@ -22,6 +22,7 @@ namespace Biters
 		#endregion
 
 		#region Accessors 
+
 		public GameObject GameObject {
 
 			get {

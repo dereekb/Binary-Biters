@@ -4,14 +4,20 @@ using UnityEngine;
 namespace Biters.Game
 {
 	/*
-	 * Represents a default entity.
+	 * Represents a Default Biters Map Entity.
 	 */ 
 	public abstract class BitersMapEntity : Entity
 	{
-		public BitersMapEntity (GameObject GameObject) : base (GameObject)
-		{
 
-		}
+		public BitersMapEntity () : this (GameObject.CreatePrimitive(PrimitiveType.Plane)) {}
+
+		public BitersMapEntity (GameObject GameObject) : base (GameObject) {}
+
+		#region Entity
+
+		public abstract string BitersId { get; }
+
+		#endregion
 
 		#region Update
 		

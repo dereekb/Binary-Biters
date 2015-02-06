@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Biters
+namespace Biters.Utility
 {
 
 	/*
@@ -9,15 +9,15 @@ namespace Biters
 	 */
 	public sealed class ResourceLoader
 	{
-		public static ResourceLoader Default {
+		public static ResourceLoader Load {
 			get {
-					return new ResourceLoader ();
+				return new ResourceLoader ();
 			}
 		}
 
 		public ResourceLoader () {}
 		
-		public ResourceLoaderItem this[String Filename]
+		public ResourceLoaderItem this[string Filename]
 		{
 			get {
 				return new ResourceLoaderItem(Filename);
