@@ -79,7 +79,7 @@ namespace Biters
 		 * Returns the WorldPosition of an entity.
 		 */
 		public WorldPosition? PositionForEntity(E Entity) {
-			WorldPosition? position;
+			WorldPosition? position = null;
 
 			if (this.ContainsEntity(Entity)) {
 				Vector3 entityPosition = Entity.Transform.position;
