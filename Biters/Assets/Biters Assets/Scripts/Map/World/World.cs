@@ -211,6 +211,7 @@ namespace Biters
 	}
 
 	public struct WorldPositionChange {
+
 		public int dX;
 		public int dY;
 		
@@ -231,6 +232,7 @@ namespace Biters
 		}
 		
 	}
+
 	#endregion
 
 	#region Direction

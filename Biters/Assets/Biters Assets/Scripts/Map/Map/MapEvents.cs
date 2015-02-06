@@ -65,7 +65,9 @@ namespace Biters
 		
 	}
 
-	public class MapEventInfo : EventInfo {
+	public class MapEventInfo : IEventInfo {
+		
+		public const string MapEventInfoId = "MAP_EVENT";
 
 		private string Name;
 		private MapEvent mapEvent;
@@ -102,6 +104,12 @@ namespace Biters
 		public MapEventInfo(MapEvent MapEvent, Map<IMapTile> Map, WorldPosition? position, string Name) : this (MapEvent, Map, Name) {
 			this.position = position;
 		}
+		
+		public string EventInfoId {
+			get {
+				return MapEventInfoId;
+			}
+		}
 
 		public string EventName {
 
@@ -126,27 +134,35 @@ namespace Biters
 			}
 
 		}
-
-		public IMapTile Tile {
-
-			get {
-
-				//TODO: If position is available, return the position.
-
-				return tile;
-			}
-
-		}
-
+		
 		public WorldPosition? Position {
-
+			
 			get {
-
-				//TODO: If Tile is available, return the tile's position.
-
+				WorldPosition? position = null;
+				
+				if (this.position.HasValue) {
+					position = this.position;
+				} else if (this.tile != null) {
+					position = this.tile.MapTilePosition;
+				}
+				
 				return position;
 			}
-
+			
+		}
+		
+		public IMapTile Tile {
+			get {
+				IMapTile tile = null;
+				
+				if (this.tile != null) {
+					tile = this.tile;
+				} else if (this.Position.HasValue) {
+					tile = this.map.GetTile(this.position.Value);
+				}
+				
+				return tile;
+			}
 		}
 
 	}

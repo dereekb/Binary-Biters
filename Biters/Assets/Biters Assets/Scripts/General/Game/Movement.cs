@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Biters 
@@ -117,7 +119,7 @@ namespace Biters
 	/*
 	 * Continuous Movement AutoPilot. 
 	 */
-	public class MovementAutoPilot : IAutoPilot {
+	public class WalkAutoPilot : IAutoPilot {
 
 		//Direction and speed vector.
 		protected Vector3 direction;
@@ -134,9 +136,9 @@ namespace Biters
 
 		}
 
-		protected MovementAutoPilot() : this(new Vector3(1, 1)) {}
+		protected WalkAutoPilot() : this(new Vector3(1, 1)) {}
 
-		public MovementAutoPilot(Vector3 Direction) {
+		public WalkAutoPilot(Vector3 Direction) {
 			this.direction = Direction;
 		}
 
@@ -170,7 +172,7 @@ namespace Biters
 	/*
 	 * AutoPilot implementation that walks for a certain amount of time.
 	 */
-	public class WalkForTimeAutoPilot : MovementAutoPilot {
+	public class WalkForTimeAutoPilot : WalkAutoPilot {
 
 		public float WalkTime;
 		private float walkedTime;
@@ -205,7 +207,7 @@ namespace Biters
 	/*
 	 * AutoPilot implementation that walks towards a position until it reaches that position.
 	 */
-	public class WalkToPositionAutoPilot : MovementAutoPilot {
+	public class WalkToPositionAutoPilot : WalkAutoPilot {
 		
 		public Vector3 Position;
 
@@ -240,6 +242,128 @@ namespace Biters
 		}
 
 	}
+
+
+
+	#endregion
+	
+	#region Auto Pilot Queue
+
+	/*
+	 * AutoPilot that has a queue of AutoPilots to run.
+	 */
+	public class AutoPilotQueue : IAutoPilot {
+
+		protected Queue<IAutoPilot> queue = new Queue<IAutoPilot>();
+		protected IAutoPilot current;
+
+		public AutoPilotQueue() {}
+
+		public IAutoPilot Current {
+			get {
+				return this.current;
+			}
+		}
+
+		public bool Empty {
+			get {
+				return (this.queue.Count == 0);
+			}
+		}
+
+		private IAutoPilot DequeueNextPilot() {
+			IAutoPilot next = null;
+
+			if (this.Empty == false) {
+				next = queue.Dequeue();
+			}
+
+			current = next;
+			return next;
+		}
+
+		#region Auto Pilot
+
+		public virtual bool AutoMove(Movement Movement) {
+			bool complete = this.IsComplete ();
+
+			if (!complete) {
+				IAutoPilot pilot = this.current;
+
+				if (pilot == null) {
+					this.DequeueNextPilot();
+				}
+
+				bool pilotFinished = pilot.AutoMove(Movement);
+
+				if (pilotFinished) {
+					current = null;
+					complete = this.IsComplete();
+				}
+			}
+
+			return complete;
+		}
+
+		public virtual bool IsComplete() {
+			return (current == null || current.IsComplete ()) && (queue.Count == 0);
+		}
+		
+		public void CancelAutoPilot() {
+			this.queue.Clear();
+		}
+
+		#endregion
+
+		#region Queue
+
+		public void Add(IAutoPilot AutoPilot) {
+			queue.Enqueue (AutoPilot);
+		}
+
+		#endregion
+
+	}
+
+	#endregion
+
+	#region More Auto Pilots
+
+	/*
+	 * Units wander aimlessly.
+	 */
+	/*
+	 * TODO: COmplete
+	public class WanderAutoPilot : WalkAutoPilot {
+
+		public WanderAutoPilot(Vector3 Direction, float WalkTime) : base(Direction) {
+		}
+		
+		public Vector3 RandomDirection() {
+			
+		}
+
+		public Vector3 RandomWalkTime() {
+			
+		}
+		
+		public override bool AutoMove(Movement Movement) {
+			bool complete = !this.HasTimeLeft;
+			
+			if (!complete) {
+				this.MakeMovement(Movement);
+				walkedTime += Time.deltaTime;
+			}
+			
+			return complete;
+		}
+		
+		public override bool IsComplete() {
+			return !this.HasTimeLeft;
+		}
+		
+	}
+	*/
 
 	#endregion
 

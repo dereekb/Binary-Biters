@@ -13,12 +13,22 @@ namespace Biters
 		/*
 		 * Called when a map tile is added.
 		 */
-		AddEntity = 10,
+		AddEntity = 0,
 		
 		/*
 		 * Called when a map tile is removed.
 		 */
-		RemoveEntity = 11,
+		RemoveEntity = 1,
+		
+		/*
+		 * Entity entered a tile.
+		 */
+		EntityEnteredTile = 10,
+		
+		/*
+		 * Entity exited a tile.
+		 */
+		EntityExitedTile = 11,
 
 		//TODO: Add other game map event types.
 		
@@ -44,27 +54,61 @@ namespace Biters
 		
 	}
 	
-	public class GameMapEventInfo : EventInfo {
+	public class GameMapEventInfo : IEventInfo {
+
+		public const string GameMapEventInfoId = "GAME_MAP_EVENT";
+
+		private readonly GameMapEvent mapEvent;
+		private readonly GameMap<IMapTile, IGameMapEntity> map;
 		
-		private GameMapEvent mapEvent;
-		private GameMap<IMapTile, IGameMapEntity> map;
+		//Optional Position associed with the event.
+		private readonly WorldPosition? position;
 
 		//Optional Entity associated with the event.
-		private IGameMapEntity entity;
+		private readonly IGameMapEntity entity;
+
+		//Optional Tile associed with the event.
+		private readonly IMapTile tile;
 		
 		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map) {
 			this.mapEvent = GameMapEvent;
 			this.map = Map;
 		}
-
+		
 		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map, IGameMapEntity Entity) : this (GameMapEvent, Map) {
 			this.entity = Entity;
 		}
 		
+		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map, IGameMapEntity Entity, WorldPosition Position) : this (GameMapEvent, Map, Entity) {
+			this.position = Position;
+		}
+
+		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map, WorldPosition Position) : this (GameMapEvent, Map) {
+			this.position = Position;
+		}
+		
+		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map, IMapTile Tile) : this (GameMapEvent, Map) {
+			this.tile = Tile;
+		}
+
+		public string EventInfoId {
+			get {
+				return GameMapEventInfoId;
+			}
+		}
+
 		public string EventName {
 			get {
 				return mapEvent.EventName();
 			}
+		}
+
+		public GameMapEvent MapEvent {
+
+			get {
+				return mapEvent;
+			}
+
 		}
 
 		public IGameMapEntity Entity {
@@ -73,6 +117,39 @@ namespace Biters
 				return entity;
 			}
 			
+		}
+
+		public WorldPosition? Position {
+
+			get {
+				WorldPosition? position = null;
+
+				if (this.position.HasValue) {
+					position = this.position;
+				} else if (this.tile != null) {
+					position = this.tile.MapTilePosition;
+				} else if (this.entity != null) {
+					position = this.map.PositionForEntity(this.entity);
+				}
+
+				return position;
+			}
+
+		}
+
+		public IMapTile Tile {
+			get {
+
+				IMapTile tile = null;
+
+				if (this.tile != null) {
+					tile = this.tile;
+				} else if (this.Position.HasValue) {
+					tile = this.map.GetTile(this.position.Value);
+				}
+
+				return tile;
+			}
 		}
 
 		public GameMap<IMapTile, IGameMapEntity> Map {

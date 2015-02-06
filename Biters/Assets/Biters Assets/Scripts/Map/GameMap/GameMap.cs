@@ -16,7 +16,6 @@ namespace Biters
 		where T : class, IMapTile
 		where E : class, IGameMapEntity
 	{
-
 		private HashSet<E> entities;
 		private EventSystem<GameMapEvent, GameMapEventInfo> gameMapEvents;
 
@@ -140,15 +139,15 @@ namespace Biters
 			
 		}
 		
-		public void RegisterForEvent(EventListener Listener, GameMapEvent EventType) {
+		public void RegisterForEvent(IEventListener Listener, GameMapEvent EventType) {
 			this.gameMapEvents.AddObserver (Listener, EventType);
 		}
 		
-		public void UnregisterForEvent(EventListener Listener, GameMapEvent EventType) {
+		public void UnregisterForEvent(IEventListener Listener, GameMapEvent EventType) {
 			this.gameMapEvents.RemoveObserver (Listener, EventType);
 		}
 		
-		public void UnregisterForEvents(EventListener Listener, GameMapEvent EventType) {
+		public void UnregisterForEvents(IEventListener Listener, GameMapEvent EventType) {
 			this.gameMapEvents.RemoveObserver (Listener);
 		}
 
@@ -170,7 +169,7 @@ namespace Biters
 	/*
 	 * Entity Placed on an Entity Map.
 	 */
-	public interface IGameMapEntity : IGameElement, ITransformableElement, IUpdatingElement {
+	public interface IGameMapEntity : IGameElement, ITransformableElement, IMovingElement, IUpdatingElement {
 
 		void AddedToGameMap(GameMap<IMapTile, IGameMapEntity> Map, WorldPosition Position);
 		

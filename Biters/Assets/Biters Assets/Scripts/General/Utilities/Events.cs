@@ -4,15 +4,23 @@ using System.Collections.Generic;
 
 namespace Biters
 {
-	public interface EventInfo {
-		
+	public interface IEventInfo {
+
+		/*
+		 * Unique identifier for the implementing type.
+		 */
+		string EventInfoId { get; }
+
+		/*
+		 * Unique event name.
+		 */
 		string EventName { get; }
-		
+
 	}
 
-	public interface EventListener {
+	public interface IEventListener {
 		
-		void HandleEvent(EventInfo EventInfo);
+		void HandleEvent(IEventInfo EventInfo);
 
 		/*
 		 * TODO: Add "was unregistered" type function if needed. (Or better yet, extend EventSystem to add that.)
@@ -26,17 +34,17 @@ namespace Biters
 	 * 
 	 * Allows elements to register and listen for specific types.
 	 */
-	public sealed class EventSystem<T, I> where I : EventInfo
+	public sealed class EventSystem<T, I> where I : IEventInfo
 	{
 		/*
 		 * Keeps the listeners dictionary clean.
 		 */
 		public bool KeepClean = false;
 
-		private Dictionary<T, HashSet<EventListener>> listeners;
+		private Dictionary<T, HashSet<IEventListener>> listeners;
 
 		public EventSystem() {
-			this.listeners = new Dictionary<T, HashSet<EventListener>> ();
+			this.listeners = new Dictionary<T, HashSet<IEventListener>> ();
 		}
 
 		#region Internal 
@@ -48,21 +56,21 @@ namespace Biters
 		}
 
 		private void NotifyObservers(T EventType, I EventInfo) {
-			HashSet<EventListener> set = listeners [EventType];
+			HashSet<IEventListener> set = listeners [EventType];
 
-			foreach (EventListener listener in set) {
+			foreach (IEventListener listener in set) {
 				listener.HandleEvent(EventInfo);
 			}
 		}
 
-		private HashSet<EventListener> ResetObserverSet(T EventType) {
-			HashSet<EventListener> set = new HashSet<EventListener>();
+		private HashSet<IEventListener> ResetObserverSet(T EventType) {
+			HashSet<IEventListener> set = new HashSet<IEventListener>();
 			listeners.Add(EventType, set);
 			return set;
 		}
 		
 		private void CheckObserverSetRemoval(T EventType) {
-			HashSet<EventListener> set;
+			HashSet<IEventListener> set;
 			
 			if (this.KeepClean && this.listeners.TryGetValue (EventType, out set)) {
 				if (set.Count == 0) {
@@ -81,8 +89,8 @@ namespace Biters
 		#region Observers
 
 		//Add Observer
-		public void AddObserver(EventListener Listener, T EventType) {
-			HashSet<EventListener> set;
+		public void AddObserver(IEventListener Listener, T EventType) {
+			HashSet<IEventListener> set;
 			
 			if (this.listeners.TryGetValue (EventType, out set) == false) {
 				set = this.ResetObserverSet(EventType);
@@ -90,8 +98,8 @@ namespace Biters
 		}
 
 		//Remove Observer
-		public void RemoveObserver(EventListener Listener, T EventType) {
-			HashSet<EventListener> set;
+		public void RemoveObserver(IEventListener Listener, T EventType) {
+			HashSet<IEventListener> set;
 			
 			if (this.listeners.TryGetValue (EventType, out set)) {
 				set.Remove(Listener);
@@ -99,9 +107,9 @@ namespace Biters
 			}
 		}
 
-		public void RemoveObserver(EventListener Listener) {
-			foreach (KeyValuePair<T, HashSet<EventListener>> pair in this.listeners) {
-				HashSet<EventListener> set = pair.Value;
+		public void RemoveObserver(IEventListener Listener) {
+			foreach (KeyValuePair<T, HashSet<IEventListener>> pair in this.listeners) {
+				HashSet<IEventListener> set = pair.Value;
 				set.Remove(Listener);
 			}
 		}

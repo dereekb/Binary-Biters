@@ -84,6 +84,10 @@ namespace Biters
 			return result;
 		}
 
+		public Vector3 GetPositionVector(WorldPosition Position) {
+			return this.positionMapper.VectorForPosition (Position);
+		}
+
 		public T SetTile(T Element, WorldPosition Position) {
 			T replaced = this.RemoveTile (Position);
 			
@@ -141,15 +145,15 @@ namespace Biters
 
 		}
 
-		public void RegisterForEvent(EventListener Listener, MapEvent EventType) {
+		public void RegisterForEvent(IEventListener Listener, MapEvent EventType) {
 			this.mapEvents.AddObserver (Listener, EventType);
 		}
 		
-		public void UnregisterForEvent(EventListener Listener, MapEvent EventType) {
+		public void UnregisterForEvent(IEventListener Listener, MapEvent EventType) {
 			this.mapEvents.RemoveObserver (Listener, EventType);
 		}
 		
-		public void UnregisterForEvents(EventListener Listener) {
+		public void UnregisterForEvents(IEventListener Listener) {
 			this.mapEvents.RemoveObserver (Listener);
 		}
 
