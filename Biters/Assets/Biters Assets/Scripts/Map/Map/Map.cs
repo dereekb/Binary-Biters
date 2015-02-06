@@ -110,9 +110,13 @@ namespace Biters
 
 		#region Update
 
-		public override void Update(Time time) {
+		public override void Update() {
+			this.UpdateTiles ();
+		}
+
+		protected void UpdateTiles() {
 			foreach (T tile in World) {
-				tile.Update(time);
+				tile.Update();
 			}
 		}
 
@@ -136,11 +140,15 @@ namespace Biters
 			this.mapEvents.RemoveObserver (Listener, EventType);
 		}
 		
-		public void BroadcastCustomEvent(String Name) {
-			this.BroadcastCustomEvent (Name, null);
+		public void UnregisterForEvents(EventListener Listener) {
+			this.mapEvents.RemoveObserver (Listener);
+		}
+
+		public void BroadcastCustomMapEvent(String Name) {
+			this.BroadcastCustomMapEvent (Name, null);
 		}
 		
-		public void BroadcastCustomEvent(String Name, WorldPosition? Position) {
+		public void BroadcastCustomMapEvent(String Name, WorldPosition? Position) {
 			MapEventInfo mapEventInfo = new MapEventInfo(MapEvent.Custom, this as Map<IMapTile>, Position);
 			this.mapEvents.BroadcastEvent(MapEvent.Custom, mapEventInfo);
 		}
@@ -148,12 +156,12 @@ namespace Biters
 		/*
 		 * Convenience function for broadcasting an internal event with default arguments. 
 		 */
-		private void BroadcastEvent(MapEvent MapEvent) {
+		protected void BroadcastMapEvent(MapEvent MapEvent) {
 			MapEventInfo info = this.DefaultMapEventInfo (MapEvent);
 			this.mapEvents.BroadcastEvent (MapEvent, info);
 		}
 
-		private MapEventInfo DefaultMapEventInfo(MapEvent MapEvent) {
+		protected MapEventInfo DefaultMapEventInfo(MapEvent MapEvent) {
 			return new MapEventInfo(MapEvent, this as Map<IMapTile>);
 		}
 

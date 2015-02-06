@@ -61,7 +61,7 @@ namespace Biters
 
 		#region Functions
 
-		public abstract void Update (Time time);
+		public abstract void Update ();
 
 		#endregion
 	}

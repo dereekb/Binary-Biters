@@ -7,6 +7,10 @@ namespace Biters
 {
 	/*
 	 * Represents a Game Map that contains entities in addition to map tiles.
+	 * 
+	 * Contains only support functions for updating the map. 
+	 * 
+	 * Game Logic should be handled through available accessors.
 	 */
 	public class GameMap<T, E> : Map<T> 
 		where T : IMapTile
@@ -27,7 +31,7 @@ namespace Biters
 		public void AddEntity(E Entity, WorldPosition Position) {
 			if (this.ContainsEntity(Entity) == false) {
 				this.entities.Add(Entity);
-				MoveEntityToPosition(Position);
+				MoveEntityToPosition(Entity, Position);
 				Entity.AddedToGameMap(this as GameMap<IMapTile, IGameMapEntity>, Position);
 			}
 		}
@@ -80,18 +84,17 @@ namespace Biters
 		
 		#region Update
 
-		public override void Update(Time time) {
-
-			foreach (E entity in this.entities) {
-				entity.Update(time);
-			}
-
-			//TODO: Update elements before board pieces.
-
-			base.Update (time);
+		public override void Update() {
+			this.UpdateEntities();
+			base.Update();
 		}
 
-		
+		private void UpdateEntities() {	
+			foreach (E entity in this.entities) {
+				entity.Update();
+			}
+		}
+
 		#endregion
 
 		#endregion
@@ -106,13 +109,18 @@ namespace Biters
 			
 		}
 		
-		/*
-		 * TODO: Add Event Functions
-		 * - Send Event
-		 * - Register for Event
-		 * - Unregister for Event
-		 */
+		public void RegisterForEvent(EventListener Listener, GameMapEvent EventType) {
+			this.gameMapEvents.AddObserver (Listener, EventType);
+		}
 		
+		public void UnregisterForEvent(EventListener Listener, GameMapEvent EventType) {
+			this.gameMapEvents.RemoveObserver (Listener, EventType);
+		}
+		
+		public void UnregisterForEvents(EventListener Listener, GameMapEvent EventType) {
+			this.gameMapEvents.RemoveObserver (Listener);
+		}
+
 		/*
 		 * Convenience function for broadcasting an event with default arguments. 
 		 */

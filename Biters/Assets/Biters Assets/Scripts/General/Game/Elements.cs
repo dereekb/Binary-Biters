@@ -27,7 +27,7 @@ namespace Biters
 	 */
 	public interface IUpdatingElement
 	{
-		void Update(Time time);
+		void Update();
 	}
 
 	#region Moving Element
@@ -37,7 +37,7 @@ namespace Biters
 	 * 
 	 * Wraps a Transformable element to performe movements.
 	 */
-	public class Movement : ITransformableElement {
+	public class Movement : ITransformableElement, IUpdatingElement {
 		
 		private ITransformableElement element;
 
@@ -50,6 +50,12 @@ namespace Biters
 			get {
 				return element.Transform;
 			}
+
+		}
+
+		public void Update() {
+
+			//TODO: Add code that automatically updates this movement.
 
 		}
 		
