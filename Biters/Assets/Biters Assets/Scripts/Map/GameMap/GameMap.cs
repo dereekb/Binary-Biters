@@ -22,13 +22,57 @@ namespace Biters
 		
 		#region Entity
 
-		/*
-		 * TODO: Add Entity Functions
-		 * - AddEntity(Entity, Position)
-		 * - RemoveEntity(Entity)
-		 * - GetEntitiesAtPosition(WorldPosition)
-		 * etc.
-		 */
+		#region Accessors
+
+		public void AddEntity(E Entity, WorldPosition Position) {
+			if (this.ContainsEntity(Entity) == false) {
+				this.entities.Add(Entity);
+				MoveEntityToPosition(Position);
+				Entity.AddedToGameMap(this as GameMap<IMapTile, IGameMapEntity>, Position);
+			}
+		}
+
+		public void RemoveEntity(E Entity) {
+			if (this.ContainsEntity(Entity)) {
+				this.entities.Remove(Entity);
+				Entity.RemovedFromGameMap(this as GameMap<IMapTile, IGameMapEntity>);
+			}
+		}
+		
+		public bool ContainsEntity(E Entity) {
+			return this.entities.Contains(Entity);
+		}
+
+		#endregion
+
+		#region Entity Positions
+
+		protected void MoveEntityToPosition(E Entity, WorldPosition Position) {
+
+			//TODO: Retrieve the tile's position, then apply that position to the entity.
+
+		}
+
+		protected WorldPosition? PositionForEntity(E Entity) {
+			WorldPosition? position;
+
+			if (this.ContainsEntity(Entity)) {
+				//TODO: Retrieve element position...
+			}
+
+			return position;
+		}
+
+		//Get Entities within Position...
+		public List<E> GetEntitiesAtPosition(WorldPosition Position) {
+			List<E> entities = new List<E> ();
+
+			//TODO: Retrieve entities within a position.
+
+			return entities;
+		}
+
+		#endregion	
 		
 		#endregion
 
@@ -37,6 +81,10 @@ namespace Biters
 		#region Update
 
 		public override void Update(Time time) {
+
+			foreach (E entity in this.entities) {
+				entity.Update(time);
+			}
 
 			//TODO: Update elements before board pieces.
 
@@ -83,9 +131,11 @@ namespace Biters
 	/*
 	 * Entity Placed on an Entity Map.
 	 */
-	public interface IGameMapEntity : IGameElement {
+	public interface IGameMapEntity : IGameElement, IUpdatingElement {
 
-		//TODO: Add anything..? Set/Get Map?
+		void AddedToGameMap(GameMap<IMapTile, IGameMapEntity> Map, WorldPosition Position);
+		
+		void RemovedFromGameMap(GameMap<IMapTile, IGameMapEntity> Map);
 
 	}
 
