@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Biters
@@ -8,37 +10,110 @@ namespace Biters
 	 * Represents a map made up of tiles.
 	 */
 	public class Map<T> : Entity 
-		where T : MapTile
+		where T : IMapTile
 	{
 		private EventSystem<MapEvent, MapEventInfo> mapEvents;
-		protected MapTileFactory<T> TileFactory;
+		protected IFactory<World<T>> WorldFactory;
 
 		protected World<T> World;
 
-		public Map(GameObject GameObject, MapTileFactory<T> TileFactory) : base(GameObject) {
-			this.TileFactory = TileFactory;
+		public Map(GameObject GameObject, IFactory<World<T>> WorldFactory) : base(GameObject) {
+			this.WorldFactory = WorldFactory;
 			this.mapEvents = new EventSystem<MapEvent, MapEventInfo> ();
 		}
 
 		#region World
 
-		public void resetWorld() {
+		/*
+		 * Resets the world to its original state.
+		 */
+		public void ResetWorld() {
+			this.ClearWorld();
+
+			World<T> newWorld = WorldFactory.Make();
+			Map<IMapTile> map = this as Map<IMapTile>;
+
+			foreach (KeyValuePair<WorldPosition, T> pair in newWorld.ElementPairs) {
+				WorldPosition position = pair.Key;
+				T element = pair.Value;
+
+				element.MapTilePosition = pair.Key;
+				element.AddedToMap(map, position);
+			}
+
+			this.World = newWorld;
+		}
+
+		/*
+		 * Deletes the current world.
+		 */
+		public void ClearWorld() {
+			foreach (WorldPosition Position in World.Positions) {
+				this.RemoveTile(Position);
+			}
+		}
+
+		#region World Position Accessors
+
+		public T this[WorldPosition Position]
+		{
+
+			get
+			{
+				return this.GetTile(Position);
+			}
+			
+			set
+			{
+				this.SetTile(value, Position);
+			}
 
 		}
 
-		/* TODO: Set Tile Functions
-		 * - GetTile
-		 * - SetTile
-		 * - ResetTile
-		 * - ClearTile
-		 */
+		public T GetTile(WorldPosition Position) {
+			T result = World [Position];
+			return result;
+		}
+
+		public T SetTile(T Element, WorldPosition Position) {
+			T replaced = this.RemoveTile (Position);
+			
+			if (Element != null) {
+				this.World.SetAtPosition(Element, Position);
+				Element.MapTilePosition = Position;
+				Element.AddedToMap(this as Map<IMapTile>, Position);
+			}
+			
+			return replaced;
+		}
+
+		public T RemoveTile(WorldPosition Position) {
+			T removed = this.GetTile(Position);
+			
+			if (removed != null) {
+				this.World.RemoveFromPosition(Position);
+				removed.RemovedFromMap(this as Map<IMapTile>);
+			}
+
+			return removed;
+		}
+
+		#endregion
+
+		#region World Accessors
+
+		//TODO: Add accessors to retrieve neighbor elements, etc.
+
+		#endregion
 
 		#endregion
 
 		#region Update
 
 		public override void Update(Time time) {
-			//TODO: Call update on all tiles.
+			foreach (T tile in World) {
+				tile.Update(time);
+			}
 		}
 
 		#endregion
@@ -53,15 +128,25 @@ namespace Biters
 
 		}
 
-		/*
-		 * TODO: Add Event Functions
-		 * - Send Event
-		 * - Register for Event
-		 * - Unregister for Event
-		 */
+		public void RegisterForEvent(EventListener Listener, MapEvent EventType) {
+			this.mapEvents.AddObserver (Listener, EventType);
+		}
+		
+		public void UnregisterForEvent(EventListener Listener, MapEvent EventType) {
+			this.mapEvents.RemoveObserver (Listener, EventType);
+		}
+		
+		public void BroadcastCustomEvent(String Name) {
+			this.BroadcastCustomEvent (Name, null);
+		}
+		
+		public void BroadcastCustomEvent(String Name, WorldPosition? Position) {
+			MapEventInfo mapEventInfo = new MapEventInfo(MapEvent.Custom, this as Map<IMapTile>, Position);
+			this.mapEvents.BroadcastEvent(MapEvent.Custom, mapEventInfo);
+		}
 
 		/*
-		 * Convenience function for broadcasting an event with default arguments. 
+		 * Convenience function for broadcasting an internal event with default arguments. 
 		 */
 		private void BroadcastEvent(MapEvent MapEvent) {
 			MapEventInfo info = this.DefaultMapEventInfo (MapEvent);
@@ -69,27 +154,21 @@ namespace Biters
 		}
 
 		private MapEventInfo DefaultMapEventInfo(MapEvent MapEvent) {
-			return new MapEventInfo(MapEvent, this as Map<MapTile>);
+			return new MapEventInfo(MapEvent, this as Map<IMapTile>);
 		}
 
 		#endregion
 	}
 
 	//Represents a Tile on a map.
-	public interface MapTile : GameElement, WorldElement {
-		//TODO: Complete.
-	}
-
-	/*
-	 * Factory for building maps tiles.
-	 * 
-	 * Should only build the tiles.
-	 */
-	public interface MapTileFactory<T> : Factory<T> 
-		where T : MapTile {
-
-		World<T> makeWorld();
+	public interface IMapTile : IGameElement, IUpdatingElement {
 		
+		WorldPosition MapTilePosition { get; set; }
+
+		void AddedToMap(Map<IMapTile> Map, WorldPosition Position);
+			
+		void RemovedFromMap(Map<IMapTile> Map);
+
 	}
 
 }

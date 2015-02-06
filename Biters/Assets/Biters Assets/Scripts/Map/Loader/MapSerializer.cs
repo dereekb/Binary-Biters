@@ -6,8 +6,8 @@ namespace Biters
 	/*
 	 * Exports a map.
 	 */
-	public interface MapExporter<T> 
-		where T : MapTile 
+	public interface IMapExporter<T> 
+		where T : IMapTile 
 	{
 
 		void Export(Map<T> Map);
@@ -17,8 +17,8 @@ namespace Biters
 	/*
 	 * Imports a map by name.
 	 */
-	public interface MapImporter<T>
-		where T : MapTile
+	public interface IMapImporter<T>
+		where T : IMapTile
 	{
 		
 		Map<T> Import(string map);

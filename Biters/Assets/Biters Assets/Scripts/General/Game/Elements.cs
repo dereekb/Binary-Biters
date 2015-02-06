@@ -6,7 +6,7 @@ namespace Biters
 	/*
 	 * A game element.
 	 */
-	public interface GameElement 
+	public interface IGameElement 
 	{
 		GameObject GameObject { get; }
 	}
@@ -16,7 +16,7 @@ namespace Biters
 	 * 
 	 * Allows access to material.
 	 */
-	public interface VisibleElement
+	public interface IVisibleElement
 	{
 		Material Material { get; set; }
 
@@ -25,7 +25,7 @@ namespace Biters
 	/*
 	 * A game element that can update itself.
 	 */
-	public interface UpdatingElement
+	public interface IUpdatingElement
 	{
 		void Update(Time time);
 	}
@@ -37,11 +37,11 @@ namespace Biters
 	 * 
 	 * Wraps a Transformable element to performe movements.
 	 */
-	public class Movement : TransformableElement {
+	public class Movement : ITransformableElement {
 		
-		private TransformableElement element;
+		private ITransformableElement element;
 
-		public Movement(TransformableElement Element) {
+		public Movement(ITransformableElement Element) {
 			this.element = Element;
 		}
 		
@@ -67,7 +67,7 @@ namespace Biters
 	/*
 	 * Element that exposes it's transform directly.
 	 */
-	public interface TransformableElement
+	public interface ITransformableElement
 	{
 
 		Transform Transform { get; }
@@ -79,7 +79,7 @@ namespace Biters
 	 * 
 	 * Allows access to it's current X and Y positions on whatever plane of existence it currently exists on.
 	 */
-	public interface MovingElement
+	public interface IMovingElement
 	{
 
 		Movement Movement { get; }

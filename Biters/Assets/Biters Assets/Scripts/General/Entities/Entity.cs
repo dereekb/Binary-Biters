@@ -7,7 +7,7 @@ namespace Biters
 	/*
 	 * Base entity class.
 	 */
-	public abstract class Entity : GameElement, VisibleElement, TransformableElement, MovingElement, UpdatingElement
+	public abstract class Entity : IGameElement, IVisibleElement, ITransformableElement, IMovingElement, IUpdatingElement
 	{
 		protected GameObject gameObject;
 		protected Movement movement;

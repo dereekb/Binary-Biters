@@ -67,32 +67,48 @@ namespace Biters
 
 	public class MapEventInfo : EventInfo {
 
+		private string Name;
 		private MapEvent mapEvent;
-		private Map<MapTile> map;
+		private Map<IMapTile> map;
 
 		//Optional Tile associated with the event.
-		private MapTile tile;
+		private IMapTile tile;
 
 		//Optional Position associated with the event.
 		private WorldPosition? position;
 		
-		public MapEventInfo(MapEvent MapEvent, Map<MapTile> Map) {
+		public MapEventInfo(MapEvent MapEvent, Map<IMapTile> Map, string Name) {
+			this.mapEvent = MapEvent;
+			this.map = Map;
+
+			if (Name == null) {
+				Name = MapEvent.EventName();
+			}
+
+			this.Name = Name;
+		}
+		
+		public MapEventInfo(MapEvent MapEvent, Map<IMapTile> Map) : this(MapEvent, Map, MapEvent.EventName()) {
 			this.mapEvent = MapEvent;
 			this.map = Map;
 		}
 		
-		public MapEventInfo(MapEvent MapEvent, Map<MapTile> Map, MapTile tile) : this (MapEvent, Map) {
+		public MapEventInfo(MapEvent MapEvent, Map<IMapTile> Map, IMapTile tile) : this (MapEvent, Map) {
 			this.tile = tile;
 		}
 		
-		public MapEventInfo(MapEvent MapEvent, Map<MapTile> Map, WorldPosition position) : this (MapEvent, Map) {
+		public MapEventInfo(MapEvent MapEvent, Map<IMapTile> Map, WorldPosition? position) : this (MapEvent, Map, MapEvent.EventName()) {}
+		
+		public MapEventInfo(MapEvent MapEvent, Map<IMapTile> Map, WorldPosition? position, string Name) : this (MapEvent, Map, Name) {
 			this.position = position;
 		}
 
 		public string EventName {
+
 			get {
-				return mapEvent.EventName();
+				return Name;
 			}
+
 		}
 
 		public MapEvent Event {
@@ -103,7 +119,7 @@ namespace Biters
 
 		}
 
-		public Map<MapTile> Map {
+		public Map<IMapTile> Map {
 
 			get {
 				return map;
@@ -111,9 +127,12 @@ namespace Biters
 
 		}
 
-		public MapTile Tile {
+		public IMapTile Tile {
 
 			get {
+
+				//TODO: If position is available, return the position.
+
 				return tile;
 			}
 
@@ -122,6 +141,9 @@ namespace Biters
 		public WorldPosition? Position {
 
 			get {
+
+				//TODO: If Tile is available, return the tile's position.
+
 				return position;
 			}
 

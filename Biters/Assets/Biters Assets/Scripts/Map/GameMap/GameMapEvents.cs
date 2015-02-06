@@ -47,17 +47,17 @@ namespace Biters
 	public class GameMapEventInfo : EventInfo {
 		
 		private GameMapEvent mapEvent;
-		private GameMap<MapTile, GameMapEntity> map;
+		private GameMap<IMapTile, IGameMapEntity> map;
 
 		//Optional Entity associated with the event.
-		private GameMapEntity entity;
+		private IGameMapEntity entity;
 		
-		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<MapTile, GameMapEntity> Map) {
+		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map) {
 			this.mapEvent = GameMapEvent;
 			this.map = Map;
 		}
 
-		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<MapTile, GameMapEntity> Map, GameMapEntity Entity) : this (GameMapEvent, Map) {
+		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map, IGameMapEntity Entity) : this (GameMapEvent, Map) {
 			this.entity = Entity;
 		}
 		
@@ -67,7 +67,7 @@ namespace Biters
 			}
 		}
 
-		public GameMapEntity Entity {
+		public IGameMapEntity Entity {
 			
 			get {
 				return entity;
@@ -75,7 +75,7 @@ namespace Biters
 			
 		}
 
-		public GameMap<MapTile, GameMapEntity> Map {
+		public GameMap<IMapTile, IGameMapEntity> Map {
 
 			get {
 				return map;

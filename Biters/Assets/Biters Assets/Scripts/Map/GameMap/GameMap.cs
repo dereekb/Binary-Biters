@@ -9,18 +9,19 @@ namespace Biters
 	 * Represents a Game Map that contains entities in addition to map tiles.
 	 */
 	public class GameMap<T, E> : Map<T> 
-		where T : MapTile
-		where E : GameMapEntity 
+		where T : IMapTile
+		where E : IGameMapEntity 
 	{
-		private List<E> entities;
+		private HashSet<E> entities;
 		private EventSystem<GameMapEvent, GameMapEventInfo> gameMapEvents;
 
-		public GameMap(GameObject GameObject, MapTileFactory<T> TileFactory) : base(GameObject, TileFactory) {
+		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory) : base(GameObject, WorldFactory) {
 			this.gameMapEvents = new EventSystem<GameMapEvent, GameMapEventInfo> ();
+			this.entities = new HashSet<E> ();
 		}
 		
 		#region Entity
-		
+
 		/*
 		 * TODO: Add Entity Functions
 		 * - AddEntity(Entity, Position)
@@ -73,7 +74,7 @@ namespace Biters
 		}
 		
 		private GameMapEventInfo DefaultMapEventInfo(GameMapEvent GameMapEvent) {
-			return new GameMapEventInfo(GameMapEvent, this as GameMap<MapTile, GameMapEntity>);
+			return new GameMapEventInfo(GameMapEvent, this as GameMap<IMapTile, IGameMapEntity>);
 		}
 		
 		#endregion
@@ -82,12 +83,11 @@ namespace Biters
 	/*
 	 * Entity Placed on an Entity Map.
 	 */
-	public interface GameMapEntity : GameElement {
+	public interface IGameMapEntity : IGameElement {
 
 		//TODO: Add anything..? Set/Get Map?
 
 	}
-
 
 }
 

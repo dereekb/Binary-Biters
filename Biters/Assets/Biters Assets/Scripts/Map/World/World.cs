@@ -11,7 +11,7 @@ namespace Biters
 	 * 
 	 * Used for tiles management.
 	 */
-	public class World<T> where T : WorldElement {
+	public class World<T> : IEnumerable {
 		
 		private Dictionary<WorldPosition, T> Everything;
 		
@@ -19,28 +19,30 @@ namespace Biters
 			Everything = new Dictionary<WorldPosition, T> ();
 		}
 
-		//Element at Position
-		public T GetAtPosition(WorldPosition Position) {
-			T result;
-			Everything.TryGetValue (Position, out result);
-			return result;
-		}
+		#region Positions
 
-		public T SetAtPosition(WorldPosition Position, T Element) {
-			T replaced = this.GetAtPosition (Position);
-			
-			if (replaced != null) {
-				replaced.removedFromWorld(this as World<WorldElement>, Position);
+		public IEnumerable<KeyValuePair<WorldPosition, T>> ElementPairs {
+
+			get 
+			{
+				return this.Everything;
 			}
 
-			if (Element != null) {
-				Everything[Position] = Element;
-				Element.addedToWorld(this as World<WorldElement>, Position);
+		}
+
+		public IEnumerable<WorldPosition> Positions {
+
+			get 
+			{
+				return this.Everything.Keys;
 			}
 
-			return replaced;
 		}
-		
+
+		#endregion
+
+		#region Elements
+
 		public T this[WorldPosition position]
 		{
 			get
@@ -50,10 +52,38 @@ namespace Biters
 			
 			set
 			{
-				this.SetAtPosition(position, value);
+				this.SetAtPosition(value, position);
 			}
 			
 		}
+
+		public T GetAtPosition(WorldPosition Position) {
+			T result;
+			Everything.TryGetValue (Position, out result);
+			return result;
+		}
+
+		public T SetAtPosition(T Element, WorldPosition Position) {
+			T replaced = this.RemoveFromPosition (Position);
+
+			if (Element != null) {
+				Everything[Position] = Element;
+			}
+
+			return replaced;
+		}
+		
+		public T RemoveFromPosition (WorldPosition Position) {
+			T removed = this.GetAtPosition (Position);
+			
+			if (removed != null) {
+				Everything.Remove(Position);
+			}
+			
+			return removed;
+		}
+
+		#endregion
 		
 		//Elements in Direction
 		//TODO: Add function
@@ -76,19 +106,14 @@ namespace Biters
 		
 		//Vector
 		//TODO: Add functions for World Vector usage.
-		
-	}
 
-	public interface WorldElement {
+		#region Enumerator
 
-		/*
-		 * Add/Remove Events
-		 */
-		void addedToWorld(World<WorldElement> World, WorldPosition Position);
+		public IEnumerator GetEnumerator() {
+			return Everything.Values.GetEnumerator();
+		}
 
-		void removedFromWorld(World<WorldElement> World, WorldPosition Position);
-
-		//TODO: Add more events, if necessary.
+		#endregion
 
 	}
 	
