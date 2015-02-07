@@ -92,9 +92,7 @@ namespace Biters
 			T replaced = this.RemoveTile (Position);
 			
 			if (Element != null) {
-				this.World.SetAtPosition(Element, Position);
-				Element.MapTilePosition = Position;
-				Element.AddedToMap(this as Map<IMapTile>, Position);
+				this.InsertTileAtPosition(Element, Position);
 			}
 			
 			return replaced;
@@ -104,11 +102,21 @@ namespace Biters
 			T removed = this.GetTile(Position);
 			
 			if (removed != null) {
-				this.World.RemoveFromPosition(Position);
-				removed.RemovedFromMap(this as Map<IMapTile>);
+				this.RemoveTileFromPosition(removed, Position);
 			}
 
 			return removed;
+		}
+		
+		protected virtual void InsertTileAtPosition(T Element, WorldPosition Position) {
+			this.World.SetAtPosition(Element, Position);
+			Element.MapTilePosition = Position;
+			Element.AddedToMap(this as Map<IMapTile>, Position);
+		}
+
+		protected virtual void RemoveTileFromPosition(T Removed, WorldPosition Position) {
+			this.World.RemoveFromPosition (Position);
+			Removed.RemovedFromMap (this as Map<IMapTile>);
 		}
 
 		#endregion

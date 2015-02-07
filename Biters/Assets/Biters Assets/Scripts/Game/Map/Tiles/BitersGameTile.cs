@@ -7,10 +7,13 @@ namespace Biters.Game
 	/*
 	 * Base class for Biters game tiles. 
 	 */
-	public abstract class BitersGameTile : Entity, IMapTile, IEventListener 
+	public abstract class BitersGameTile : Entity, IGameMapTile, IEventListener 
 	{
 		//Position in the map's world. Should only be changed by the Map.
 		public WorldPosition MapTilePosition { get; set; }
+
+		//Game Map of the tile.
+		protected GameMap<IGameMapTile, IGameMapEntity> Map;
 
 		public BitersGameTile() : base(GameObject.CreatePrimitive(PrimitiveType.Cube)) {}
 
@@ -19,13 +22,31 @@ namespace Biters.Game
 		#region Map
 
 		public virtual void AddedToMap(Map<IMapTile> Map, WorldPosition Position) {
-			//Override. Use to initialize and capture map if necessary.
+			//Override. Use to initialize and/or capture map if necessary. Use AddedAsTileToGameMap for GameMap capture.
 		}
 		
 		public virtual void RemovedFromMap(Map<IMapTile> Map) {
-			//TODO: Remove from view. Discard.
+			//TODO: Remove object from view. Discard.
 		}
 
+		public virtual void AddedAsTileToGameMap(GameMap<IGameMapTile, IGameMapEntity> Map, WorldPosition Position) {
+			//Override to initialize, and/or capture the map reference.
+			this.Map = Map;
+		}
+		
+		public virtual void RemovedAsTileFromGameMap(GameMap<IGameMapTile, IGameMapEntity> Map) {
+			//Override to deallocated using the GameMap. Use RemovedFromMap otherwise.
+			this.Map = null;
+		}
+
+		#endregion
+		
+		#region Update
+
+		public override void Update() {
+			//Override to do something with the update.	
+		}
+		
 		#endregion
 
 		#region Events

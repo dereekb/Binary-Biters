@@ -40,10 +40,10 @@ namespace Biters
 	
 	public static class WorldPositionAlignmentInfo
 	{
-		
+
 		public static Vector2 Magnitude(this WorldPositionAlignment Alignment)
 		{
-			Vector2 vector;
+			Vector2 vector = new Vector2();
 			
 			switch (Alignment) {
 			case WorldPositionAlignment.Top: vector = new Vector2(0.5f, 0f); break;

@@ -13,7 +13,7 @@ namespace Biters
 	 * Game Logic should be handled through available accessors.
 	 */
 	public class GameMap<T, E> : Map<T> 
-		where T : class, IMapTile
+		where T : class, IGameMapTile
 		where E : class, IGameMapEntity
 	{
 		private HashSet<E> entities;
@@ -46,7 +46,7 @@ namespace Biters
 				Entity.Transform.SetParent(this.Transform);
 
 				MoveEntityToPosition(Entity, Position);
-				Entity.AddedToGameMap(this as GameMap<IMapTile, IGameMapEntity>, Position);
+				Entity.AddedToGameMap(this as GameMap<IGameMapTile, IGameMapEntity>, Position);
 
 				GameMapEventInfoBuilder builder = this.GameMapEventInfoBuilder(GameMapEvent.AddEntity);
 				builder.Entity = Entity;
@@ -67,7 +67,7 @@ namespace Biters
 				builder.Entity = Entity;
 				this.BroadcastEvent(builder);
 
-				Entity.RemovedFromGameMap(this as GameMap<IMapTile, IGameMapEntity>);
+				Entity.RemovedFromGameMap(this as GameMap<IGameMapTile, IGameMapEntity>);
 			}
 		}
 		
@@ -88,6 +88,16 @@ namespace Biters
 			}
 
 			return tile;
+		}
+		
+		protected override void InsertTileAtPosition(T Element, WorldPosition Position) {
+			base.InsertTileAtPosition (Element, Position);
+			Element.AddedAsTileToGameMap(this as GameMap<IGameMapTile, IGameMapEntity>, Position);
+		}
+		
+		protected override void RemoveTileFromPosition(T Removed, WorldPosition Position) {
+			base.RemoveTileFromPosition (Removed, Position);
+			Removed.RemovedAsTileFromGameMap(this as GameMap<IGameMapTile, IGameMapEntity>);
 		}
 
 		#endregion
@@ -220,7 +230,7 @@ namespace Biters
 
 		//TODO: If this being public presents itself as an issue, then hide again, and abstract necessary components.
 		public GameMapEventInfoBuilder GameMapEventInfoBuilder(GameMapEvent GameMapEvent) {
-			return new GameMapEventInfoBuilder(GameMapEvent, this as GameMap<IMapTile, IGameMapEntity>);
+			return new GameMapEventInfoBuilder(GameMapEvent, this as GameMap<IGameMapTile, IGameMapEntity>);
 		}
 
 		#endregion
@@ -231,9 +241,17 @@ namespace Biters
 	 */
 	public interface IGameMapEntity : IGameElement, ITransformableElement, IMovingElement, IUpdatingElement {
 
-		void AddedToGameMap(GameMap<IMapTile, IGameMapEntity> Map, WorldPosition Position);
+		void AddedToGameMap(GameMap<IGameMapTile, IGameMapEntity> Map, WorldPosition Position);
 		
-		void RemovedFromGameMap(GameMap<IMapTile, IGameMapEntity> Map);
+		void RemovedFromGameMap(GameMap<IGameMapTile, IGameMapEntity> Map);
+
+	}
+
+	public interface IGameMapTile : IMapTile {
+		
+		void AddedAsTileToGameMap(GameMap<IGameMapTile, IGameMapEntity> Map, WorldPosition Position);
+		
+		void RemovedAsTileFromGameMap(GameMap<IGameMapTile, IGameMapEntity> Map);
 
 	}
 

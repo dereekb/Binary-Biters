@@ -174,16 +174,15 @@ namespace Biters
 	 */
 	public class WalkForTimeAutoPilot : WalkAutoPilot {
 
-		public float WalkTime;
-		private float walkedTime;
+		public Timer WalkTimer;
 
 		public WalkForTimeAutoPilot(Vector3 Direction, float WalkTime) : base(Direction) {
-			this.WalkTime = WalkTime;
+			this.WalkTimer = new Timer(WalkTime);
 		}
 
 		public bool HasTimeLeft {
 			get {
-				return WalkTime > walkedTime;
+				return !WalkTimer.Done;
 			}
 		}
 
@@ -192,7 +191,7 @@ namespace Biters
 
 			if (!complete) {
 				this.MakeMovement(Movement);
-				walkedTime += Time.deltaTime;
+				WalkTimer.Update();
 			}
 
 			return complete;

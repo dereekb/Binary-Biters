@@ -12,7 +12,7 @@ namespace Biters
 	 * Has access to a Game Map's event system.
 	 */
 	public interface IGameMapWatcher<T, E>
-		where T : class, IMapTile
+		where T : class, IGameMapTile
 		where E : class, IGameMapEntity
 	{
 		
@@ -35,7 +35,7 @@ namespace Biters
 	 * Default implementation that checks entity positions every 
 	 */
 	public class GameMapWatcher<T, E> : IEventListener, IGameMapWatcher<T, E>
-		where T : class, IMapTile
+		where T : class, IGameMapTile
 		where E : class, IGameMapEntity
 	{
 		public Dictionary<E, WorldPosition> TrackingMap = new Dictionary<E, WorldPosition>();

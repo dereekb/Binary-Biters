@@ -27,14 +27,6 @@ namespace Biters.Game
 		}
 
 		#endregion
-		
-		#region Update
-		
-		public override void Update() {
-			//TODO: Watch for entities to enter this tile, then change their direction as needed.
-		}
-		
-		#endregion
 
 		#region Accessors
 		
@@ -74,15 +66,6 @@ namespace Biters.Game
 
 		#region Watch
 
-		public override void AddedToMap(Map<IMapTile> Map, WorldPosition Position) {
-			base.AddedToMap (Map, Position);
-		}
-		
-		public override void RemovedFromMap(Map<IMapTile> Map) {
-			base.RemovedFromMap (Map);
-			
-		}
-		
 		protected override void HandleGameMapEvent(GameMapEventInfo Info) {
 
 			switch (Info.GameMapEvent) {
