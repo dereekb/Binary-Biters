@@ -10,6 +10,8 @@ namespace Biters.Game
 	 */
 	public abstract class BitersGameTile : Entity, IGameMapTile, IEventListener 
 	{
+		public const float BitersGameTileZOffset = 2.0f;
+
 		//Position in the map's world. Should only be changed by the Map.
 		private WorldPosition mapTilePosition;
 
@@ -60,13 +62,16 @@ namespace Biters.Game
 			//Override to unregister from other events. Is called before destroy.
 		}
 		
-		private void UnregisterFromMapEvents() {
+		private void UnregisterFromGameMapEvents() {
 			//Automatically unregisters from the map.
 			this.map.UnregisterFromGameMapEvents (this);
 		}
 
 		public void AddedToMap(WorldPosition Position) {
-			this.GameObject.transform.position = Map.GetPositionVector (Position);
+			Vector3 position = Map.GetPositionVector (Position);
+			position.z = BitersGameTileZOffset;
+			this.GameObject.transform.position = position;
+
 			//Override to initialize and/or capture map if necessary.
 			this.mapTilePosition = Position;
 			this.Initialize ();
@@ -75,7 +80,7 @@ namespace Biters.Game
 		
 		public void RemovedFromMap() {
 			//TODO: Remove object from view?
-			this.UnregisterFromMapEvents ();
+			this.UnregisterFromGameMapEvents ();
 			this.UnregisterFromEvents ();
 			this.map = null;
 			this.Destroy ();

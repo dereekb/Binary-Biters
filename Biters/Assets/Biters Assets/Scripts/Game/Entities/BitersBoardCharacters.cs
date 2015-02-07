@@ -30,7 +30,7 @@ namespace Biters.Game
 	public class Nili : BitersMapEntity {
 
 		public static readonly string NiliId = "Entity.Nili";
-		public static readonly Vector3 NiliScale = new Vector3 (0.5f, 0.5f, 0.5f);
+		public static readonly Vector3 NiliScale = new Vector3 (2.5f, 2.5f, 2.5f);
 		public static readonly Material NiliMat = ResourceLoader.Load["Entity_Nili"].Material;
 		
 		public Nili () : base () {}

@@ -32,7 +32,7 @@ namespace Biters.Testing
 	public class TestMapGeneratorMap : IImportedMap<BitersGameTile>, IGameMapDelegate<BitersGameTile, BitersMapEntity> {
 		
 		public int xSize = 5;
-		public int ySize = 1;
+		public int ySize = 5;
 
 		public IFactory<BitersGameTile> Factory;
 
@@ -74,7 +74,7 @@ namespace Biters.Testing
 			BitersGameTile tile = null;
 
 			Func<BitersMapEntity> SpawnFunction = () => {
-				if (RandomGenerator.Next(1) == 0) {
+				if (RandomGenerator.Next(-1, 1) == 0) {
 					return new Unii ();
 				} else {
 					return new Nili ();
@@ -84,8 +84,18 @@ namespace Biters.Testing
 			SpawnerGameTileDelegate spawnerDelegate = new SpawnerGameTileDelegate(SpawnFunction);
 
 			//TODO: Spawn and make them go random directions.
-			tile = new SpawnerGameTile (spawnerDelegate, new Vector3 (1.0f, 1.0f));
 
+			float timer = RandomGenerator.Next (1, 2) / 4.0f;	//Between 1 and 5 seconds
+			int max = RandomGenerator.Next (5, 20);
+			Vector3 direction = new Vector3 ();
+			direction.x = (RandomGenerator.Next (-5, 5) / 2.0f) - 2.5f;
+			direction.y = (RandomGenerator.Next (-5, 5) / 2.0f) - 2.5f;
+			
+			SpawnerGameTile spawnTile = new SpawnerGameTile (spawnerDelegate, direction);
+			spawnTile.SpawnTimer.Length = timer;
+			spawnTile.SpawnMax = max;
+
+			tile = spawnTile;
 			return tile;
 		}
 
