@@ -1,6 +1,6 @@
 using System;
 
-namespace Biters
+namespace Biters.Utility
 {
 	/*
 	 * Factory for making new elements of type T.

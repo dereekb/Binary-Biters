@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Biters
+namespace Biters.Utility
 {
 	public interface IEventInfo {
 
@@ -88,6 +88,24 @@ namespace Biters
 
 		#region Observers
 
+		public int EventTypeCount {
+
+			get {
+				return this.listeners.Count;
+			}
+
+		}
+
+		public int ListenersForEvent(T EventType) {
+			int count = 0;
+
+			if (this.listeners.ContainsKey(EventType)) {
+				count = this.listeners[EventType].Count;
+			}
+
+			return count;
+		}
+
 		//Add Observer
 		public void AddObserver(IEventListener Listener, T EventType) {
 			HashSet<IEventListener> set;
@@ -95,6 +113,8 @@ namespace Biters
 			if (this.listeners.TryGetValue (EventType, out set) == false) {
 				set = this.ResetObserverSet(EventType);
 			}
+
+			set.Add (Listener);
 		}
 
 		//Remove Observer

@@ -40,6 +40,27 @@ namespace Biters.Game
 		}
 
 		#endregion
+		
+		#region Events
+
+		public override void RegisterForEvents() {
+			this.Map.RegisterForEvent (this, GameMapEvent.EntityEnteredTile);
+			//this.Map.RegisterForEvent (this, GameMapEvent.EntityExitedTile);
+		}
+		
+		protected override void HandleGameMapEvent(GameMapEventInfo Info) {
+			
+			switch (Info.GameMapEvent) {
+			case GameMapEvent.EntityEnteredTile:
+				if (Info.Position.Equals(this.MapTilePosition)) {
+					this.ChangeEntityMovement(Info);
+				}
+				break;
+			}
+			
+		}
+		
+		#endregion
 
 		#region Redirection
 
@@ -65,21 +86,6 @@ namespace Biters.Game
 
 		#endregion
 
-		#region Watch
-
-		protected override void HandleGameMapEvent(GameMapEventInfo Info) {
-
-			switch (Info.GameMapEvent) {
-			case GameMapEvent.EntityEnteredTile:
-				if (Info.Position.Equals(this.MapTilePosition)) {
-					this.ChangeEntityMovement(Info);
-				}
-			break;
-			}
-
-		}
-
-		#endregion
 	}
 	
 	//Vector Extension 

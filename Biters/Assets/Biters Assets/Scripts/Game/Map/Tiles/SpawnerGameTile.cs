@@ -35,17 +35,21 @@ namespace Biters.Game
 		
 		#endregion
 
-		#region Update
+		#region Initialize
 
 		public override void Initialize ()
 		{
 			this.GameObject.renderer.material = SpawnerMat;
 		}
 
+		#endregion
+
+		#region Update
+
 		public override void Update() {
 			this.TrySpawning ();
 		}
-		
+	
 		#endregion
 
 		#region Spawning

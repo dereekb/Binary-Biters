@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Biters
+namespace Biters.Utility
 {
 	/*
 	 * Basic timer. Counts up until it reaches or passes a certain duration value.

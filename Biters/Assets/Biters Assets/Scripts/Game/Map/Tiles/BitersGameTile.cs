@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Biters;
+using Biters.Utility;
 
 namespace Biters.Game
 {
@@ -50,16 +51,32 @@ namespace Biters.Game
 		public virtual void Destroy() {
 			//Override to destroy entity elements.
 		}
+		
+		public virtual void RegisterForEvents() {
+			//Override to register for events. Is called after initialize.
+		}
+		
+		public virtual void UnregisterFromEvents() {
+			//Override to unregister from other events. Is called before destroy.
+		}
+		
+		private void UnregisterFromMapEvents() {
+			//Automatically unregisters from the map.
+			this.map.UnregisterForEvents (this);
+		}
 
 		public void AddedToMap(WorldPosition Position) {
 			this.GameObject.transform.position = Map.GetPositionVector (Position);
 			//Override to initialize and/or capture map if necessary.
 			this.mapTilePosition = Position;
 			this.Initialize ();
+			this.RegisterForEvents ();
 		}
 		
 		public void RemovedFromMap() {
 			//TODO: Remove object from view?
+			this.UnregisterFromMapEvents ();
+			this.UnregisterFromEvents ();
 			this.map = null;
 			this.Destroy ();
 		}

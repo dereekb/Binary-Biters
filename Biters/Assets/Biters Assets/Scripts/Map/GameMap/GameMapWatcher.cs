@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Biters.Utility;
 
 namespace Biters
 {
@@ -38,25 +39,44 @@ namespace Biters
 		where T : class, IGameMapTile
 		where E : class, IGameMapEntity
 	{
-		public Dictionary<E, WorldPosition> TrackingMap = new Dictionary<E, WorldPosition>();
-		public GameMap<T, E> Map;
+		protected List<EntityPositionTuple<E>> JustAdded = new List<EntityPositionTuple<E>>();
+		protected Dictionary<E, WorldPosition> TrackingMap = new Dictionary<E, WorldPosition>();
+		private GameMap<T, E> map;
+
+		public GameMap<T, E> Map {
 		
+			get {
+				return this.map;
+			}
+		
+		}
+
 		#region Attach
 		
+		public virtual void AttachedToMap(GameMap<T, E> Map) {
+			//Override in subclass to continue initialization.
+		}
+		
+		public virtual void DeattachedFromMap(GameMap<T, E> Map) {
+			//Override in subclass to continue initialization.
+		}
+
 		public void AttachToMap(GameMap<T, E> Map) {
-			this.Map = Map;
+			this.map = Map;
 			Map.RegisterForEvent (this, GameMapEvent.AddEntity);
+			this.AttachedToMap (Map);
 		}
 		
 		public void DeattachFromMap(GameMap<T, E> Map) {
 			Map.UnregisterForEvents (this);
+			this.DeattachFromMap (Map);
 		}
 		
 		#endregion
 
 		#region Tracking Map
-		
-		public void HandleEvent(IEventInfo EventInfo) {
+
+		public virtual void HandleEvent(IEventInfo EventInfo) {
 			GameMapEventInfo info = EventInfo as GameMapEventInfo;
 
 			switch (info.GameMapEvent) {
@@ -75,6 +95,7 @@ namespace Biters
 		
 		private void InsertEntity(E Entity, WorldPosition Position) {
 			this.TrackingMap.Add (Entity, Position);
+			this.JustAdded.Add (new EntityPositionTuple<E>(Entity, Position));
 		}
 
 		private void MoveEntity(E Entity, WorldPosition Position) {
@@ -88,28 +109,42 @@ namespace Biters
 
 		#endregion
 
-		public IEnumerable<GameMapEventInfoBuilder> Observe(GameMap<T, E> Map) {
-			List<GameMapEventInfoBuilder> events = new List<GameMapEventInfoBuilder>();
+		//TODO: Instead of this, can possible add a "flag" that will cause the entity to call Entity Entered Tile.
+		private void ObserveMapAdditions(GameMap<T, E> Map, List<GameMapEventInfoBuilder> events) {
+			if (this.JustAdded.Count > 0) {
+				foreach (EntityPositionTuple<E> tuple in this.JustAdded) {
 
+					GameMapEventInfoBuilder enteredTile = Map.GameMapEventInfoBuilder(GameMapEvent.EntityEnteredTile);
+					enteredTile.Entity = tuple.Entity;
+					enteredTile.Position = tuple.Position;
+					events.Add(enteredTile);
+				}
+
+				this.JustAdded.Clear();
+			}
+		}
+
+		private void ObserverTileChanges(GameMap<T, E> Map, List<GameMapEventInfoBuilder> events) {
+			
 			foreach (KeyValuePair<E, WorldPosition> pair in TrackingMap) {
 				E entity = pair.Key;
-
+				
 				WorldPosition? position = Map.GetPositionForEntity(entity);
 				if (position.HasValue) {
 					if (position.Value.Equals(pair.Value) == false) {
-
+						
 						//Entered Tile Event
 						GameMapEventInfoBuilder enteredTile = Map.GameMapEventInfoBuilder(GameMapEvent.EntityEnteredTile);
 						enteredTile.Entity = entity;
 						enteredTile.Position = position.Value;
 						events.Add(enteredTile);
-
+						
 						//Exited Tile Event
-						GameMapEventInfoBuilder exitedTile = Map.GameMapEventInfoBuilder(GameMapEvent.EntityEnteredTile);
+						GameMapEventInfoBuilder exitedTile = Map.GameMapEventInfoBuilder(GameMapEvent.EntityExitedTile);
 						exitedTile.Entity = entity;
 						exitedTile.Position = pair.Value;
 						events.Add(exitedTile);
-
+						
 						this.MoveEntity(entity, position.Value);
 					}
 				} else {
@@ -119,6 +154,14 @@ namespace Biters
 				}
 			}
 
+		}
+
+		public virtual IEnumerable<GameMapEventInfoBuilder> Observe(GameMap<T, E> Map) {
+			List<GameMapEventInfoBuilder> events = new List<GameMapEventInfoBuilder>();
+			
+			this.ObserveMapAdditions (Map, events);
+			this.ObserverTileChanges (Map, events);
+
 			return events;
 		}
 
@@ -126,13 +169,13 @@ namespace Biters
 
 	#endregion
 
-	public struct TileEntityTuple<E>
+	public struct EntityPositionTuple<E>
 		where E : class, IGameMapEntity
 	{
 		public readonly E Entity;
 		public readonly WorldPosition Position;
 
-		public TileEntityTuple(E Entity, WorldPosition Position) {
+		public EntityPositionTuple(E Entity, WorldPosition Position) {
 			this.Entity = Entity;
 			this.Position = Position;
 		}

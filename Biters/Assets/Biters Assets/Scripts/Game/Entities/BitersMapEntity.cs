@@ -9,7 +9,7 @@ namespace Biters.Game
 	public abstract class BitersMapEntity : Entity, IGameMapEntity
 	{
 
-		public BitersMapEntity () : this (GameObject.CreatePrimitive(PrimitiveType.Plane)) {}
+		public BitersMapEntity () : this (GameObject.CreatePrimitive(PrimitiveType.Cube)) {}
 
 		public BitersMapEntity (GameObject GameObject) : base (GameObject) {}
 
@@ -61,6 +61,7 @@ namespace Biters.Game
 		
 		public override void Update() {
 			this.movement.Update();
+			this.Transform.rotation = Quaternion.AngleAxis(90, Vector3.forward);
 			//TODO: Update anything else.
 		}
 		
