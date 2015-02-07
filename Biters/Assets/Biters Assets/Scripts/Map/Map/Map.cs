@@ -157,25 +157,18 @@ namespace Biters
 			this.mapEvents.RemoveObserver (Listener);
 		}
 
-		public void BroadcastCustomMapEvent(String Name) {
-			this.BroadcastCustomMapEvent (Name, null);
+		public void BroadcastEvent(MapEventInfoBuilder Builder) {
+			this.mapEvents.BroadcastEvent (Builder.MapEvent, Builder.Make ());
+		}
+
+		public MapEventInfoBuilder CustomMapEventBuilder {
+			get {
+				return this.MapEventInfoBuilder(MapEvent.Custom);
+			}
 		}
 		
-		public void BroadcastCustomMapEvent(String Name, WorldPosition? Position) {
-			MapEventInfo mapEventInfo = new MapEventInfo(MapEvent.Custom, this as Map<IMapTile>, Position);
-			this.mapEvents.BroadcastEvent(MapEvent.Custom, mapEventInfo);
-		}
-
-		/*
-		 * Convenience function for broadcasting an internal event with default arguments. 
-		 */
-		protected void BroadcastMapEvent(MapEvent MapEvent) {
-			MapEventInfo info = this.DefaultMapEventInfo (MapEvent);
-			this.mapEvents.BroadcastEvent (MapEvent, info);
-		}
-
-		protected MapEventInfo DefaultMapEventInfo(MapEvent MapEvent) {
-			return new MapEventInfo(MapEvent, this as Map<IMapTile>);
+		private MapEventInfoBuilder MapEventInfoBuilder(MapEvent MapEvent) {
+			return new MapEventInfoBuilder(MapEvent, this as Map<IMapTile>);
 		}
 
 		#endregion

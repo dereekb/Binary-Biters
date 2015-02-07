@@ -64,45 +64,54 @@ namespace Biters
 		}
 		
 	}
+	
+	public class MapEventInfoBuilder : IFactory<MapEventInfo> {
+		
+		public readonly MapEvent MapEvent;
+		public readonly Map<IMapTile> Map;
+
+		public string EventName;
+		public WorldPosition? Position;
+		public IMapTile Tile;
+		
+		public MapEventInfoBuilder(MapEvent MapEvent, Map<IMapTile> Map) {
+			this.MapEvent = MapEvent;
+			this.Map = Map;
+		}
+		
+		public MapEventInfo Make() {
+			return new MapEventInfo (this);
+		}
+		
+	}
 
 	public class MapEventInfo : IEventInfo {
 		
 		public const string MapEventInfoId = "MAP_EVENT";
 
-		private string Name;
-		private MapEvent mapEvent;
-		private Map<IMapTile> map;
+		private readonly string Name;
+		private readonly MapEvent mapEvent;
+		private readonly Map<IMapTile> map;
 
 		//Optional Tile associated with the event.
-		private IMapTile tile;
+		private readonly IMapTile tile;
 
 		//Optional Position associated with the event.
-		private WorldPosition? position;
+		private readonly WorldPosition? position;
 		
-		public MapEventInfo(MapEvent MapEvent, Map<IMapTile> Map, string Name) {
-			this.mapEvent = MapEvent;
-			this.map = Map;
+		internal MapEventInfo(MapEventInfoBuilder Builder) {
+			this.mapEvent = Builder.MapEvent;
+			this.map = Builder.Map;
 
-			if (Name == null) {
-				Name = MapEvent.EventName();
+			string name = Builder.EventName;
+
+			if (name == null) {
+				name = mapEvent.EventName();
 			}
-
-			this.Name = Name;
-		}
-		
-		public MapEventInfo(MapEvent MapEvent, Map<IMapTile> Map) : this(MapEvent, Map, MapEvent.EventName()) {
-			this.mapEvent = MapEvent;
-			this.map = Map;
-		}
-		
-		public MapEventInfo(MapEvent MapEvent, Map<IMapTile> Map, IMapTile tile) : this (MapEvent, Map) {
-			this.tile = tile;
-		}
-		
-		public MapEventInfo(MapEvent MapEvent, Map<IMapTile> Map, WorldPosition? position) : this (MapEvent, Map, MapEvent.EventName()) {}
-		
-		public MapEventInfo(MapEvent MapEvent, Map<IMapTile> Map, WorldPosition? position, string Name) : this (MapEvent, Map, Name) {
-			this.position = position;
+			
+			this.Name = name;
+			this.position = Builder.Position;
+			this.tile = Builder.Tile;
 		}
 		
 		public string EventInfoId {

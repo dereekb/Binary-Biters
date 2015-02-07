@@ -17,11 +17,17 @@ namespace Biters
 		where E : class, IGameMapEntity
 	{
 		private HashSet<E> entities;
+		private IGameMapWatcher<T, E, IGameMapWatcherObservation<T, E>> watcher;
 		private EventSystem<GameMapEvent, GameMapEventInfo> gameMapEvents;
+		
+		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IWorldPositionMapper PositionMapper) : this(GameObject, WorldFactory, null, PositionMapper) {
+			this.watcher = new GameMapWatcher<T, E>() as IGameMapWatcher<T, E, IGameMapWatcherObservation<T, E>>;
+		}
 
-		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IWorldPositionMapper PositionMapper) : base(GameObject, WorldFactory, PositionMapper) {
+		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IGameMapWatcher<T, E, IGameMapWatcherObservation<T, E>> Watcher, IWorldPositionMapper PositionMapper) : base(GameObject, WorldFactory, PositionMapper) {
 			this.gameMapEvents = new EventSystem<GameMapEvent, GameMapEventInfo> ();
 			this.entities = new HashSet<E> ();
+			this.watcher = Watcher;
 		}
 		
 		#region Entity
@@ -116,6 +122,7 @@ namespace Biters
 
 		public override void Update() {
 			this.UpdateEntities();
+			this.UpdateWatcher ();
 			base.Update();
 		}
 
@@ -123,6 +130,10 @@ namespace Biters
 			foreach (E entity in this.entities) {
 				entity.Update();
 			}
+		}
+
+		private void UpdateWatcher() {
+			this.watcher.Observe (this);
 		}
 
 		#endregion
@@ -151,18 +162,20 @@ namespace Biters
 			this.gameMapEvents.RemoveObserver (Listener);
 		}
 
-		/*
-		 * Convenience function for broadcasting an event with default arguments. 
-		 */
-		private void BroadcastEvent(GameMapEvent GameMapEvent) {
-			GameMapEventInfo info = this.DefaultMapEventInfo(GameMapEvent);
-			this.gameMapEvents.BroadcastEvent (GameMapEvent, info);
+		private void BroadcastEvent(GameMapEventInfoBuilder Builder) {
+			this.gameMapEvents.BroadcastEvent (Builder.MapEvent, Builder.Make());
 		}
 		
-		private GameMapEventInfo DefaultMapEventInfo(GameMapEvent GameMapEvent) {
-			return new GameMapEventInfo(GameMapEvent, this as GameMap<IMapTile, IGameMapEntity>);
+		public GameMapEventInfoBuilder CustomGameMapEventBuilder {
+			get {
+				return this.GameMapEventInfoBuilder(GameMapEvent.Custom);
+			}
 		}
-		
+
+		private GameMapEventInfoBuilder GameMapEventInfoBuilder(GameMapEvent GameMapEvent) {
+			return new GameMapEventInfoBuilder(GameMapEvent, this as GameMap<IMapTile, IGameMapEntity>);
+		}
+
 		#endregion
 	}
 	

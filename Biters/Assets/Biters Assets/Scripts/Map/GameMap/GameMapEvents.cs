@@ -53,11 +53,33 @@ namespace Biters
 		}
 		
 	}
-	
+
+	public class GameMapEventInfoBuilder : IFactory<GameMapEventInfo> {
+		
+		public readonly GameMapEvent MapEvent;
+		public readonly GameMap<IMapTile, IGameMapEntity> Map;
+
+		public string EventName;
+		public WorldPosition? Position;
+		public IGameMapEntity Entity;
+		public IMapTile Tile;
+		
+		public GameMapEventInfoBuilder(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map) {
+			this.MapEvent = GameMapEvent;
+			this.Map = Map;
+		}
+
+		public GameMapEventInfo Make() {
+			return new GameMapEventInfo (this);
+		}
+
+	}
+
 	public class GameMapEventInfo : IEventInfo {
 
 		public const string GameMapEventInfoId = "GAME_MAP_EVENT";
-
+		
+		private readonly string name;
 		private readonly GameMapEvent mapEvent;
 		private readonly GameMap<IMapTile, IGameMapEntity> map;
 		
@@ -69,26 +91,21 @@ namespace Biters
 
 		//Optional Tile associed with the event.
 		private readonly IMapTile tile;
-		
-		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map) {
-			this.mapEvent = GameMapEvent;
-			this.map = Map;
-		}
-		
-		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map, IGameMapEntity Entity) : this (GameMapEvent, Map) {
-			this.entity = Entity;
-		}
-		
-		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map, IGameMapEntity Entity, WorldPosition Position) : this (GameMapEvent, Map, Entity) {
-			this.position = Position;
-		}
 
-		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map, WorldPosition Position) : this (GameMapEvent, Map) {
-			this.position = Position;
-		}
-		
-		public GameMapEventInfo(GameMapEvent GameMapEvent, GameMap<IMapTile, IGameMapEntity> Map, IMapTile Tile) : this (GameMapEvent, Map) {
-			this.tile = Tile;
+		internal GameMapEventInfo(GameMapEventInfoBuilder Builder) {
+			mapEvent = Builder.MapEvent;
+			map = Builder.Map;
+			position = Builder.Position;
+			entity = Builder.Entity;
+			tile = Builder.Tile;
+			
+			string name = Builder.EventName;
+			
+			if (name == null) {
+				name = mapEvent.EventName();
+			}
+			
+			this.name = name;
 		}
 
 		public string EventInfoId {
@@ -99,7 +116,7 @@ namespace Biters
 
 		public string EventName {
 			get {
-				return mapEvent.EventName();
+				return name;
 			}
 		}
 
