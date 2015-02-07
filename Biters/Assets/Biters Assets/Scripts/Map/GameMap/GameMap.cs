@@ -17,14 +17,12 @@ namespace Biters
 		where E : class, IGameMapEntity
 	{
 		private HashSet<E> entities;
-		private IGameMapWatcher<T, E, IGameMapWatcherObservation<T, E>> watcher;
+		private IGameMapWatcher<T, E> watcher;
 		private EventSystem<GameMapEvent, GameMapEventInfo> gameMapEvents;
 		
-		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IWorldPositionMapper PositionMapper) : this(GameObject, WorldFactory, null, PositionMapper) {
-			this.watcher = new GameMapWatcher<T, E>() as IGameMapWatcher<T, E, IGameMapWatcherObservation<T, E>>;
-		}
+		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IWorldPositionMapper PositionMapper) : this (GameObject, WorldFactory, new GameMapWatcher<T, E>(), PositionMapper) {}
 
-		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IGameMapWatcher<T, E, IGameMapWatcherObservation<T, E>> Watcher, IWorldPositionMapper PositionMapper) : base(GameObject, WorldFactory, PositionMapper) {
+		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IGameMapWatcher<T, E> Watcher, IWorldPositionMapper PositionMapper) : base(GameObject, WorldFactory, PositionMapper) {
 			this.gameMapEvents = new EventSystem<GameMapEvent, GameMapEventInfo> ();
 			this.entities = new HashSet<E> ();
 			this.watcher = Watcher;
@@ -32,22 +30,43 @@ namespace Biters
 		
 		#region Entity
 
+		public IEnumerable<E> Entities {
+			get {
+				return this.entities;
+			}
+		}
+
 		#region Accessors
 
 		public void AddEntity(E Entity, WorldPosition Position) {
 			if (this.ContainsEntity(Entity) == false) {
 				this.entities.Add(Entity);
-
-				//TODO: Consider other things, such as setting the entity's position parent to the map's game object.
+				
+				//Set Transform to match map's.
+				Entity.Transform.SetParent(this.Transform);
 
 				MoveEntityToPosition(Entity, Position);
 				Entity.AddedToGameMap(this as GameMap<IMapTile, IGameMapEntity>, Position);
+
+				GameMapEventInfoBuilder builder = this.GameMapEventInfoBuilder(GameMapEvent.AddEntity);
+				builder.Entity = Entity;
+				builder.Position = Position;
+				this.BroadcastEvent(builder);
 			}
 		}
 
 		public void RemoveEntity(E Entity) {
 			if (this.ContainsEntity(Entity)) {
 				this.entities.Remove(Entity);
+
+				if (Entity.Transform.parent == this.Transform) {
+					Entity.Transform.parent = null;
+				}
+
+				GameMapEventInfoBuilder builder = this.GameMapEventInfoBuilder(GameMapEvent.RemoveEntity);
+				builder.Entity = Entity;
+				this.BroadcastEvent(builder);
+
 				Entity.RemovedFromGameMap(this as GameMap<IMapTile, IGameMapEntity>);
 			}
 		}
@@ -60,9 +79,9 @@ namespace Biters
 
 		#region World
 
-		public T TileUnderEntity(E Entity) {
+		public T GetTileUnderEntity(E Entity) {
 			T tile = null;
-			WorldPosition? position = this.PositionForEntity (Entity);
+			WorldPosition? position = this.GetPositionForEntity (Entity);
 
 			if (position.HasValue) {
 				tile = base.GetTile(position.Value);
@@ -83,7 +102,7 @@ namespace Biters
 		/*
 		 * Returns the WorldPosition of an entity.
 		 */
-		public WorldPosition? PositionForEntity(E Entity) {
+		public WorldPosition? GetPositionForEntity(E Entity) {
 			WorldPosition? position = null;
 
 			if (this.ContainsEntity(Entity)) {
@@ -113,7 +132,30 @@ namespace Biters
 		}
 
 		#endregion	
-		
+
+		#region Watcher
+
+		public IGameMapWatcher<T, E> Watcher {
+
+			get {
+				return this.watcher;
+			}
+
+			set {
+				if (value != null) {
+					if (this.watcher != null) {
+						this.watcher.DeattachFromMap(this);
+					}
+
+					this.watcher = value;
+					this.watcher.AttachToMap(this);
+				}
+			}
+
+		}
+
+		#endregion
+
 		#endregion
 
 		#region Game
@@ -122,18 +164,22 @@ namespace Biters
 
 		public override void Update() {
 			this.UpdateEntities();
-			this.UpdateWatcher ();
+			this.UpdateWatcher();
 			base.Update();
 		}
 
-		private void UpdateEntities() {	
+		protected void UpdateEntities() {	
 			foreach (E entity in this.entities) {
 				entity.Update();
 			}
 		}
 
-		private void UpdateWatcher() {
-			this.watcher.Observe (this);
+		protected void UpdateWatcher() {
+			IEnumerable<GameMapEventInfoBuilder> events = this.watcher.Observe (this);
+
+			foreach (GameMapEventInfoBuilder info in events) {
+				this.BroadcastEvent(info);
+			}
 		}
 
 		#endregion
@@ -149,7 +195,7 @@ namespace Biters
 			}
 			
 		}
-		
+
 		public void RegisterForEvent(IEventListener Listener, GameMapEvent EventType) {
 			this.gameMapEvents.AddObserver (Listener, EventType);
 		}
@@ -172,7 +218,8 @@ namespace Biters
 			}
 		}
 
-		private GameMapEventInfoBuilder GameMapEventInfoBuilder(GameMapEvent GameMapEvent) {
+		//TODO: If this being public presents itself as an issue, then hide again, and abstract necessary components.
+		public GameMapEventInfoBuilder GameMapEventInfoBuilder(GameMapEvent GameMapEvent) {
 			return new GameMapEventInfoBuilder(GameMapEvent, this as GameMap<IMapTile, IGameMapEntity>);
 		}
 

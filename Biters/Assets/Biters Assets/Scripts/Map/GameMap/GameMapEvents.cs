@@ -9,26 +9,37 @@ namespace Biters
 		 */
 		Custom = -1,
 
+		//Map
+		/*
+		 * Called when the map is going to be deleted.
+		 */
+		Delete = 0,
+
 		//Entities
 		/*
 		 * Called when a map tile is added.
 		 */
-		AddEntity = 0,
+		AddEntity = 10,
 		
 		/*
 		 * Called when a map tile is removed.
 		 */
-		RemoveEntity = 1,
+		RemoveEntity = 11,
 		
 		/*
 		 * Entity entered a tile.
 		 */
-		EntityEnteredTile = 10,
+		EntityEnteredTile = 12,
 		
 		/*
 		 * Entity exited a tile.
 		 */
-		EntityExitedTile = 11,
+		EntityExitedTile = 13,
+
+		/*
+		 * Entity went outside the bounds of the world.
+		 */
+		EntityOutsideWorld = 14
 
 		//TODO: Add other game map event types.
 		
@@ -120,7 +131,7 @@ namespace Biters
 			}
 		}
 
-		public GameMapEvent MapEvent {
+		public GameMapEvent GameMapEvent {
 
 			get {
 				return mapEvent;
@@ -146,7 +157,7 @@ namespace Biters
 				} else if (this.tile != null) {
 					position = this.tile.MapTilePosition;
 				} else if (this.entity != null) {
-					position = this.map.PositionForEntity(this.entity);
+					position = this.map.GetPositionForEntity(this.entity);
 				}
 
 				return position;

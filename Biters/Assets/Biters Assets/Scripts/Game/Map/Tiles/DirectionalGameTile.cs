@@ -85,7 +85,7 @@ namespace Biters.Game
 		
 		protected override void HandleGameMapEvent(GameMapEventInfo Info) {
 
-			switch (Info.MapEvent) {
+			switch (Info.GameMapEvent) {
 			case GameMapEvent.EntityEnteredTile:
 				if (Info.Position.Equals(this.MapTilePosition)) {
 					this.ChangeEntityMovement(Info);

@@ -167,7 +167,7 @@ namespace Biters
 			}
 		}
 		
-		private MapEventInfoBuilder MapEventInfoBuilder(MapEvent MapEvent) {
+		public MapEventInfoBuilder MapEventInfoBuilder(MapEvent MapEvent) {
 			return new MapEventInfoBuilder(MapEvent, this as Map<IMapTile>);
 		}
 
