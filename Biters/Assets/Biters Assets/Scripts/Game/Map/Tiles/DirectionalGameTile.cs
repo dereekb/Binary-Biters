@@ -44,7 +44,7 @@ namespace Biters.Game
 		#region Events
 
 		public override void RegisterForEvents() {
-			this.Map.RegisterForEvent (this, GameMapEvent.EntityEnteredTile);
+			this.Map.RegisterForGameMapEvent (this, GameMapEvent.EntityEnteredTile);
 			//this.Map.RegisterForEvent (this, GameMapEvent.EntityExitedTile);
 		}
 		
@@ -68,7 +68,7 @@ namespace Biters.Game
 
 			//If tile == this tile
 			IGameMapEntity entity = Info.Entity;
-			Vector3 middle = Info.Map.GetPositionVector(this.MapTilePosition);
+			Vector3 middle = this.Map.GetPositionVector(this.MapTilePosition);
 			
 			AutoPilotQueue movementQueue = new AutoPilotQueue();
 			

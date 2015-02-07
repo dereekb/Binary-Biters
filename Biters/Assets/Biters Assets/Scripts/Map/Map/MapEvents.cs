@@ -1,19 +1,20 @@
 using System;
+using UnityEngine;
 using Biters.Utility;
 
 namespace Biters
 {
 
-	public interface IMapEventSystem {
+	public interface IMapEventSystem<T>  where T : class, IMapTile {
 		
 		//Events
-		void RegisterForEvent (IEventListener Listener, MapEvent EventType);
-		void UnregisterForEvent (IEventListener Listener, MapEvent EventType);
-		void UnregisterForEvents (IEventListener Listener);
-		void BroadcastEvent (MapEventInfoBuilder Builder);
+		void RegisterForMapEvent (IEventListener Listener, MapEvent EventType);
+		void UnregisterFromMapEvent (IEventListener Listener, MapEvent EventType);
+		void UnregisterFromMapEvents (IEventListener Listener);
+		void BroadcastCustomMapEvent (MapEventInfoBuilder<T> Builder);
 		
-		MapEventInfoBuilder CustomMapEventBuilder { get; }
-		MapEventInfoBuilder MapEventInfoBuilder (MapEvent MapEvent);
+		MapEventInfoBuilder<T> CustomMapEventBuilder { get; }
+		MapEventInfoBuilder<T> MapEventInfoBuilder (MapEvent MapEvent);
 		
 	}
 
@@ -79,85 +80,35 @@ namespace Biters
 		
 	}
 	
-	public class MapEventInfoBuilder : IFactory<MapEventInfo> {
+	public class MapEventInfoBuilder<T> : IFactory<MapEventInfo>
+		where T : class, IMapTile
+	{
 		
 		public readonly MapEvent MapEvent;
-		public readonly IMap<IMapTile> Map;
+		public readonly IMap<T> Map;
 
-		public string EventName;
-		public WorldPosition? Position;
-		public IMapTile Tile;
+		private string eventName;
+		private WorldPosition? position;
+		private T tile;
 		
-		public MapEventInfoBuilder(MapEvent MapEvent, IMap<IMapTile> Map) {
-			this.MapEvent = MapEvent;
-			this.Map = Map;
-		}
-		
-		public MapEventInfo Make() {
-			return new MapEventInfo (this);
-		}
-		
-	}
-
-	public class MapEventInfo : IEventInfo {
-		
-		public const string MapEventInfoId = "MAP_EVENT";
-
-		private readonly string Name;
-		private readonly MapEvent mapEvent;
-		private readonly IMap<IMapTile> map;
-
-		//Optional Tile associated with the event.
-		private readonly IMapTile tile;
-
-		//Optional Position associated with the event.
-		private readonly WorldPosition? position;
-		
-		internal MapEventInfo(MapEventInfoBuilder Builder) {
-			this.mapEvent = Builder.MapEvent;
-			this.map = Builder.Map;
-
-			string name = Builder.EventName;
-
-			if (name == null) {
-				name = mapEvent.EventName();
+		public string EventName {
+			
+			get {
+				return this.eventName;
 			}
 			
-			this.Name = name;
-			this.position = Builder.Position;
-			this.tile = Builder.Tile;
-		}
-		
-		public string EventInfoId {
-			get {
-				return MapEventInfoId;
+			set {
+				string name = value;
+				
+				if (name == null) {
+					name = this.MapEvent.EventName();
+				}
+				
+				this.eventName = name;
 			}
+			
 		}
 
-		public string EventName {
-
-			get {
-				return Name;
-			}
-
-		}
-
-		public MapEvent Event {
-
-			get {
-				return mapEvent;
-			}
-
-		}
-
-		public IMap<IMapTile> Map {
-
-			get {
-				return map;
-			}
-
-		}
-		
 		public WorldPosition? Position {
 			
 			get {
@@ -171,20 +122,74 @@ namespace Biters
 				
 				return position;
 			}
-			
+
+			set {
+				this.position = value;
+			}
+
 		}
 		
-		public IMapTile Tile {
+		public T Tile {
+
 			get {
-				IMapTile tile = null;
+				T tile = null;
 				
 				if (this.tile != null) {
 					tile = this.tile;
 				} else if (this.Position.HasValue) {
-					tile = this.map.GetTile(this.position.Value);
+					tile = this.Map.GetTile(this.position.Value);
 				}
 				
 				return tile;
+			}
+
+			set {
+				this.tile = value;
+			}
+
+		}
+
+		public MapEventInfoBuilder(MapEvent MapEvent, IMap<T> Map) {
+			this.MapEvent = MapEvent;
+			this.Map = Map;
+		}
+		
+		public MapEventInfo Make() {
+			return new MapEventInfo (MapEvent, eventName, Map, Position, Tile);
+		}
+		
+	}
+
+	public sealed class MapEventInfo : IEventInfo {
+		
+		public const string MapEventInfoId = "MAP_EVENT";
+		
+		
+		private readonly string eventName;
+		public readonly MapEvent MapEvent;
+		public readonly object Map;
+
+		public readonly WorldPosition? Position;
+		public readonly IMapTile Tile;
+		
+		internal MapEventInfo(MapEvent MapEvent, string EventName, object Map, WorldPosition? Position, IMapTile Tile) {
+			this.eventName = EventName;
+			this.MapEvent = MapEvent;
+			this.Map = Map;
+			
+			this.Position = Position;
+			this.Tile = Tile;
+		}
+		
+		public string EventInfoId {
+			get {
+				return MapEventInfoId;
+			}
+		}
+		
+		public string EventName {
+			get {
+				return this.eventName;
 			}
 		}
 

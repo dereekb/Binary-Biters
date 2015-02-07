@@ -13,8 +13,8 @@ namespace Biters.Game
 		public static readonly Material SpawnerMat = ResourceLoader.Load["Tiles_Concrete"].Material;
 
 		public int SpawnCount = 0;
-		public int SpawnMax = 1;
-		public Timer SpawnTimer = new Timer(1.0f);
+		public int SpawnMax = 100;
+		public Timer SpawnTimer = new Timer(1.5f);
 
 		//Spawning Delegate
 		public ISpawnerGameTileDelegate SpawnDelegate;
@@ -65,6 +65,7 @@ namespace Biters.Game
 		public void SpawnEntity() {
 			BitersMapEntity entity = this.SpawnDelegate.Make ();
 			entity.Map = this.Map;	//Share the map.
+
 			this.Map.AddEntity(entity, this.MapTilePosition);
 			this.SpawnTimer.Reset ();
 			this.SpawnCount += 1;

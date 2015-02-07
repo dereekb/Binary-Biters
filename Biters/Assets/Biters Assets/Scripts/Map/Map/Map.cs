@@ -22,21 +22,23 @@ namespace Biters
 	/*
 	 * Represents a map made up of tiles.
 	 */
-	public interface IMap<T> : IMapEventSystem where T : class, IMapTile {
+	public interface IMap<T> : IMapEventSystem<T> where T : class, IMapTile {
 
 		//World
 		void ResetWorld();
 		void ClearWorld();
 
+		//Tiles
+		void SetTile (T Element, WorldPosition Position);
+		T RemoveTile (WorldPosition Position);
+		
 		//Position
 		IWorldPositionMapper PositionMapper { get; }
 		Vector3 GetPositionVector (WorldPosition Position);
-
+		
 		//Tiles
 		T this [WorldPosition Position] { get; }
 		T GetTile (WorldPosition Position);
-		void SetTile (T Element, WorldPosition Position);
-		T RemoveTile (WorldPosition Position);
 
 	}
 
@@ -172,7 +174,7 @@ namespace Biters
 
 		#endregion
 
-		#region mapEvents
+		#region Map Events
 
 		protected EventSystem<MapEvent, MapEventInfo> MapEvents {
 
@@ -182,30 +184,36 @@ namespace Biters
 
 		}
 
-		public void RegisterForEvent(IEventListener Listener, MapEvent EventType) {
+		public void RegisterForMapEvent(IEventListener Listener, MapEvent EventType) {
 			this.mapEvents.AddObserver (Listener, EventType);
 		}
 		
-		public void UnregisterForEvent(IEventListener Listener, MapEvent EventType) {
+		public void UnregisterFromMapEvent(IEventListener Listener, MapEvent EventType) {
 			this.mapEvents.RemoveObserver (Listener, EventType);
 		}
-		
-		public void UnregisterForEvents(IEventListener Listener) {
+
+		public void UnregisterFromMapEvents(IEventListener Listener) {
 			this.mapEvents.RemoveObserver (Listener);
 		}
-
-		public void BroadcastEvent(MapEventInfoBuilder Builder) {
+		
+		private void BroadcastMapEvent(MapEventInfoBuilder<T> Builder) {
 			this.mapEvents.BroadcastEvent (Builder.MapEvent, Builder.Make ());
 		}
 
-		public MapEventInfoBuilder CustomMapEventBuilder {
+		public void BroadcastCustomMapEvent(MapEventInfoBuilder<T> Builder) {
+			if (Builder.MapEvent == MapEvent.Custom) {
+				this.mapEvents.BroadcastEvent (MapEvent.Custom, Builder.Make ());
+			}
+		}
+
+		public MapEventInfoBuilder<T> CustomMapEventBuilder {
 			get {
 				return this.MapEventInfoBuilder(MapEvent.Custom);
 			}
 		}
 		
-		public MapEventInfoBuilder MapEventInfoBuilder(MapEvent MapEvent) {
-			return new MapEventInfoBuilder(MapEvent, this as IMap<IMapTile>);
+		public MapEventInfoBuilder<T> MapEventInfoBuilder(MapEvent MapEvent) {
+			return new MapEventInfoBuilder<T>(MapEvent, this);
 		}
 
 		#endregion

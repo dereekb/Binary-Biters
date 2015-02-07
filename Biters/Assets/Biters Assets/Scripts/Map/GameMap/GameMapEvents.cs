@@ -3,6 +3,21 @@ using Biters.Utility;
 
 namespace Biters
 {
+	public interface IGameMapEventSystem<T, E>
+		where T : class, IGameMapTile
+		where E : class, IGameMapEntity {
+		
+		//Events
+		void RegisterForGameMapEvent (IEventListener Listener, GameMapEvent EventType);
+		void UnregisterFromGameMapEvent (IEventListener Listener, GameMapEvent EventType);
+		void UnregisterFromGameMapEvents (IEventListener Listener);
+		void BroadcastCustomGameMapEvent (GameMapEventInfoBuilder<T,E> Builder);
+		
+		GameMapEventInfoBuilder<T,E> CustomGameMapEventBuilder { get; }
+		GameMapEventInfoBuilder<T,E> GameMapEventInfoBuilder (GameMapEvent MapEvent);
+		
+	}
+
 	public enum GameMapEvent : int {
 		
 		/*
@@ -66,58 +81,126 @@ namespace Biters
 		
 	}
 
-	public class GameMapEventInfoBuilder : IFactory<GameMapEventInfo> {
+	public sealed class GameMapEventInfoBuilder<T, E> : IFactory<GameMapEventInfo> 
+		where T : class, IGameMapTile
+		where E : class, IGameMapEntity 
+	{
 		
-		public readonly GameMapEvent MapEvent;
-		public readonly IGameMap<IGameMapTile, IGameMapEntity> Map;
+		public readonly GameMapEvent GameMapEvent;
+		public readonly IGameMap<T, E> Map;
 
-		public string EventName;
-		public WorldPosition? Position;
-		public IGameMapEntity Entity;
-		public IMapTile Tile;
+		private string eventName;
+		private WorldPosition? position;
+		private E entity;
+		private T tile;
+
+		public string EventName {
+
+			get {
+				return this.eventName;
+			}
+
+			set {
+				string name = value;
+				
+				if (name == null) {
+					name = this.GameMapEvent.EventName();
+				}
+				
+				this.eventName = name;
+			}
+
+		}
+
+		public WorldPosition? Position {
+			
+			get {
+				WorldPosition? position = null;
+				
+				if (this.position.HasValue) {
+					position = this.position;
+				} else if (this.tile != null) {
+					position = this.tile.MapTilePosition;
+				} else if (this.entity != null) {
+					position = this.Map.GetPositionForEntity(this.entity);
+				}
+				
+				return position;
+			}
+
+			set {
+				this.position = value;
+			}
+			
+		}
 		
-		public GameMapEventInfoBuilder(GameMapEvent GameMapEvent, IGameMap<IGameMapTile, IGameMapEntity> Map) {
-			this.MapEvent = GameMapEvent;
+		public T Tile {
+			get {
+				T tile = null;
+				
+				if (this.tile != null) {
+					tile = this.tile;
+				} else if (this.Position.HasValue) {
+					tile = this.Map.GetTile(this.position.Value);
+				}
+				
+				return tile;
+			}
+
+			set {
+				this.tile = value;
+			}
+
+		}
+
+		public E Entity {
+
+			get {
+				return this.entity;
+			}
+
+			set {
+				this.entity = value;
+			}
+
+		}
+
+		public GameMapEventInfoBuilder(GameMapEvent GameMapEvent, IGameMap<T, E> Map) {
+			this.GameMapEvent = GameMapEvent;
 			this.Map = Map;
 		}
 
 		public GameMapEventInfo Make() {
-			return new GameMapEventInfo (this);
+			return new GameMapEventInfo (GameMapEvent, EventName, Map, Position, Entity, Tile);
 		}
 
 	}
 
-	public class GameMapEventInfo : IEventInfo {
+	public sealed class GameMapEventInfo : IEventInfo {
 
 		public const string GameMapEventInfoId = "GAME_MAP_EVENT";
 		
-		private readonly string name;
-		private readonly GameMapEvent mapEvent;
-		private readonly IGameMap<IGameMapTile, IGameMapEntity> map;
+		private readonly string eventName;
+		public readonly GameMapEvent GameMapEvent;
+		public readonly object Map;
 		
 		//Optional Position associed with the event.
-		private readonly WorldPosition? position;
+		public readonly WorldPosition? Position;
 
 		//Optional Entity associated with the event.
-		private readonly IGameMapEntity entity;
+		public readonly IGameMapEntity Entity;
 
 		//Optional Tile associed with the event.
-		private readonly IMapTile tile;
+		public readonly IMapTile Tile;
 
-		internal GameMapEventInfo(GameMapEventInfoBuilder Builder) {
-			mapEvent = Builder.MapEvent;
-			map = Builder.Map;
-			position = Builder.Position;
-			entity = Builder.Entity;
-			tile = Builder.Tile;
-			
-			string name = Builder.EventName;
-			
-			if (name == null) {
-				name = mapEvent.EventName();
-			}
-			
-			this.name = name;
+		internal GameMapEventInfo(GameMapEvent GameMapEvent, string EventName, object Map, WorldPosition? Position, IGameMapEntity Entity, IMapTile Tile) {
+			this.eventName = EventName;
+			this.GameMapEvent = GameMapEvent;
+			this.Map = Map;
+
+			this.Position = Position;
+			this.Entity = Entity;
+			this.Tile = Tile;
 		}
 
 		public string EventInfoId {
@@ -128,67 +211,10 @@ namespace Biters
 
 		public string EventName {
 			get {
-				return name;
+				return this.eventName;
 			}
 		}
 
-		public GameMapEvent GameMapEvent {
-
-			get {
-				return mapEvent;
-			}
-
-		}
-
-		public IGameMapEntity Entity {
-			
-			get {
-				return entity;
-			}
-			
-		}
-
-		public WorldPosition? Position {
-
-			get {
-				WorldPosition? position = null;
-
-				if (this.position.HasValue) {
-					position = this.position;
-				} else if (this.tile != null) {
-					position = this.tile.MapTilePosition;
-				} else if (this.entity != null) {
-					position = this.map.GetPositionForEntity(this.entity);
-				}
-
-				return position;
-			}
-
-		}
-
-		public IMapTile Tile {
-			get {
-
-				IMapTile tile = null;
-
-				if (this.tile != null) {
-					tile = this.tile;
-				} else if (this.Position.HasValue) {
-					tile = this.map.GetTile(this.position.Value);
-				}
-
-				return tile;
-			}
-		}
-
-		public IGameMap<IGameMapTile, IGameMapEntity> Map {
-
-			get {
-				return map;
-			}
-
-		}
-		
 	}
 
 }

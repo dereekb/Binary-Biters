@@ -13,7 +13,7 @@ namespace Biters
 	 * 
 	 * Game Logic should be handled through available accessors.
 	 */
-	public interface IGameMap<T, E> : IMap<T>
+	public interface IGameMap<T, E> : IMap<T>, IGameMapEventSystem<T, E>
 		where T : class, IGameMapTile
 		where E : class, IGameMapEntity {
 
@@ -33,15 +33,6 @@ namespace Biters
 		//Watcher
 		IGameMapWatcher<T, E> Watcher { get; set; }
 
-		//Element
-		void RegisterForEvent (IEventListener Listener, GameMapEvent EventType);
-		void UnregisterForEvent (IEventListener Listener, GameMapEvent EventType);
-		void UnregisterForEvents (IEventListener Listener, GameMapEvent EventType);
-
-		void BroadcastCustomEvent (GameMapEventInfoBuilder Builder);
-
-		GameMapEventInfoBuilder CustomGameMapEventBuilder { get; }
-		GameMapEventInfoBuilder GameMapEventInfoBuilder (GameMapEvent GameMapEvent);
 	}
 	
 	/*
@@ -124,10 +115,10 @@ namespace Biters
 
 				Entity.AddedToGameMap(Position);
 
-				GameMapEventInfoBuilder builder = this.GameMapEventInfoBuilder(GameMapEvent.AddEntity);
+				GameMapEventInfoBuilder<T, E> builder = this.GameMapEventInfoBuilder(GameMapEvent.AddEntity);
 				builder.Entity = Entity;
 				builder.Position = Position;
-				this.BroadcastEvent(builder);
+				this.BroadcastGameMapEvent(builder);
 			}
 		}
 
@@ -139,9 +130,9 @@ namespace Biters
 					Entity.Transform.parent = null;
 				}
 
-				GameMapEventInfoBuilder builder = this.GameMapEventInfoBuilder(GameMapEvent.RemoveEntity);
+				GameMapEventInfoBuilder<T, E> builder = this.GameMapEventInfoBuilder(GameMapEvent.RemoveEntity);
 				builder.Entity = Entity;
-				this.BroadcastEvent(builder);
+				this.BroadcastGameMapEvent(builder);
 
 				Entity.RemovedFromGameMap();
 			}
@@ -252,10 +243,10 @@ namespace Biters
 		}
 
 		protected void UpdateWatcher() {
-			IEnumerable<GameMapEventInfoBuilder> events = this.watcher.Observe (this);
+			IEnumerable<GameMapEventInfoBuilder<T, E>> events = this.watcher.Observe (this);
 
-			foreach (GameMapEventInfoBuilder info in events) {
-				this.BroadcastEvent(info);
+			foreach (GameMapEventInfoBuilder<T, E> info in events) {
+				this.BroadcastGameMapEvent(info);
 			}
 		}
 
@@ -273,37 +264,37 @@ namespace Biters
 			
 		}
 
-		public void RegisterForEvent(IEventListener Listener, GameMapEvent EventType) {
+		public void RegisterForGameMapEvent(IEventListener Listener, GameMapEvent EventType) {
 			this.gameMapEvents.AddObserver (Listener, EventType);
 		}
 		
-		public void UnregisterForEvent(IEventListener Listener, GameMapEvent EventType) {
+		public void UnregisterFromGameMapEvent(IEventListener Listener, GameMapEvent EventType) {
 			this.gameMapEvents.RemoveObserver (Listener, EventType);
 		}
 		
-		public void UnregisterForEvents(IEventListener Listener, GameMapEvent EventType) {
+		public void UnregisterFromGameMapEvents(IEventListener Listener) {
 			this.gameMapEvents.RemoveObserver (Listener);
 		}
 
-		private void BroadcastEvent(GameMapEventInfoBuilder Builder) {
-			this.gameMapEvents.BroadcastEvent (Builder.MapEvent, Builder.Make());
+		private void BroadcastGameMapEvent(GameMapEventInfoBuilder<T,E> Builder) {
+			this.gameMapEvents.BroadcastEvent (Builder.GameMapEvent, Builder.Make());
 		}
 		
-		public void BroadcastCustomEvent(GameMapEventInfoBuilder Builder) {
-			if (Builder.MapEvent == GameMapEvent.Custom) {
-				this.BroadcastEvent(Builder);
+		public void BroadcastCustomGameMapEvent(GameMapEventInfoBuilder<T,E> Builder) {
+			if (Builder.GameMapEvent == GameMapEvent.Custom) {
+				this.BroadcastGameMapEvent(Builder);
 			}
 		}
-		
-		public GameMapEventInfoBuilder CustomGameMapEventBuilder {
+
+		public GameMapEventInfoBuilder<T,E> CustomGameMapEventBuilder {
 			get {
 				return this.GameMapEventInfoBuilder(GameMapEvent.Custom);
 			}
 		}
 
 		//TODO: If this being public presents itself as an issue, then hide again, and abstract necessary components.
-		public GameMapEventInfoBuilder GameMapEventInfoBuilder(GameMapEvent GameMapEvent) {
-			return new GameMapEventInfoBuilder(GameMapEvent, this as IGameMap<IGameMapTile, IGameMapEntity>);
+		public GameMapEventInfoBuilder<T,E> GameMapEventInfoBuilder(GameMapEvent GameMapEvent) {
+			return new GameMapEventInfoBuilder<T,E>(GameMapEvent, this);
 		}
 
 		#endregion
@@ -323,6 +314,10 @@ namespace Biters
 	public interface IGameMapTile : IMapTile {
 		//TODO: Add anything if necessary.
 	}
+	
+	#region Game Map Events
+
+	#endregion
 
 }
 

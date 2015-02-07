@@ -291,7 +291,8 @@ namespace Biters
 				IAutoPilot pilot = this.current;
 
 				if (pilot == null) {
-					this.DequeueNextPilot();
+					//Always a next pilot at this point, due to checking isComplete.
+					pilot = this.DequeueNextPilot();
 				}
 
 				bool pilotFinished = pilot.AutoMove(Movement);

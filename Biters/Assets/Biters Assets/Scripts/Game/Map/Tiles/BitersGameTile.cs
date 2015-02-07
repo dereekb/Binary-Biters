@@ -14,7 +14,7 @@ namespace Biters.Game
 		private WorldPosition mapTilePosition;
 
 		//Game Map of the tile.
-		private IGameMap<BitersGameTile, BitersMapEntity> map;
+		private IGameMap<BitersGameTile, BitersMapEntity> map = null;
 
 		public BitersGameTile() : base(GameObject.CreatePrimitive(PrimitiveType.Cube)) {}
 
@@ -62,7 +62,7 @@ namespace Biters.Game
 		
 		private void UnregisterFromMapEvents() {
 			//Automatically unregisters from the map.
-			this.map.UnregisterForEvents (this);
+			this.map.UnregisterFromGameMapEvents (this);
 		}
 
 		public void AddedToMap(WorldPosition Position) {
@@ -98,11 +98,13 @@ namespace Biters.Game
 		 */
 		public void HandleEvent(IEventInfo eventInfo) {
 
+
+
 			switch (eventInfo.EventInfoId) {
 			case MapEventInfo.MapEventInfoId: 
-				this.HandleMapEvent(eventInfo as MapEventInfo); break;
+				this.HandleMapEvent((MapEventInfo) eventInfo); break;
 			case GameMapEventInfo.GameMapEventInfoId:
-				this.HandleGameMapEvent(eventInfo as GameMapEventInfo); break;
+				this.HandleGameMapEvent((GameMapEventInfo) eventInfo); break;
 			}
 
 		}

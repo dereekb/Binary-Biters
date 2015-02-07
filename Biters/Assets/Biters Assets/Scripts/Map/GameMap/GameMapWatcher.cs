@@ -24,7 +24,7 @@ namespace Biters
 		/*
 		 * Takes a look at the current map state.
 		 */
-		IEnumerable<GameMapEventInfoBuilder> Observe(GameMap<T, E> Map);
+		IEnumerable<GameMapEventInfoBuilder<T,E>> Observe(GameMap<T, E> Map);
 
 	}
 
@@ -63,12 +63,12 @@ namespace Biters
 
 		public void AttachToMap(GameMap<T, E> Map) {
 			this.map = Map;
-			Map.RegisterForEvent (this, GameMapEvent.AddEntity);
+			Map.RegisterForGameMapEvent (this, GameMapEvent.AddEntity);
 			this.AttachedToMap (Map);
 		}
 		
 		public void DeattachFromMap(GameMap<T, E> Map) {
-			Map.UnregisterForEvents (this);
+			Map.UnregisterFromGameMapEvents (this);
 			this.DeattachFromMap (Map);
 		}
 		
@@ -89,8 +89,22 @@ namespace Biters
 			case GameMapEvent.RemoveEntity:
 				this.RemoveEntity(info.Entity as E);
 				break;
+			case GameMapEvent.EntityEnteredTile:
+				/*
+				 * Originally was in ObserverTileChanges, but changing the TrackingMap while moving is bad.
+				 * 
+				 * This way also catches any other move entity events that may occur, 
+				 * to prevent this watcher from seeing it again, or missing the change.
+				 */
+				this.MoveEntity (info.Entity as E, info.Position.Value);
+				break;
 			}
-			
+
+			this.HandleGameMapEvent (info);
+		}
+
+		protected virtual void HandleGameMapEvent(GameMapEventInfo EventInfo) {
+			//Override in super-class incase.
 		}
 		
 		private void InsertEntity(E Entity, WorldPosition Position) {
@@ -110,11 +124,11 @@ namespace Biters
 		#endregion
 
 		//TODO: Instead of this, can possible add a "flag" that will cause the entity to call Entity Entered Tile.
-		private void ObserveMapAdditions(GameMap<T, E> Map, List<GameMapEventInfoBuilder> events) {
+		private void ObserveMapAdditions(GameMap<T, E> Map, List<GameMapEventInfoBuilder<T,E>> events) {
 			if (this.JustAdded.Count > 0) {
 				foreach (EntityPositionTuple<E> tuple in this.JustAdded) {
 
-					GameMapEventInfoBuilder enteredTile = Map.GameMapEventInfoBuilder(GameMapEvent.EntityEnteredTile);
+					GameMapEventInfoBuilder<T,E> enteredTile = Map.GameMapEventInfoBuilder(GameMapEvent.EntityEnteredTile);
 					enteredTile.Entity = tuple.Entity;
 					enteredTile.Position = tuple.Position;
 					events.Add(enteredTile);
@@ -124,40 +138,42 @@ namespace Biters
 			}
 		}
 
-		private void ObserverTileChanges(GameMap<T, E> Map, List<GameMapEventInfoBuilder> events) {
+		private void ObserverTileChanges(GameMap<T, E> Map, List<GameMapEventInfoBuilder<T,E>> events) {
 			
-			foreach (KeyValuePair<E, WorldPosition> pair in TrackingMap) {
-				E entity = pair.Key;
-				
-				WorldPosition? position = Map.GetPositionForEntity(entity);
-				if (position.HasValue) {
-					if (position.Value.Equals(pair.Value) == false) {
+			if (TrackingMap.Count > 0) {
+				foreach (KeyValuePair<E, WorldPosition> pair in TrackingMap) {
+					E entity = pair.Key;
+					
+					WorldPosition? position = Map.GetPositionForEntity (entity);
+					if (position.HasValue) {
+						if (position.Value.Equals (pair.Value) == false) {
+							
+							//Entered Tile Event
+							GameMapEventInfoBuilder<T,E> enteredTile = Map.GameMapEventInfoBuilder (GameMapEvent.EntityEnteredTile);
+							enteredTile.Entity = entity;
+							enteredTile.Position = position.Value;
+							events.Add (enteredTile);
+							
+							//Exited Tile Event
+							GameMapEventInfoBuilder<T,E> exitedTile = Map.GameMapEventInfoBuilder (GameMapEvent.EntityExitedTile);
+							exitedTile.Entity = entity;
+							exitedTile.Position = pair.Value;
+							events.Add (exitedTile);
+						}
+					} else {
 						
-						//Entered Tile Event
-						GameMapEventInfoBuilder enteredTile = Map.GameMapEventInfoBuilder(GameMapEvent.EntityEnteredTile);
-						enteredTile.Entity = entity;
-						enteredTile.Position = position.Value;
-						events.Add(enteredTile);
-						
-						//Exited Tile Event
-						GameMapEventInfoBuilder exitedTile = Map.GameMapEventInfoBuilder(GameMapEvent.EntityExitedTile);
-						exitedTile.Entity = entity;
-						exitedTile.Position = pair.Value;
-						events.Add(exitedTile);
-						
-						this.MoveEntity(entity, position.Value);
+						//Is out of bounds.
+						GameMapEventInfoBuilder<T,E> outOfBounds = Map.GameMapEventInfoBuilder (GameMapEvent.EntityOutsideWorld);
+						outOfBounds.Entity = entity;
+						events.Add (outOfBounds);
 					}
-				} else {
-					GameMapEventInfoBuilder outOfBounds = Map.GameMapEventInfoBuilder(GameMapEvent.EntityOutsideWorld);
-					outOfBounds.Entity = entity;
-					events.Add(outOfBounds);
 				}
 			}
-
+			
 		}
-
-		public virtual IEnumerable<GameMapEventInfoBuilder> Observe(GameMap<T, E> Map) {
-			List<GameMapEventInfoBuilder> events = new List<GameMapEventInfoBuilder>();
+		
+		public virtual IEnumerable<GameMapEventInfoBuilder<T,E>> Observe(GameMap<T, E> Map) {
+			List<GameMapEventInfoBuilder<T,E>> events = new List<GameMapEventInfoBuilder<T,E>>();
 			
 			this.ObserveMapAdditions (Map, events);
 			this.ObserverTileChanges (Map, events);
