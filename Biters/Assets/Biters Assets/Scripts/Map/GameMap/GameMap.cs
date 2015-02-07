@@ -88,7 +88,7 @@ namespace Biters
 		 * Resets the world to its original state.
 		 */
 		public override void ResetWorld() {
-			base.ClearWorld ();
+			base.ResetWorld ();
 
 			World<T> newWorld = this.mapDelegate.GenerateNewWorld(this);
 			
@@ -97,12 +97,8 @@ namespace Biters
 			}
 			
 			foreach (KeyValuePair<WorldPosition, T> pair in newWorld.ElementPairs) {
-				WorldPosition position = pair.Key;
-				T element = pair.Value;
-				element.AddedToMap(position);
+				base.InsertTileAtPosition(pair.Value, pair.Key);
 			}
-			
-			this.World = newWorld;
 		}
 
 		#endregion
