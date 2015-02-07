@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using Biters;
+using Biters.Utility;
 
 namespace Biters.Game
 {
@@ -8,7 +10,11 @@ namespace Biters.Game
 	 */ 
 	public class SpawnerGameTile : DirectionalGameTile
 	{
-		public Timer SpawnTimer = new Timer(10.0f);
+		public static readonly Material SpawnerMat = ResourceLoader.Load["Tiles_Concrete"].Material;
+
+		public int SpawnCount = 0;
+		public int SpawnMax = 1;
+		public Timer SpawnTimer = new Timer(1.0f);
 
 		//Spawning Delegate
 		public ISpawnerGameTileDelegate SpawnDelegate;
@@ -31,6 +37,11 @@ namespace Biters.Game
 
 		#region Update
 
+		public override void Initialize ()
+		{
+			this.GameObject.renderer.material = SpawnerMat;
+		}
+
 		public override void Update() {
 			this.TrySpawning ();
 		}
@@ -40,8 +51,10 @@ namespace Biters.Game
 		#region Spawning
 
 		public void TrySpawning() {
-			if (this.SpawnTimer.Done) {
-				this.SpawnEntity();
+			if (this.SpawnCount < SpawnMax) {
+				if (this.SpawnTimer.UpdateAndCheck ()) {
+						this.SpawnEntity ();
+				}
 			}
 		}
 
@@ -50,6 +63,7 @@ namespace Biters.Game
 			entity.Map = this.Map;	//Share the map.
 			this.Map.AddEntity(entity, this.MapTilePosition);
 			this.SpawnTimer.Reset ();
+			this.SpawnCount += 1;
 		}
 
 		#endregion

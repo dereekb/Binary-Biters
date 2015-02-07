@@ -47,6 +47,11 @@ namespace Biters
 		public virtual void Update() {
 			this.Increase (Time.deltaTime);
 		}
+		
+		public virtual bool UpdateAndCheck() {
+			this.Increase (Time.deltaTime);
+			return this.Done;
+		}
 
 		public virtual void Increase(float time) {
 			this.count += time;

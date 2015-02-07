@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Biters.Game
 {
+
 	/*
 	 * Basic game tile that moves entities that enter it's tiles towards the center, and then in a new direction.
 	 */
@@ -18,11 +19,11 @@ namespace Biters.Game
 
 		public DirectionalGameTile () : base () {}
 
-		public DirectionalGameTile (WorldDirection Direction) : base () {
+		public DirectionalGameTile (WorldDirection Direction) : this () {
 			this.SetDirection (Direction);
 		}
 
-		public DirectionalGameTile (Vector3 Direction) : base () {
+		public DirectionalGameTile (Vector3 Direction) : this () {
 			this.SetDirection (Direction);
 		}
 

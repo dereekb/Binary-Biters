@@ -8,7 +8,7 @@ namespace Biters
 	/*
 	 * Represents a Tile on a map.
 	 */
-	public interface IMapTile : IGameElement, IUpdatingElement {
+	public interface IMapTile : IGameElement, ITransformableElement, IUpdatingElement {
 		
 		WorldPosition MapTilePosition { get; }
 		
@@ -133,11 +133,17 @@ namespace Biters
 		
 		protected virtual void InsertTileAtPosition(T Element, WorldPosition Position) {
 			this.World.SetAtPosition(Element, Position);
+			Element.Transform.SetParent (this.Transform);
 			Element.AddedToMap(Position);
 		}
 
 		protected virtual void RemoveTileFromPosition(T Removed, WorldPosition Position) {
 			this.World.RemoveFromPosition (Position);
+
+			if (Removed.Transform.parent == this.Transform) {
+				Removed.Transform.parent = null;
+			}
+
 			Removed.RemovedFromMap();
 		}
 

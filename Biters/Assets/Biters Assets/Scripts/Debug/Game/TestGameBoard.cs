@@ -32,7 +32,7 @@ namespace Biters.Testing
 		
 		public void Update () 
 		{
-			//Map.Update ();
+			Map.Update ();
 		}
 
 	}

@@ -54,19 +54,12 @@ namespace Biters.Game
 		public void AddedToMap(WorldPosition Position) {
 			this.GameObject.transform.position = Map.GetPositionVector (Position);
 			//Override to initialize and/or capture map if necessary.
+			this.mapTilePosition = Position;
+			this.Initialize ();
 		}
 		
 		public void RemovedFromMap() {
 			//TODO: Remove object from view?
-		}
-
-		public void AddedAsTileToGameMap(WorldPosition Position) {
-			this.mapTilePosition = Position;
-			this.map = Map;
-			this.Initialize ();
-		}
-		
-		public void RemovedAsTileFromGameMap() {
 			this.map = null;
 			this.Destroy ();
 		}

@@ -209,17 +209,7 @@ namespace Biters
 
 			return tile;
 		}
-		
-		protected override void InsertTileAtPosition(T Element, WorldPosition Position) {
-			base.InsertTileAtPosition (Element, Position);
-			Element.AddedAsTileToGameMap(Position);
-		}
-		
-		protected override void RemoveTileFromPosition(T Removed, WorldPosition Position) {
-			base.RemoveTileFromPosition (Removed, Position);
-			Removed.RemovedAsTileFromGameMap();
-		}
-
+	
 		#endregion
 
 		#region Watcher
@@ -333,11 +323,7 @@ namespace Biters
 	}
 
 	public interface IGameMapTile : IMapTile {
-		
-		void AddedAsTileToGameMap(WorldPosition Position);
-		
-		void RemovedAsTileFromGameMap();
-
+		//TODO: Add anything if necessary.
 	}
 
 }
