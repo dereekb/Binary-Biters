@@ -12,23 +12,100 @@ namespace Biters
 	 * 
 	 * Game Logic should be handled through available accessors.
 	 */
-	public class GameMap<T, E> : Map<T> 
+	public interface IGameMap<T, E> : IMap<T>
+		where T : class, IGameMapTile
+		where E : class, IGameMapEntity {
+
+		//Entities
+		IEnumerable<E> Entities { get; }
+
+		void AddEntity (E Entity, WorldPosition Position);
+		void RemoveEntity (E Entity);
+		bool ContainsEntity (E Entity);
+		
+		WorldPosition? GetPositionForEntity (E Entity);
+		List<E> GetEntitiesAtPosition (WorldPosition Position);
+
+		//World
+		T GetTileUnderEntity (E Entity);
+
+		//Watcher
+		IGameMapWatcher<T, E> Watcher { get; set; }
+
+		//Element
+		void RegisterForEvent (IEventListener Listener, GameMapEvent EventType);
+		void UnregisterForEvent (IEventListener Listener, GameMapEvent EventType);
+		void UnregisterForEvents (IEventListener Listener, GameMapEvent EventType);
+
+		void BroadcastCustomEvent (GameMapEventInfoBuilder Builder);
+
+		GameMapEventInfoBuilder CustomGameMapEventBuilder { get; }
+		GameMapEventInfoBuilder GameMapEventInfoBuilder (GameMapEvent GameMapEvent);
+	}
+	
+	/*
+	 * Game Map Delegate.
+	 */
+	public interface IGameMapDelegate<T, E> 
+		where T : class, IGameMapTile
+		where E : class, IGameMapEntity {
+		
+		/*
+		 * Generates a new world for the passed map.
+		 * 
+		 * Map elements that depend on the map to function should be set properly.
+		 */
+		World<T> GenerateNewWorld(IGameMap<T, E> GameMap);
+		
+	}
+
+	/*
+	 * Default GameMap Implementation.
+	 */
+	public class GameMap<T, E> : Map<T>, IGameMap<T, E>
 		where T : class, IGameMapTile
 		where E : class, IGameMapEntity
 	{
 		private HashSet<E> entities;
 		private IGameMapWatcher<T, E> watcher;
+		protected IGameMapDelegate<T, E> mapDelegate;
 		private EventSystem<GameMapEvent, GameMapEventInfo> gameMapEvents;
 		
-		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory) : this (GameObject, WorldFactory, new GameMapWatcher<T, E>(), new WorldPositionMapper()) {}
+		public GameMap(GameObject GameObject, IGameMapDelegate<T, E> MapDelegate) : this (GameObject, MapDelegate, new GameMapWatcher<T, E>(), new WorldPositionMapper()) {}
 
-		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IWorldPositionMapper PositionMapper) : this (GameObject, WorldFactory, new GameMapWatcher<T, E>(), PositionMapper) {}
+		public GameMap(GameObject GameObject, IGameMapDelegate<T, E> MapDelegate, IWorldPositionMapper PositionMapper) : this (GameObject, MapDelegate, new GameMapWatcher<T, E>(), PositionMapper) {}
 
-		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IGameMapWatcher<T, E> Watcher, IWorldPositionMapper PositionMapper) : base(GameObject, WorldFactory, PositionMapper) {
+		public GameMap(GameObject GameObject, IGameMapDelegate<T, E> MapDelegate, IGameMapWatcher<T, E> Watcher, IWorldPositionMapper PositionMapper) : base(GameObject, PositionMapper) {
 			this.gameMapEvents = new EventSystem<GameMapEvent, GameMapEventInfo> ();
 			this.entities = new HashSet<E> ();
+			this.mapDelegate = MapDelegate;
 			this.watcher = Watcher;
 		}
+
+		#region World
+		
+		/*
+		 * Resets the world to its original state.
+		 */
+		public override void ResetWorld() {
+			base.ClearWorld ();
+
+			World<T> newWorld = this.mapDelegate.GenerateNewWorld(this);
+			
+			if (newWorld == null) {
+				throw new Exception("World was reset with a null world.");
+			}
+			
+			foreach (KeyValuePair<WorldPosition, T> pair in newWorld.ElementPairs) {
+				WorldPosition position = pair.Key;
+				T element = pair.Value;
+				element.AddedToMap(position);
+			}
+			
+			this.World = newWorld;
+		}
+
+		#endregion
 		
 		#region Entity
 
@@ -48,7 +125,7 @@ namespace Biters
 				Entity.Transform.SetParent(this.Transform);
 
 				MoveEntityToPosition(Entity, Position);
-				Entity.AddedToGameMap(this as GameMap<IGameMapTile, IGameMapEntity>, Position);
+				Entity.AddedToGameMap(Position);
 
 				GameMapEventInfoBuilder builder = this.GameMapEventInfoBuilder(GameMapEvent.AddEntity);
 				builder.Entity = Entity;
@@ -69,7 +146,7 @@ namespace Biters
 				builder.Entity = Entity;
 				this.BroadcastEvent(builder);
 
-				Entity.RemovedFromGameMap(this as GameMap<IGameMapTile, IGameMapEntity>);
+				Entity.RemovedFromGameMap();
 			}
 		}
 		
@@ -78,8 +155,49 @@ namespace Biters
 		}
 
 		#endregion
+		
+		#region Entity Positions
+		
+		protected void MoveEntityToPosition(E Entity, WorldPosition Position) {
+			Vector3 entityPosition = this.PositionMapper.VectorForPosition (Position);
+			Entity.Transform.position = entityPosition;
+		}
+		
+		/*
+		 * Returns the WorldPosition of an entity.
+		 */
+		public WorldPosition? GetPositionForEntity(E Entity) {
+			WorldPosition? position = null;
+			
+			if (this.ContainsEntity(Entity)) {
+				Vector3 entityPosition = Entity.Transform.position;
+				position = this.PositionMapper.PositionForVector(entityPosition);
+			}
+			
+			return position;
+		}
+		
+		/*
+		 * Returns all entities at a given WorldPosition.
+		 */
+		public List<E> GetEntitiesAtPosition(WorldPosition Position) {
+			List<E> result = new List<E> ();
+			
+			foreach (E entity in this.entities) {
+				Vector3 entityPosition = entity.Transform.position;
+				WorldPosition? position = this.PositionMapper.PositionForVector(entityPosition);
+				
+				if (position.HasValue && Position.Equals(position.Value)) {
+					result.Add(entity);
+				}
+			}
+			
+			return result;
+		}
+		
+		#endregion
 
-		#region World
+		#region World Position
 
 		public T GetTileUnderEntity(E Entity) {
 			T tile = null;
@@ -94,56 +212,15 @@ namespace Biters
 		
 		protected override void InsertTileAtPosition(T Element, WorldPosition Position) {
 			base.InsertTileAtPosition (Element, Position);
-			Element.AddedAsTileToGameMap(this as GameMap<IGameMapTile, IGameMapEntity>, Position);
+			Element.AddedAsTileToGameMap(Position);
 		}
 		
 		protected override void RemoveTileFromPosition(T Removed, WorldPosition Position) {
 			base.RemoveTileFromPosition (Removed, Position);
-			Removed.RemovedAsTileFromGameMap(this as GameMap<IGameMapTile, IGameMapEntity>);
+			Removed.RemovedAsTileFromGameMap();
 		}
 
 		#endregion
-
-		#region Entity Positions
-
-		protected void MoveEntityToPosition(E Entity, WorldPosition Position) {
-			Vector3 entityPosition = this.PositionMapper.VectorForPosition (Position);
-			Entity.Transform.position = entityPosition;
-		}
-
-		/*
-		 * Returns the WorldPosition of an entity.
-		 */
-		public WorldPosition? GetPositionForEntity(E Entity) {
-			WorldPosition? position = null;
-
-			if (this.ContainsEntity(Entity)) {
-				Vector3 entityPosition = Entity.Transform.position;
-				position = this.PositionMapper.PositionForVector(entityPosition);
-			}
-
-			return position;
-		}
-
-		/*
-		 * Returns all entities at a given WorldPosition.
-		 */
-		public List<E> GetEntitiesAtPosition(WorldPosition Position) {
-			List<E> result = new List<E> ();
-
-			foreach (E entity in this.entities) {
-				Vector3 entityPosition = entity.Transform.position;
-				WorldPosition? position = this.PositionMapper.PositionForVector(entityPosition);
-
-				if (position.HasValue && Position.Equals(position.Value)) {
-					result.Add(entity);
-				}
-			}
-
-			return result;
-		}
-
-		#endregion	
 
 		#region Watcher
 
@@ -224,6 +301,12 @@ namespace Biters
 			this.gameMapEvents.BroadcastEvent (Builder.MapEvent, Builder.Make());
 		}
 		
+		public void BroadcastCustomEvent(GameMapEventInfoBuilder Builder) {
+			if (Builder.MapEvent == GameMapEvent.Custom) {
+				this.BroadcastEvent(Builder);
+			}
+		}
+		
 		public GameMapEventInfoBuilder CustomGameMapEventBuilder {
 			get {
 				return this.GameMapEventInfoBuilder(GameMapEvent.Custom);
@@ -232,7 +315,7 @@ namespace Biters
 
 		//TODO: If this being public presents itself as an issue, then hide again, and abstract necessary components.
 		public GameMapEventInfoBuilder GameMapEventInfoBuilder(GameMapEvent GameMapEvent) {
-			return new GameMapEventInfoBuilder(GameMapEvent, this as GameMap<IGameMapTile, IGameMapEntity>);
+			return new GameMapEventInfoBuilder(GameMapEvent, this as IGameMap<IGameMapTile, IGameMapEntity>);
 		}
 
 		#endregion
@@ -243,17 +326,17 @@ namespace Biters
 	 */
 	public interface IGameMapEntity : IGameElement, ITransformableElement, IMovingElement, IUpdatingElement {
 
-		void AddedToGameMap(GameMap<IGameMapTile, IGameMapEntity> Map, WorldPosition Position);
+		void AddedToGameMap(WorldPosition Position);
 		
-		void RemovedFromGameMap(GameMap<IGameMapTile, IGameMapEntity> Map);
+		void RemovedFromGameMap();
 
 	}
 
 	public interface IGameMapTile : IMapTile {
 		
-		void AddedAsTileToGameMap(GameMap<IGameMapTile, IGameMapEntity> Map, WorldPosition Position);
+		void AddedAsTileToGameMap(WorldPosition Position);
 		
-		void RemovedAsTileFromGameMap(GameMap<IGameMapTile, IGameMapEntity> Map);
+		void RemovedAsTileFromGameMap();
 
 	}
 

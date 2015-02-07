@@ -8,7 +8,7 @@ using Biters.Game;
 namespace Biters.Testing
 {
 
-	public class TestMapGenerator : IMapTileImporter<BitersGameTile>
+	public class TestMapGenerator : IGameMapTileImporter<BitersGameTile, BitersMapEntity>, IFactory<IGameMapDelegate<BitersGameTile, BitersMapEntity>>
 	{
 		public TestMapGenerator () {
 			this.Factory = new TestMapGeneratorFactory ();
@@ -21,9 +21,14 @@ namespace Biters.Testing
 			return import;
 		}
 
+		public IGameMapDelegate<BitersGameTile, BitersMapEntity> Make() {
+			TestMapGeneratorMap import = new TestMapGeneratorMap (this.Factory);
+			return import;
+		}
+
 	}
 	
-	public class TestMapGeneratorMap : IImportedMap<BitersGameTile> {
+	public class TestMapGeneratorMap : IImportedMap<BitersGameTile>, IGameMapDelegate<BitersGameTile, BitersMapEntity> {
 		
 		public int xSize = 10;
 		public int ySize = 10;
@@ -48,6 +53,16 @@ namespace Biters.Testing
 			return world;
 		}
 		
+		public World<BitersGameTile> GenerateNewWorld(IGameMap<BitersGameTile, BitersMapEntity> Map) {
+			World<BitersGameTile> world = this.Make ();
+
+			foreach (BitersGameTile tile in world) {
+				tile.Map = Map;
+			}
+
+			return world;
+		}
+
 	}
 
 	public class TestMapGeneratorFactory : IFactory<BitersGameTile> {

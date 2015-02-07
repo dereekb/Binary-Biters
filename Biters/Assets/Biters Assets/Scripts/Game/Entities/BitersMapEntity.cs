@@ -13,7 +13,7 @@ namespace Biters.Game
 
 		public BitersMapEntity (GameObject GameObject) : base (GameObject) {}
 
-		private GameMap<IGameMapTile, IGameMapEntity> map;
+		private IGameMap<BitersGameTile, BitersMapEntity> map;
 
 		#region Entity
 
@@ -23,10 +23,16 @@ namespace Biters.Game
 		
 		#region Map
 
-		public GameMap<IGameMapTile, IGameMapEntity> Map {
+		public IGameMap<BitersGameTile, BitersMapEntity> Map {
 
 			get {
-				return this.Map;
+				return this.map;
+			}
+
+			set {
+				if (this.map == null) {
+					this.map = value;
+				}
 			}
 
 		}
@@ -39,13 +45,12 @@ namespace Biters.Game
 			//Override to initialize entity further.
 		}
 
-		public void AddedToGameMap(GameMap<IGameMapTile, IGameMapEntity> Map, WorldPosition Position) {
-			this.map = Map;
-			this.GameObject.transform.position = Map.GetPositionVector (Position);
+		public void AddedToGameMap(WorldPosition Position) {
+			this.GameObject.transform.position = this.Map.GetPositionVector (Position);
 			this.Initialize ();
 		}
 		
-		public void RemovedFromGameMap(GameMap<IGameMapTile, IGameMapEntity> Map) {
+		public void RemovedFromGameMap() {
 			this.map = null;
 			this.Destroy ();
 		}

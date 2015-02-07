@@ -5,21 +5,54 @@ using UnityEngine;
 
 namespace Biters
 {
+	/*
+	 * Represents a Tile on a map.
+	 */
+	public interface IMapTile : IGameElement, IUpdatingElement {
+		
+		WorldPosition MapTilePosition { get; }
+		
+		void AddedToMap(WorldPosition Position);
+		
+		void RemovedFromMap();
+		
+	}
 
 	/*
 	 * Represents a map made up of tiles.
 	 */
-	public class Map<T> : Entity 
+	public interface IMap<T> : IMapEventSystem where T : class, IMapTile {
+
+		//World
+		void ResetWorld();
+		void ClearWorld();
+
+		//Position
+		IWorldPositionMapper PositionMapper { get; }
+		Vector3 GetPositionVector (WorldPosition Position);
+
+		//Tiles
+		T this [WorldPosition Position] { get; }
+		T GetTile (WorldPosition Position);
+		void SetTile (T Element, WorldPosition Position);
+		T RemoveTile (WorldPosition Position);
+
+	}
+
+	/*
+	 * Default map implementation.
+	 */
+	public class Map<T> : Entity, IMap<T>
 		where T : class, IMapTile
 	{
 		private IWorldPositionMapper positionMapper;
 		private EventSystem<MapEvent, MapEventInfo> mapEvents;
-		protected IFactory<World<T>> WorldFactory;
 
 		protected World<T> World;
+		
+		public Map(GameObject GameObject) : this(GameObject, new WorldPositionMapper()) {}
 
-		public Map(GameObject GameObject, IFactory<World<T>> WorldFactory, IWorldPositionMapper PositionMapper) : base(GameObject) {
-			this.WorldFactory = WorldFactory;
+		public Map(GameObject GameObject, IWorldPositionMapper PositionMapper) : base(GameObject) {
 			this.positionMapper = PositionMapper;
 			this.mapEvents = new EventSystem<MapEvent, MapEventInfo> ();
 		}
@@ -29,20 +62,10 @@ namespace Biters
 		/*
 		 * Resets the world to its original state.
 		 */
-		public void ResetWorld() {
+		public virtual void ResetWorld() {
 			this.ClearWorld();
 
-			World<T> newWorld = WorldFactory.Make();
-			Map<IMapTile> map = this as Map<IMapTile>;
-
-			foreach (KeyValuePair<WorldPosition, T> pair in newWorld.ElementPairs) {
-				WorldPosition position = pair.Key;
-				T element = pair.Value;
-
-				element.MapTilePosition = pair.Key;
-				element.AddedToMap(map, position);
-			}
-
+			World<T> newWorld = new World<T> (); 
 			this.World = newWorld;
 		}
 
@@ -50,8 +73,10 @@ namespace Biters
 		 * Deletes the current world.
 		 */
 		public void ClearWorld() {
-			foreach (WorldPosition Position in World.Positions) {
-				this.RemoveTile(Position);
+			if (this.World != null) {
+				foreach (WorldPosition Position in World.Positions) {
+					this.RemoveTile(Position);
+				}
 			}
 		}
 
@@ -62,6 +87,10 @@ namespace Biters
 			get {
 				return this.positionMapper;
 			}
+		}
+		
+		public Vector3 GetPositionVector(WorldPosition Position) {
+			return this.positionMapper.VectorForPosition (Position);
 		}
 
 		public T this[WorldPosition Position]
@@ -83,19 +112,13 @@ namespace Biters
 			T result = World [Position];
 			return result;
 		}
-
-		public Vector3 GetPositionVector(WorldPosition Position) {
-			return this.positionMapper.VectorForPosition (Position);
-		}
-
-		public T SetTile(T Element, WorldPosition Position) {
-			T replaced = this.RemoveTile (Position);
+		
+		public void SetTile(T Element, WorldPosition Position) {
+			this.RemoveTile (Position);
 			
 			if (Element != null) {
 				this.InsertTileAtPosition(Element, Position);
 			}
-			
-			return replaced;
 		}
 
 		public T RemoveTile(WorldPosition Position) {
@@ -110,20 +133,19 @@ namespace Biters
 		
 		protected virtual void InsertTileAtPosition(T Element, WorldPosition Position) {
 			this.World.SetAtPosition(Element, Position);
-			Element.MapTilePosition = Position;
-			Element.AddedToMap(this as Map<IMapTile>, Position);
+			Element.AddedToMap(Position);
 		}
 
 		protected virtual void RemoveTileFromPosition(T Removed, WorldPosition Position) {
 			this.World.RemoveFromPosition (Position);
-			Removed.RemovedFromMap (this as Map<IMapTile>);
+			Removed.RemovedFromMap();
 		}
 
 		#endregion
 
 		#region World Accessors
 
-		//TODO: Add accessors to retrieve neighbor elements, etc.
+		//TODO: Add accessors to retrieve neighbor elements, etc. Add those to the interface too.
 
 		#endregion
 
@@ -136,7 +158,7 @@ namespace Biters
 		}
 
 		protected void UpdateTiles() {
-			foreach (T tile in World) {
+			foreach (T tile in this.World) {
 				tile.Update();
 			}
 		}
@@ -176,21 +198,10 @@ namespace Biters
 		}
 		
 		public MapEventInfoBuilder MapEventInfoBuilder(MapEvent MapEvent) {
-			return new MapEventInfoBuilder(MapEvent, this as Map<IMapTile>);
+			return new MapEventInfoBuilder(MapEvent, this as IMap<IMapTile>);
 		}
 
 		#endregion
-	}
-
-	//Represents a Tile on a map.
-	public interface IMapTile : IGameElement, IUpdatingElement {
-		
-		WorldPosition MapTilePosition { get; set; }
-
-		void AddedToMap(Map<IMapTile> Map, WorldPosition Position);
-			
-		void RemovedFromMap(Map<IMapTile> Map);
-
 	}
 
 }

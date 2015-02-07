@@ -68,14 +68,14 @@ namespace Biters
 	public class GameMapEventInfoBuilder : IFactory<GameMapEventInfo> {
 		
 		public readonly GameMapEvent MapEvent;
-		public readonly GameMap<IGameMapTile, IGameMapEntity> Map;
+		public readonly IGameMap<IGameMapTile, IGameMapEntity> Map;
 
 		public string EventName;
 		public WorldPosition? Position;
 		public IGameMapEntity Entity;
 		public IMapTile Tile;
 		
-		public GameMapEventInfoBuilder(GameMapEvent GameMapEvent, GameMap<IGameMapTile, IGameMapEntity> Map) {
+		public GameMapEventInfoBuilder(GameMapEvent GameMapEvent, IGameMap<IGameMapTile, IGameMapEntity> Map) {
 			this.MapEvent = GameMapEvent;
 			this.Map = Map;
 		}
@@ -92,7 +92,7 @@ namespace Biters
 		
 		private readonly string name;
 		private readonly GameMapEvent mapEvent;
-		private readonly GameMap<IGameMapTile, IGameMapEntity> map;
+		private readonly IGameMap<IGameMapTile, IGameMapEntity> map;
 		
 		//Optional Position associed with the event.
 		private readonly WorldPosition? position;
@@ -180,7 +180,7 @@ namespace Biters
 			}
 		}
 
-		public GameMap<IGameMapTile, IGameMapEntity> Map {
+		public IGameMap<IGameMapTile, IGameMapEntity> Map {
 
 			get {
 				return map;

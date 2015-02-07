@@ -20,9 +20,14 @@ namespace Biters.Testing
 			TestMapGenerator TestMapGenerator = new TestMapGenerator();
 			
 			GameObject MapObject = GameObject.CreatePrimitive (PrimitiveType.Sphere);
-			IFactory<World<BitersGameTile>> WorldFactory = TestMapGenerator.Import ("test");
-			this.Map = new GameMap<BitersGameTile, BitersMapEntity> (MapObject, WorldFactory);
+			IGameMapDelegate<BitersGameTile, BitersMapEntity> MapDelegate = TestMapGenerator.Make ();
+
+			//TODO: Issue of "Now Game Tiles NEED to have this map set before they are created, but the map also needs a generator first..."
+			this.Map = new GameMap<BitersGameTile, BitersMapEntity> (MapObject, MapDelegate);
+
 			Map.ResetWorld ();
+
+			Console.WriteLine ("Finished resetting world...");
 		}
 		
 		public void Update () 

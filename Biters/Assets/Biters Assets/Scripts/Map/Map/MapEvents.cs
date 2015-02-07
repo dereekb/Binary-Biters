@@ -3,6 +3,19 @@ using System;
 namespace Biters
 {
 
+	public interface IMapEventSystem {
+		
+		//Events
+		void RegisterForEvent (IEventListener Listener, MapEvent EventType);
+		void UnregisterForEvent (IEventListener Listener, MapEvent EventType);
+		void UnregisterForEvents (IEventListener Listener);
+		void BroadcastEvent (MapEventInfoBuilder Builder);
+		
+		MapEventInfoBuilder CustomMapEventBuilder { get; }
+		MapEventInfoBuilder MapEventInfoBuilder (MapEvent MapEvent);
+		
+	}
+
 	public enum MapEvent : int {
 
 		/*
@@ -68,13 +81,13 @@ namespace Biters
 	public class MapEventInfoBuilder : IFactory<MapEventInfo> {
 		
 		public readonly MapEvent MapEvent;
-		public readonly Map<IMapTile> Map;
+		public readonly IMap<IMapTile> Map;
 
 		public string EventName;
 		public WorldPosition? Position;
 		public IMapTile Tile;
 		
-		public MapEventInfoBuilder(MapEvent MapEvent, Map<IMapTile> Map) {
+		public MapEventInfoBuilder(MapEvent MapEvent, IMap<IMapTile> Map) {
 			this.MapEvent = MapEvent;
 			this.Map = Map;
 		}
@@ -91,7 +104,7 @@ namespace Biters
 
 		private readonly string Name;
 		private readonly MapEvent mapEvent;
-		private readonly Map<IMapTile> map;
+		private readonly IMap<IMapTile> map;
 
 		//Optional Tile associated with the event.
 		private readonly IMapTile tile;
@@ -136,7 +149,7 @@ namespace Biters
 
 		}
 
-		public Map<IMapTile> Map {
+		public IMap<IMapTile> Map {
 
 			get {
 				return map;

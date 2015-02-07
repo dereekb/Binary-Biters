@@ -2,6 +2,21 @@ using System;
 
 namespace Biters
 {
+	
+	public interface IGameMapTileExporter<T, E> : IMapTileExporter<T>
+		where T : class, IGameMapTile
+	where E : class, IGameMapEntity {
+		
+		void Export(IGameMap<T, E> GameMap);
+		
+	}
+
+	//TODO: Extend later.
+	public interface IGameMapTileImporter<T, E> : IMapTileImporter<T>
+		where T : class, IGameMapTile
+		where E : class, IGameMapEntity {
+
+	}
 
 	/*
 	 * Exports a map.
@@ -10,7 +25,7 @@ namespace Biters
 		where T : class, IMapTile 
 	{
 
-		void Export(Map<T> Map);
+		void Export(IMap<T> Map);
 
 	}
 

@@ -13,7 +13,7 @@ namespace Biters.Game
 		private WorldPosition mapTilePosition;
 
 		//Game Map of the tile.
-		private GameMap<IGameMapTile, IGameMapEntity> map;
+		private IGameMap<BitersGameTile, BitersMapEntity> map;
 
 		public BitersGameTile() : base(GameObject.CreatePrimitive(PrimitiveType.Cube)) {}
 
@@ -29,12 +29,18 @@ namespace Biters.Game
 
 		}
 
-		public GameMap<IGameMapTile, IGameMapEntity> Map {
+		public IGameMap<BitersGameTile, BitersMapEntity> Map {
 			
 			get {
-				return this.Map;
+				return this.map;
 			}
-			
+		
+			set {
+				if (this.map == null) {
+					this.map = value;
+				}
+			}
+
 		}
 
 		public virtual void Initialize() {
@@ -45,22 +51,22 @@ namespace Biters.Game
 			//Override to destroy entity elements.
 		}
 
-		public void AddedToMap(Map<IMapTile> Map, WorldPosition Position) {
+		public void AddedToMap(WorldPosition Position) {
 			this.GameObject.transform.position = Map.GetPositionVector (Position);
 			//Override to initialize and/or capture map if necessary.
 		}
 		
-		public void RemovedFromMap(Map<IMapTile> Map) {
+		public void RemovedFromMap() {
 			//TODO: Remove object from view?
 		}
 
-		public void AddedAsTileToGameMap(GameMap<IGameMapTile, IGameMapEntity> Map, WorldPosition Position) {
+		public void AddedAsTileToGameMap(WorldPosition Position) {
 			this.mapTilePosition = Position;
 			this.map = Map;
 			this.Initialize ();
 		}
 		
-		public void RemovedAsTileFromGameMap(GameMap<IGameMapTile, IGameMapEntity> Map) {
+		public void RemovedAsTileFromGameMap() {
 			this.map = null;
 			this.Destroy ();
 		}
