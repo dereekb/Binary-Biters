@@ -30,8 +30,8 @@ namespace Biters.Testing
 	
 	public class TestMapGeneratorMap : IImportedMap<BitersGameTile>, IGameMapDelegate<BitersGameTile, BitersMapEntity> {
 		
-		public int xSize = 10;
-		public int ySize = 10;
+		public int xSize = 5;
+		public int ySize = 1;
 
 		public IFactory<BitersGameTile> Factory;
 

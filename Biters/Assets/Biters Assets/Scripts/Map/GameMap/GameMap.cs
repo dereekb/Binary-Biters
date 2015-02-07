@@ -79,7 +79,7 @@ namespace Biters
 			this.gameMapEvents = new EventSystem<GameMapEvent, GameMapEventInfo> ();
 			this.entities = new HashSet<E> ();
 			this.mapDelegate = MapDelegate;
-			this.watcher = Watcher;
+			this.Watcher = Watcher;
 		}
 
 		#region World
@@ -119,8 +119,8 @@ namespace Biters
 				
 				//Set Transform to match map's.
 				Entity.Transform.SetParent(this.Transform);
-
 				MoveEntityToPosition(Entity, Position);
+
 				Entity.AddedToGameMap(Position);
 
 				GameMapEventInfoBuilder builder = this.GameMapEventInfoBuilder(GameMapEvent.AddEntity);
@@ -157,6 +157,7 @@ namespace Biters
 		protected void MoveEntityToPosition(E Entity, WorldPosition Position) {
 			Vector3 entityPosition = this.PositionMapper.VectorForPosition (Position);
 			Entity.Transform.position = entityPosition;
+
 		}
 		
 		/*
