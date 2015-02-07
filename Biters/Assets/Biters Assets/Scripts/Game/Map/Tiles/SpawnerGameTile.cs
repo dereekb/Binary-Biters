@@ -15,21 +15,21 @@ namespace Biters.Game
 
 		#region Constructors
 
-		public SpawnerGameTile (WorldDirection Direction) : base (Direction) {}
+		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate) : base () {
+			this.SpawnDelegate = SpawnDelegate;
+		}
+
+		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate, WorldDirection Direction) : base (Direction) {
+			this.SpawnDelegate = SpawnDelegate;	
+		}
 		
-		public SpawnerGameTile (Vector3 Direction) : base (Direction) {}
+		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate, Vector3 Direction) : base (Direction) {
+			this.SpawnDelegate = SpawnDelegate;	
+		}
 		
 		#endregion
 
 		#region Update
-		
-		public override void AddedToMap(Map<IMapTile> Map, WorldPosition Position) {
-			base.AddedToMap (Map, Position);
-		}
-		
-		public override void RemovedFromMap(Map<IMapTile> Map) {
-			base.RemovedFromMap (Map);
-		}
 
 		public override void Update() {
 			this.TrySpawning ();
@@ -58,8 +58,22 @@ namespace Biters.Game
 	/*
 	 * Factory for entities that are spawned.
 	 */
-	public interface ISpawnerGameTileDelegate : IFactory<BitersMapEntity> {
-		
+	public interface ISpawnerGameTileDelegate : IFactory<BitersMapEntity> {}
+
+	/*
+	 * Default class that uses a Lambda expression to spawn elements.
+	 */
+	public class SpawnerGameTileDelegate : ISpawnerGameTileDelegate {
+
+		private readonly Func<BitersMapEntity> SpawnFunction;
+
+		public SpawnerGameTileDelegate(Func<BitersMapEntity> SpawnFunction) {
+			this.SpawnFunction = SpawnFunction;
+		}
+
+		public BitersMapEntity Make() {
+			return this.SpawnFunction.Invoke ();
+		}
 	}
 
 }

@@ -20,6 +20,8 @@ namespace Biters
 		private IGameMapWatcher<T, E> watcher;
 		private EventSystem<GameMapEvent, GameMapEventInfo> gameMapEvents;
 		
+		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory) : this (GameObject, WorldFactory, new GameMapWatcher<T, E>(), new WorldPositionMapper()) {}
+
 		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IWorldPositionMapper PositionMapper) : this (GameObject, WorldFactory, new GameMapWatcher<T, E>(), PositionMapper) {}
 
 		public GameMap(GameObject GameObject, IFactory<World<T>> WorldFactory, IGameMapWatcher<T, E> Watcher, IWorldPositionMapper PositionMapper) : base(GameObject, WorldFactory, PositionMapper) {

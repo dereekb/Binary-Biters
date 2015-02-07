@@ -10,10 +10,10 @@ namespace Biters.Game
 	public abstract class BitersGameTile : Entity, IGameMapTile, IEventListener 
 	{
 		//Position in the map's world. Should only be changed by the Map.
-		public WorldPosition MapTilePosition { get; set; }
+		private WorldPosition mapTilePosition;
 
 		//Game Map of the tile.
-		protected GameMap<IGameMapTile, IGameMapEntity> Map;
+		private GameMap<IGameMapTile, IGameMapEntity> map;
 
 		public BitersGameTile() : base(GameObject.CreatePrimitive(PrimitiveType.Cube)) {}
 
@@ -21,22 +21,48 @@ namespace Biters.Game
 
 		#region Map
 
-		public virtual void AddedToMap(Map<IMapTile> Map, WorldPosition Position) {
-			//Override. Use to initialize and/or capture map if necessary. Use AddedAsTileToGameMap for GameMap capture.
-		}
-		
-		public virtual void RemovedFromMap(Map<IMapTile> Map) {
-			//TODO: Remove object from view. Discard.
+		public WorldPosition MapTilePosition {
+
+			get {
+				return this.mapTilePosition;
+			}
+
 		}
 
-		public virtual void AddedAsTileToGameMap(GameMap<IGameMapTile, IGameMapEntity> Map, WorldPosition Position) {
-			//Override to initialize, and/or capture the map reference.
-			this.Map = Map;
+		public GameMap<IGameMapTile, IGameMapEntity> Map {
+			
+			get {
+				return this.Map;
+			}
+			
+		}
+
+		public virtual void Initialize() {
+			//Override to initialize entity further.
 		}
 		
-		public virtual void RemovedAsTileFromGameMap(GameMap<IGameMapTile, IGameMapEntity> Map) {
-			//Override to deallocated using the GameMap. Use RemovedFromMap otherwise.
-			this.Map = null;
+		public virtual void Destroy() {
+			//Override to destroy entity elements.
+		}
+
+		public void AddedToMap(Map<IMapTile> Map, WorldPosition Position) {
+			this.GameObject.transform.position = Map.GetPositionVector (Position);
+			//Override to initialize and/or capture map if necessary.
+		}
+		
+		public void RemovedFromMap(Map<IMapTile> Map) {
+			//TODO: Remove object from view?
+		}
+
+		public void AddedAsTileToGameMap(GameMap<IGameMapTile, IGameMapEntity> Map, WorldPosition Position) {
+			this.mapTilePosition = Position;
+			this.map = Map;
+			this.Initialize ();
+		}
+		
+		public void RemovedAsTileFromGameMap(GameMap<IGameMapTile, IGameMapEntity> Map) {
+			this.map = null;
+			this.Destroy ();
 		}
 
 		#endregion
