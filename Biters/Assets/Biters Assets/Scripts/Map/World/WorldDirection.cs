@@ -21,17 +21,33 @@ namespace Biters
 	 */
 	public sealed class DirectionSuggestion : IDirectionSuggestion {
 		
-		public WorldDirection Suggestion;			 //Suggested Direction
+		public WorldDirection WeakSuggestion; //Suggested Direction. If it is the same as the current entity, use the backup.
+		public WorldDirection StrongSuggestion; //Backup Suggested Direction.
 		private HashSet<WorldDirection> avoid = new HashSet<WorldDirection>();
 		
 		public DirectionSuggestion() : this (WorldDirection.North) {}
 		
 		public DirectionSuggestion(WorldDirection Suggestion) {
-			this.Suggestion = Suggestion;
+			this.WeakSuggestion = Suggestion;
+			this.StrongSuggestion = Suggestion;
 		}
 		
+		public DirectionSuggestion(WorldDirection WeakSuggestion, WorldDirection StrongSuggestion) {
+			this.WeakSuggestion = WeakSuggestion;
+			this.StrongSuggestion = StrongSuggestion;
+		}
+
 		public DirectionSuggestion Avoid(WorldDirection Direction) {
 			this.avoid.Add(Direction);
+			return this;
+		}
+		
+		public DirectionSuggestion Avoid(params WorldDirection[] Directions) {
+
+			foreach (WorldDirection direction in Directions) {
+				this.avoid.Add(direction);
+			}
+
 			return this;
 		}
 		
@@ -67,7 +83,11 @@ namespace Biters
 			WorldDirection heading = Alignment.OppositeAlignment().SuggestedDirection();
 			
 			if (this.avoid.Contains(heading)) {
-				heading = this.Suggestion;
+				if (heading.Opposite() == this.WeakSuggestion) {
+					heading = this.StrongSuggestion;
+				} else {
+					heading = this.WeakSuggestion;
+				}
 			}
 			
 			return heading;

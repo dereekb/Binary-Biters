@@ -93,7 +93,7 @@ namespace Biters.Debugging
 			float timer = RandomGenerator.Next (4, 10);	//Between 3 and 20 seconds
 			int max = 500; // RandomGenerator.Next (20, 500);
 
-			int directionNumber = RandomGenerator.Next (-1, (int) DirectionalGameTileType.T_Right);
+			int directionNumber = RandomGenerator.Next (-1, (int) DirectionalGameTileType.Corner_Bottom_Left);
 
 			DirectionalGameTileType direction = (DirectionalGameTileType) directionNumber+1;
 

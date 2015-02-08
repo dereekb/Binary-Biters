@@ -208,49 +208,6 @@ namespace Biters.Game
 			}
 		}
 
-		/*
-		 * Direction the tile will point elements.
-		 * 
-		 * T elements default to where the | points.
-		 * 
-		 * Corner elements point up and down.
-		 */
-
-		//TODO: Remove this. Use DirectionSuggestion instead.
-		public static Vector3 DefaultTileDirection(this DirectionalGameTileType Type) {
-
-			Vector3 direction;
-
-			switch (Type) {
-			case DirectionalGameTileType.Vertical:
-			case DirectionalGameTileType.T_Up:
-			case DirectionalGameTileType.Corner_Top_Left:
-			case DirectionalGameTileType.Corner_Top_Right:
-				direction = WorldDirection.North.Vector();
-				break;
-				
-			case DirectionalGameTileType.Horizontal:
-			case DirectionalGameTileType.T_Left:
-				direction = WorldDirection.West.Vector();
-				break;
-			case DirectionalGameTileType.T_Right:
-				direction = WorldDirection.East.Vector();
-				break;
-
-			case DirectionalGameTileType.T_Down:
-			case DirectionalGameTileType.Corner_Bottom_Right:
-			case DirectionalGameTileType.Corner_Bottom_Left:
-				direction = WorldDirection.South.Vector();
-				break;
-
-			default: 
-				direction = WorldDirection.South.Vector();
-				break;
-			}
-
-			return direction;
-		}
-
 	}
 
 	#region Auto Pilot Factory
@@ -290,11 +247,6 @@ namespace Biters.Game
 		public virtual IAutoPilot MoveOutOfSquare(IPositionalElement Target, IPositionalElement Element) {
 			Vector3 direction = this.Delegate.DirectionForElement(Target, Element, this.Type);
 			Vector3 moveDirection = (direction * this.MoveSpeed);
-
-			/*
-			 * Handle corner-type tiles and stuff.
-			 */
-
 			return new WalkAutoPilot(moveDirection);
 		}
 	}
@@ -319,11 +271,22 @@ namespace Biters.Game
 			get {
 				Dictionary<DirectionalGameTileType, IDirectionSuggestion> s 
 					= new Dictionary<DirectionalGameTileType, IDirectionSuggestion>();
-				
-				s.Add(DirectionalGameTileType.Vertical, new DirectionSuggestion().AvoidEastWest());
-				s.Add(DirectionalGameTileType.Horizontal, new DirectionSuggestion().AvoidUpDown());
 
-				//TODO: Complete for each tile type.
+				//Straight
+				s.Add(DirectionalGameTileType.Vertical, new DirectionSuggestion(WorldDirection.North).AvoidEastWest());
+				s.Add(DirectionalGameTileType.Horizontal, new DirectionSuggestion(WorldDirection.East).AvoidUpDown());
+				
+				//T_Sections
+				s.Add(DirectionalGameTileType.T_Up, new DirectionSuggestion().AllowAllBut(WorldDirection.South));
+				s.Add(DirectionalGameTileType.T_Down, new DirectionSuggestion().AllowAllBut(WorldDirection.North));
+				s.Add(DirectionalGameTileType.T_Left, new DirectionSuggestion().AllowAllBut(WorldDirection.East));
+				s.Add(DirectionalGameTileType.T_Right, new DirectionSuggestion().AllowAllBut(WorldDirection.West));
+				
+				//Corner_Sections
+				s.Add(DirectionalGameTileType.Corner_Top_Left, new DirectionSuggestion().Avoid(WorldDirection.South, WorldDirection.East));
+				s.Add(DirectionalGameTileType.Corner_Top_Right, new DirectionSuggestion().Avoid(WorldDirection.South, WorldDirection.West));
+				s.Add(DirectionalGameTileType.Corner_Bottom_Left, new DirectionSuggestion().Avoid(WorldDirection.North, WorldDirection.East));
+				s.Add(DirectionalGameTileType.Corner_Bottom_Right, new DirectionSuggestion().Avoid(WorldDirection.North, WorldDirection.West));
 
 				return s;
 			}
@@ -332,15 +295,11 @@ namespace Biters.Game
 		public DirectionalTileAutoPilotFactoryDelegate() {}
 		
 		public Vector3 DirectionForElement(IPositionalElement Target, IPositionalElement Element, DirectionalGameTileType type) {
+			IDirectionSuggestion suggestion = Suggestions [type];
 			WorldPositionAlignment side = WorldPositionAlignmentInfo.GetAlignment(Target.Position, Element.Position);
-			Vector3 direction = new Vector3 ();
 
-			//TODO: Get Type/Suggestion form static.
-			
-			//TODO: Get Alignment.
-			
-			//TODO: Get Vector for direction.
-
+			WorldDirection heading = suggestion.GetSuggestion (side);
+			Vector3 direction = heading.Vector ();
 			return direction;
 		}
 

@@ -11,31 +11,32 @@ namespace Biters
 	public enum WorldPositionAlignment {
 
 		//TODO: Add four corners (Top-Left, etc.) if necessary.
-
-		/*
-		 * Top-Center position. Equivalent to (width/2, 0)
-		 */
-		Top,
-
-		/*
-		 * Left-Center position. Equivalent to (0,height/2)
-		 */
-		Left,
 		
 		/*
 		 * Right-Center position. Equivalent to (width,height/2)
 		 */
-		Right,
-		
+		Right = 0,
+
 		/*
-		 * Center of the World Position. Equivalent to (width/2,height/2)
+		 * Top-Center position. Equivalent to (width/2, 0)
 		 */
-		Center,
+		Top = 1,
+
+		/*
+		 * Left-Center position. Equivalent to (0,height/2)
+		 */
+		Left = 2,
 		
 		/*
 		 * Bottom-Center position. Equivalent to (width/2, height)
 		 */
-		Bottom
+		Bottom = 3,
+		
+		/*
+		 * Center of the World Position. Equivalent to (width/2,height/2)
+		 */
+		Center = 4
+
 	}
 	
 	public static class WorldPositionAlignmentInfo
@@ -87,12 +88,24 @@ namespace Biters
 		}
 
 		public static WorldPositionAlignment GetAlignment(Vector3 Center, Vector3 Element) {
-			WorldPositionAlignment alignment = WorldPositionAlignment.Center;
-
-			return alignment;
+			double angle = GetAngleDegree (Center, Element);
+			int quadrant = GetQuadrant (angle + 45.0);
+			return (WorldPositionAlignment) quadrant;
+		}
+		
+		public static int GetQuadrant(double angle) {
+			int quadrant = (int) Math.Floor(angle / 90.0);
+			return quadrant % 4;
+		}
+		
+		public static double GetAngleDegree(Vector3 Center, Vector3 Target) {
+			Vector3 relative = Center - Target;
+			double n = (Math.Atan2(relative.y, relative.x) * 180.0 / Math.PI) + 180.0;
+			return n;
 		}
 
 	}
+
 	/*
 	 * Acts as a delegate to convert between the game engine's space and a world's space.
 	 */
@@ -124,7 +137,7 @@ namespace Biters
 		}
 		
 		public WorldPosition? PositionForVector(Vector3 Vector) {
-			int X = Convert.ToInt32 (Math.Floor(Vector.x / PositionWidth));
+			int X = Convert.ToInt32 (Math.Floor (Vector.x / PositionWidth));
 			int Y = Convert.ToInt32 (Math.Floor (Vector.y / PositionHeight));
 			
 			//Returns the coordinate at the top-left corner of the position tile, if it exists.

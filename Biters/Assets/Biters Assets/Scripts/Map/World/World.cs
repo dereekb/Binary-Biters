@@ -313,7 +313,8 @@ namespace Biters
 		 * Watch for the other things that will need to be updated too.
 		 */
 	}
-
+	
+	//Extension of WorldDirection enum with static functions.
 	public static class WorldDirectionInfo
 	{
 		//STYLE: Use lowercase for private variables.
@@ -336,8 +337,8 @@ namespace Biters
 			elements.Remove (direction);
 			return elements;
 		}
-		
-		//Extension of WorldDirection enum with static functinon.
+
+
 		public static WorldPositionChange PositionChange(this WorldDirection direction)
 		{
 			WorldPositionChange change = new WorldPositionChange();
@@ -358,6 +359,28 @@ namespace Biters
 			}
 			
 			return change;
+		}
+
+		public static WorldDirection Opposite(this WorldDirection direction)
+		{
+			WorldDirection opposite = WorldDirection.North;
+			
+			switch (direction) {
+			case WorldDirection.North:
+				opposite = WorldDirection.South; 
+				break;
+			case WorldDirection.East:
+				opposite = WorldDirection.West;
+				break;
+			case WorldDirection.South:
+				opposite = WorldDirection.North;
+				break;
+			case WorldDirection.West:
+				opposite = WorldDirection.East;
+				break;
+			}
+			
+			return opposite;
 		}
 		
 	}
