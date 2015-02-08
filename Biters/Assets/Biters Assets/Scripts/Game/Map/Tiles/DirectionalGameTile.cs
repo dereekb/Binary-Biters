@@ -9,44 +9,37 @@ namespace Biters.Game
 {
 
 	/*
-	 * Basic game tile that moves entities that enter it's tiles towards the center, and then in a new direction.
+	 * Standard game map tile that will send units in the target direction.
 	 * 
-	 * 
+	 * Uses a DirectionalTileAutoPilotFactory for handling movement.
 	 */
-	public abstract class DirectionalGameTile : BitersGameTile {
-
+	public class DirectionalGameTile : MoveEntityGameTile
+	{
 		public const float DefaultMoveSpeed = 1.0f;
 		public const string DirectionalTileId = "Entity.Direction";
 
-		//TODO: Add material factory for handling TileSets.
-
-		//Factory which builds AutoPilots for entities that enter this tile.
-		public IAutoPilotFactory MovementFactory;
-
 		//Internal element to avoid need to cast to MovementFactory.
 		private DirectionalTileAutoPilotFactory tileDirectionFactory;
-
-		protected virtual DirectionalTileAutoPilotFactory TileDirectionFactory {
-
+		
+		public virtual DirectionalTileAutoPilotFactory TileDirectionFactory {
+			
 			get {
 				return this.tileDirectionFactory;
 			}
 
-			set {
-				this.MovementFactory = value;
-				this.tileDirectionFactory = value;
-			}
-
 		}
 
-		#region Constructors
+		#region Constructor
 		
-		public DirectionalGameTile () : this (DirectionalGameTileType.Vertical, DefaultMoveSpeed) {}
+		public DirectionalGameTile () : this(new DirectionalTileAutoPilotFactory()) {}
 		
-		public DirectionalGameTile (DirectionalGameTileType Type, WorldDirection Direction) : this (Type,  DefaultMoveSpeed) {}
-
-		public DirectionalGameTile (DirectionalGameTileType Type) : base () {
+		public DirectionalGameTile (DirectionalGameTileType Type, WorldDirection Direction) : this(new DirectionalTileAutoPilotFactory()) {
 			this.SetTileType (Type);
+			this.SetTileDirection (Direction);
+		}
+
+		public DirectionalGameTile (DirectionalTileAutoPilotFactory Factory) : base(Factory) {
+			this.tileDirectionFactory = Factory;
 		}
 
 		#endregion
@@ -60,60 +53,33 @@ namespace Biters.Game
 		}
 		
 		#endregion
-
+		
 		#region Initialization
-
+		
 		public void SetTileType(DirectionalGameTileType Type) {
 			this.GameObject.renderer.material = Type.TileMaterial();
 			Type.RotateTileObject(this);
-			this.UpdateDirectionFactory(DirectionalGameTileType Type);
 		}
 
-		//Updates
-		public abstract void UpdateDirectionToReflectTileTypeChange (DirectionalGameTileType Type);
-
-		#endregion
-		
-		#region Events
-
-		public override void RegisterForEvents() {
-			this.Map.RegisterForGameMapEvent (this, GameMapEvent.EntityEnteredTile);
-			//this.Map.RegisterForEvent (this, GameMapEvent.EntityExitedTile);
-		}
-		
-		protected override void HandleGameMapEvent(GameMapEventInfo Info) {
-			
-			switch (Info.GameMapEvent) {
-			case GameMapEvent.EntityEnteredTile:
-				if (Info.Position.Equals(this.MapTilePosition)) {
-					this.ChangeEntityMovement(Info);
-				}
-				break;
-			}
-			
+		public virtual void SetTileDirection(WorldDirection Direction) {
+			//Override to prevent in sub-classes if this behavior is unwanted.
+			DirectionalTileAutoPilotFactoryDelegate NewDelegate = new DirectionalTileAutoPilotFactoryDelegate (Direction);
+			this.tileDirectionFactory.Delegate = NewDelegate;
 		}
 		
 		#endregion
-
-		#region Redirection
-
-		protected void ChangeEntityMovement(GameMapEventInfo Info) {
-			IGameMapEntity entity = Info.Entity;
-			entity.Movement.AutoPilot = this.MovementFactory.Make(this, entity);
-		}
-
-		#endregion
-
 	}
 
+	#region Game Tile Type
+	
 	public enum DirectionalGameTileType : int {
 
 		//Vertical
 		Vertical,
-
+		
 		//Horizontal
 		Horizontal,
-
+		
 		/*
 		 * T Intersections. The cross is the directional output.
 		 * 
@@ -123,7 +89,7 @@ namespace Biters.Game
 		T_Down,
 		T_Left,
 		T_Right,
-
+		
 		/*
 		 * Corner Pieces.
 		 */
@@ -131,7 +97,7 @@ namespace Biters.Game
 		Corner_Top_Left,
 		Corner_Bottom_Right,
 		Corner_Bottom_Left
-
+		
 		/*
 		//Ends
 		E_Up,
@@ -143,11 +109,11 @@ namespace Biters.Game
 		Custom
 		*/
 	}
-
+	
 	//Vector Extension 
 	public static class WorldDirectionalGameTileInfo
 	{
-
+		
 		//TODO: Will later ditch this for a Material Factory that can load Tilesets, but that will be later.
 		
 		public static Material DefaultTileMat = ResourceLoader.Load["Tiles_Concrete"].Material;
@@ -155,13 +121,13 @@ namespace Biters.Game
 		public static Material VerticalTileMat = ResourceLoader.Load["Tiles_Vertical"].Material;
 		public static Material TIntersectionTileMat = ResourceLoader.Load["Tiles_T_Intersection"].Material;
 		public static Material CornerTileMat = ResourceLoader.Load["Tiles_Corner"].Material;
-
+		
 		public static Vector3 Vector(this WorldDirection Direction)
 		{
 			WorldPositionChange change = Direction.PositionChange ();
 			return change.Vector();
 		}
-
+		
 		public static Vector3 Vector(this WorldPositionChange Change)
 		{
 			Vector3 direction = new Vector3 ();
@@ -169,10 +135,10 @@ namespace Biters.Game
 			direction.y = Change.dY;
 			return direction;
 		}
-
+		
 		public static Material TileMaterial(this DirectionalGameTileType Type) {
 			Material material = null;
-
+			
 			switch (Type) {
 			case DirectionalGameTileType.Vertical:
 				material = VerticalTileMat;
@@ -181,14 +147,14 @@ namespace Biters.Game
 			case DirectionalGameTileType.Horizontal:
 				material = HorizontalTileMat;
 				break;
-			
+				
 			case DirectionalGameTileType.Corner_Top_Left:
 			case DirectionalGameTileType.Corner_Top_Right:
 			case DirectionalGameTileType.Corner_Bottom_Left:
 			case DirectionalGameTileType.Corner_Bottom_Right:
 				material = CornerTileMat;
 				break;
-
+				
 			case DirectionalGameTileType.T_Up:
 			case DirectionalGameTileType.T_Down:
 			case DirectionalGameTileType.T_Left:
@@ -198,10 +164,10 @@ namespace Biters.Game
 				material = TIntersectionTileMat;
 				break;
 			}
-
+			
 			return material;
 		}
-
+		
 		/*
 		 * Tile Cube Rotations to make sure the tiles go the correct way with their material.
 		 */
@@ -230,25 +196,29 @@ namespace Biters.Game
 				break;
 			}
 		}
-
+		
 	}
 
-	#region Directional Auto Pilot Factory
+	#endregion
 
+	#region Directional Auto Pilot Factory
+	
 	/*
 	 * Default Implementation.
 	 */
 	public class DirectionalTileAutoPilotFactory : IAutoPilotFactory {
-
+		
 		public float MoveSpeed = 1.0f;
 		public Vector3 Offset = new Vector3 (0, 0, -BitersGameTile.BitersGameTileZOffset);
 		public IDirectionalTileAutoPilotFactoryDelegate Delegate;
+
+		public DirectionalTileAutoPilotFactory() {}
 
 		public DirectionalTileAutoPilotFactory(float MoveSpeed, IDirectionalTileAutoPilotFactoryDelegate Delegate) {
 			this.MoveSpeed = MoveSpeed;
 			this.Delegate = Delegate;
 		}
-
+		
 		public IAutoPilot Make() {
 			throw new InvalidOperationException ("Factory requires a target and element.");
 		}
@@ -259,7 +229,7 @@ namespace Biters.Game
 			queue.Add (this.MoveOutOfSquare (Target, Element));
 			return queue;
 		}
-
+		
 		public virtual IAutoPilot MoveToCenter(IPositionalElement Target, IPositionalElement Element) {
 			PositionalElementOffset middle = new PositionalElementOffset (Target, Offset);
 			return new WalkToTargetAutoPilot(middle, Element, this.MoveSpeed);
@@ -270,7 +240,7 @@ namespace Biters.Game
 			Vector3 moveDirection = (direction * this.MoveSpeed);
 			return new WalkAutoPilot(moveDirection);
 		}
-
+		
 	}
 	
 	public interface IDirectionalTileAutoPilotFactoryDelegate {
@@ -288,17 +258,17 @@ namespace Biters.Game
 	public class DirectionalTileAutoPilotFactoryDelegate : IDirectionalTileAutoPilotFactoryDelegate {
 		
 		public WorldDirection Direction;
-
+		
 		public DirectionalTileAutoPilotFactoryDelegate(WorldDirection Direction) {
 			this.Direction = Direction;
 		}
-
+		
 		public Vector3 DirectionForElement(IPositionalElement Target, IPositionalElement Element) {
 			return this.Direction.Vector ();
 		}
 		
 	}
-
+	
 	#endregion
 
 }
