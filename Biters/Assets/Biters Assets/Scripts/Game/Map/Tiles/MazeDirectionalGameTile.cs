@@ -90,7 +90,7 @@ namespace Biters.Game
 		}
 
 		public WorldDirection HeadingForElement(IPositionalElement Target, IPositionalElement Element) {
-			IDirectionSuggestion suggestion = Suggestions [this.Type];
+			IDirectionSuggestion suggestion = MazeTileAutoPilotFactoryDelegate.Suggestions [this.Type];
 			
 			WorldPositionAlignment side = WorldPositionAlignmentInfo.GetAlignment(Target.Position, Element.Position);
 			WorldDirection heading = suggestion.GetSuggestion(side).Value;

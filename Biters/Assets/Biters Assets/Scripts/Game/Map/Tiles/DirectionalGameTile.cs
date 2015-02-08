@@ -151,7 +151,7 @@ namespace Biters.Game
 	}
 	
 	//Vector Extension 
-	public static class WorldDirectionalGameTileInfo
+	public static class DirectionalGameTileInfo
 	{
 		
 		//TODO: Will later ditch this for a Material Factory that can load Tilesets, but that will be later.
@@ -161,7 +161,17 @@ namespace Biters.Game
 		public static Material VerticalTileMat = ResourceLoader.Load["Tiles_Vertical"].Material;
 		public static Material TIntersectionTileMat = ResourceLoader.Load["Tiles_T_Intersection"].Material;
 		public static Material CornerTileMat = ResourceLoader.Load["Tiles_Corner"].Material;
-		
+
+		public static readonly DirectionalGameTileType[] All = new DirectionalGameTileType[] {
+			DirectionalGameTileType.Vertical, DirectionalGameTileType.Horizontal,
+
+			DirectionalGameTileType.T_Up, DirectionalGameTileType.T_Down, 
+			DirectionalGameTileType.T_Left, DirectionalGameTileType.T_Right,
+
+			DirectionalGameTileType.Corner_Top_Right, DirectionalGameTileType.Corner_Top_Left, 
+			DirectionalGameTileType.Corner_Bottom_Right, DirectionalGameTileType.Corner_Bottom_Left
+		};
+
 		public static Vector3 Vector(this WorldDirection Direction)
 		{
 			WorldPositionChange change = Direction.PositionChange ();
