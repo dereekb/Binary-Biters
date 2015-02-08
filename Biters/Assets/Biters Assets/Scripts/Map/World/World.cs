@@ -304,8 +304,17 @@ namespace Biters
 	//Directions on the board
 	public enum WorldDirection {
 		North, East, South, West
-	}
 
+		//None
+
+		/*
+		 * TODO: Add NE, NW, etc. if full support of corner moves is needed/wanted.
+		 * 
+		 * Watch for the other things that will need to be updated too.
+		 */
+	}
+	
+	//Extension of WorldDirection enum with static functions.
 	public static class WorldDirectionInfo
 	{
 		//STYLE: Use lowercase for private variables.
@@ -316,21 +325,33 @@ namespace Biters
 				return all; //Public accessor.
 			}
 		}
-		
-		//Extension of WorldDirection enum with static functinon.
+
+		public static ICollection<WorldDirection> AllExcept(this WorldDirection direction) 
+		{
+			HashSet<WorldDirection> elements = new HashSet<WorldDirection> ();
+
+			foreach (WorldDirection worldDirection in all) {
+				elements.Add(worldDirection);
+			}
+
+			elements.Remove (direction);
+			return elements;
+		}
+
+
 		public static WorldPositionChange PositionChange(this WorldDirection direction)
 		{
 			WorldPositionChange change = new WorldPositionChange();
 			
 			switch (direction) {
 			case WorldDirection.North:
-				change.dY = -1; 
+				change.dY = 1;
 				break;
 			case WorldDirection.East:
 				change.dX = 1;
 				break;
 			case WorldDirection.South:
-				change.dY = 1;
+				change.dY = -1;
 				break;
 			case WorldDirection.West:
 				change.dX = -1;
@@ -338,6 +359,28 @@ namespace Biters
 			}
 			
 			return change;
+		}
+
+		public static WorldDirection Opposite(this WorldDirection direction)
+		{
+			WorldDirection opposite = WorldDirection.North;
+			
+			switch (direction) {
+			case WorldDirection.North:
+				opposite = WorldDirection.South; 
+				break;
+			case WorldDirection.East:
+				opposite = WorldDirection.West;
+				break;
+			case WorldDirection.South:
+				opposite = WorldDirection.North;
+				break;
+			case WorldDirection.West:
+				opposite = WorldDirection.East;
+				break;
+			}
+			
+			return opposite;
 		}
 		
 	}

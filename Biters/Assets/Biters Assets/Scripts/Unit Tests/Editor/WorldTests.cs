@@ -29,6 +29,32 @@ namespace Biters.Testing
 
 		}
 
+		[Test()]
+		public void TestWorldAlignmentGetAlignment() {
+
+			Vector2 c = new Vector2 (0, 0);	//Center
+			
+			Vector2 r = new Vector2 (1, 0);	//Right
+			Vector2 u = new Vector2 (0, 1);	//Up
+			Vector2 l = new Vector2 (-1, 0);	//Left
+			Vector2 d = new Vector2 (0, -1);	//Down
+
+			Console.WriteLine (WorldPositionAlignmentInfo.GetQuadrant (360));
+
+			Assert.True(WorldPositionAlignmentInfo.GetAngleDegree (c, r) == 360);
+			Assert.True(WorldPositionAlignmentInfo.GetAngleDegree (c, u) == 90);
+			Assert.True(WorldPositionAlignmentInfo.GetAngleDegree (c, l) == 180);
+			Assert.True(WorldPositionAlignmentInfo.GetAngleDegree (c, d) == 270);
+
+			Assert.True (WorldPositionAlignmentInfo.GetQuadrant(360) == 0);
+
+			Assert.True(WorldPositionAlignmentInfo.GetAlignment (c, r) == WorldPositionAlignment.Right);
+			Assert.True(WorldPositionAlignmentInfo.GetAlignment (c, u) == WorldPositionAlignment.Top);
+			Assert.True(WorldPositionAlignmentInfo.GetAlignment (c, l) == WorldPositionAlignment.Left);
+			Assert.True(WorldPositionAlignmentInfo.GetAlignment (c, d) == WorldPositionAlignment.Bottom);
+
+		}
+
 	}
 
 }

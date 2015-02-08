@@ -24,24 +24,14 @@ namespace Biters.Game
 		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate) : base () {
 			this.SpawnDelegate = SpawnDelegate;
 		}
-
+		
 		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate, DirectionalGameTileType Type) : base (Type) {
 			this.SpawnDelegate = SpawnDelegate;
 		}
 
-		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate, DirectionalGameTileType Type, float MoveSpeed) : base (Type, MoveSpeed) {
+		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate, DirectionalGameTileType Type, WorldDirection Direction) : base (Type, Direction) {
 			this.SpawnDelegate = SpawnDelegate;
 		}
-
-		/*
-		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate, WorldDirection Direction) : base (Direction) {
-			this.SpawnDelegate = SpawnDelegate;	
-		}
-		
-		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate, Vector3 Direction) : base (Direction) {
-			this.SpawnDelegate = SpawnDelegate;	
-		}
-		*/
 
 		#endregion
 
