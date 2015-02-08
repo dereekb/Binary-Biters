@@ -64,7 +64,14 @@ namespace Biters
 
 		public void AttachToMap(GameMap<T, E> Map) {
 			this.map = Map;
+
+			//Register for Map Events
+			Map.RegisterForGameMapEvent (this, GameMapEvent.Delete);
 			Map.RegisterForGameMapEvent (this, GameMapEvent.AddEntity);
+			Map.RegisterForGameMapEvent (this, GameMapEvent.RemoveEntity);
+			Map.RegisterForGameMapEvent (this, GameMapEvent.EntityEnteredTile);
+			Map.RegisterForGameMapEvent (this, GameMapEvent.EntityOutsideWorld);
+
 			this.AttachedToMap (Map);
 		}
 		
@@ -98,6 +105,9 @@ namespace Biters
 				 * to prevent this watcher from seeing it again, or missing the change.
 				 */
 				this.MoveEntity (info.Entity as E, info.Position.Value);
+				break;
+			case GameMapEvent.EntityOutsideWorld:
+				this.map.RemoveEntity(info.Entity as E);
 				break;
 			}
 
@@ -149,7 +159,7 @@ namespace Biters
 					if (position.HasValue) {
 						if (position.Value.Equals (pair.Value) == false) {
 							
-							Debug.Log (String.Format("Entity {0} moved from tile {1} to {2}.", entity, position.Value, pair.Value));
+							//Debug.Log (String.Format("Entity {0} moved from tile {1} to {2}.", entity, position.Value, pair.Value));
 
 							//Entered Tile Event
 							GameMapEventInfoBuilder<T,E> enteredTile = Map.GameMapEventInfoBuilder (GameMapEvent.EntityEnteredTile);
@@ -164,7 +174,7 @@ namespace Biters
 							events.Add (exitedTile);
 						}
 					} else {
-						Debug.Log ("Entity {0} was found out of bounds.");
+						Debug.Log (String.Format("Entity {0} was found out of bounds.", entity));
 						
 						//Is out of bounds.
 						GameMapEventInfoBuilder<T,E> outOfBounds = Map.GameMapEventInfoBuilder (GameMapEvent.EntityOutsideWorld);

@@ -53,6 +53,7 @@ namespace Biters.Game
 		public void RemovedFromGameMap() {
 			this.map = null;
 			this.Destroy ();
+			GameObject.Destroy (this.GameObject);
 		}
 		
 		#endregion

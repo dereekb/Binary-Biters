@@ -268,7 +268,7 @@ namespace Biters
 		}
 		
 		protected virtual void MakeMovement(Movement Movement) {
-			Vector3 move = Vector3.MoveTowards (Element.Position, Target.Position, Speed);
+			Vector3 move = Vector3.MoveTowards (Element.Position, Target.Position, Speed * Time.deltaTime);
 			Movement.Transform.position = move;
 		}
 

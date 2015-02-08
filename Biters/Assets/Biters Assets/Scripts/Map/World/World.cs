@@ -151,7 +151,7 @@ namespace Biters
 		private static int MAX_POSITION = 65535;
 		
 		private static int SanitizePosition(int X) {
-			return (X < MAX_POSITION) ? ((X > MIN_POSITION) ? X : MIN_POSITION) : MAX_POSITION;
+			return (X <= MAX_POSITION) ? ((X >= MIN_POSITION) ? X : MIN_POSITION) : MAX_POSITION;
 		}
 		
 		public static bool IsValidPosition(int X, int Y) {
@@ -159,7 +159,7 @@ namespace Biters
 		}
 		
 		public static bool IsValidPosition(int X) {
-			return (X < MAX_POSITION) ? ((X > MIN_POSITION) ? true : false) : false;
+			return (X <= MAX_POSITION) ? ((X >= MIN_POSITION) ? true : false) : false;
 		}
 		
 		internal int x;
@@ -235,7 +235,7 @@ namespace Biters
 			
 			return neighbors;
 		}
-		
+
 		//Unique Hashcode 
 		public override int GetHashCode() {
 			//Cantor Pairing
@@ -250,6 +250,16 @@ namespace Biters
 		public bool Equals(WorldPosition other)
 		{
 			return (other.X == this.X && other.Y == this.Y);
+		}
+		
+		public static bool operator ==(WorldPosition a, WorldPosition b) 
+		{
+			return a.Equals (b);
+		}
+		
+		public static bool operator !=(WorldPosition a, WorldPosition b) 
+		{
+			return !a.Equals (b);
 		}
 
 	}
