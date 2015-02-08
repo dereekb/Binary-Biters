@@ -244,7 +244,6 @@ namespace Biters.World
 				/*
 				 * If the primary Suggestions return null, return the default suggestion's answer, if a Default is set.
 				 */
-				Debug.Log (String.Format ("Get Suggestion fro: {0} and {1}.", this.Suggestions, this.DefaultSuggestion));
 				suggestion = this.Suggestions.GetSuggestion (Heading) ?? this.DefaultSuggestion.GetSuggestion (Heading);
 			} else {
 				//Continue on current path.

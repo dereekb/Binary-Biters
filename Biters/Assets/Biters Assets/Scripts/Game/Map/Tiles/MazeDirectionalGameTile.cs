@@ -93,10 +93,7 @@ namespace Biters.Game
 			IDirectionSuggestion suggestion = Suggestions [this.Type];
 
 			WorldPositionAlignment side = WorldPositionAlignmentInfo.GetAlignment(Target.Position, Element.Position);
-			
-			Debug.Log(String.Format("Get Suggestion for element at Side {0} with type {1} using [{2}].", side, Type, suggestion));
 			WorldDirection heading = suggestion.GetSuggestion(side).Value;
-			Debug.Log(String.Format("Suggestion for element at Side {0} with type {1} -> {2}.", side, Type, heading));
 
 			Vector3 direction = heading.Vector ();
 			return direction;
