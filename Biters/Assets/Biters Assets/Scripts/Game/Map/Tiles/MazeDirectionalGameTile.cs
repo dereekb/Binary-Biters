@@ -27,7 +27,7 @@ namespace Biters.Game
 	 * 
 	 * When elements cannot move forward, they choose a new direction randomly that is acceptable to the tile.
 	 */
-	public struct MazeTileAutoPilotFactoryDelegate : IDirectionalTileAutoPilotFactoryDelegate {
+	public class MazeTileAutoPilotFactoryDelegate : IDirectionalTileAutoPilotFactoryDelegate {
 		
 		private readonly static Dictionary<DirectionalGameTileType, IDirectionSuggestion> Suggestions = DefaultSuggestions;
 
@@ -89,13 +89,16 @@ namespace Biters.Game
 			this.Type = Type;
 		}
 
-		public Vector3 DirectionForElement(IPositionalElement Target, IPositionalElement Element) {
+		public WorldDirection HeadingForElement(IPositionalElement Target, IPositionalElement Element) {
 			IDirectionSuggestion suggestion = Suggestions [this.Type];
-
+			
 			WorldPositionAlignment side = WorldPositionAlignmentInfo.GetAlignment(Target.Position, Element.Position);
 			WorldDirection heading = suggestion.GetSuggestion(side).Value;
+			return heading;
+		}
 
-			Vector3 direction = heading.Vector ();
+		public Vector3 DirectionForElement(IPositionalElement Target, IPositionalElement Element) {
+			Vector3 direction = this.HeadingForElement(Target, Element).Vector();
 			return direction;
 		}
 		

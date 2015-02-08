@@ -150,7 +150,9 @@ namespace Biters.World
 		public RandomSuggestion (params IDirectionSuggestion[] Suggestions) : base () {}
 
 		public IDirectionSuggestion Next() {
-			return this.Suggestions [this.Random.Next (0, this.Suggestions.Count)];
+			int index = this.Random.Next (0, this.Suggestions.Count);
+			IDirectionSuggestion suggestion = this.Suggestions [index];
+			return suggestion;
 		}
 
 		public override WorldDirection? GetSuggestion(WorldDirection Heading) {
@@ -227,11 +229,16 @@ namespace Biters.World
 		}
 		
 		public HeadingSuggestion AllowAllBut(WorldDirection Direction) {
-			this.avoid = new HashSet<WorldDirection> ();
+			this.avoid.Clear ();
 			this.Avoid (Direction);
 			return this;
 		}
 		
+		public HeadingSuggestion Suggest(IDirectionSuggestion Suggestion) {
+			this.Suggestions = Suggestion;
+			return this;
+		}
+
 		public HeadingSuggestion Suggest(params IDirectionSuggestion[] Suggestions) {
 			this.Suggestions = new DirectionSuggestionList(Suggestions);
 			return this;
