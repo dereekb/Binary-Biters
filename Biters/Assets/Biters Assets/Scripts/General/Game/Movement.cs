@@ -14,7 +14,7 @@ namespace Biters
 	 * 
 	 * Wraps a Transformable element to performe movements.
 	 */
-	public class Movement : ITransformableElement, IUpdatingElement {
+	public class Movement : ITransformableElement, IPositionalElement, IUpdatingElement {
 		
 		private IAutoPilot autoPilot;
 		private ITransformableElement element;
@@ -38,11 +38,19 @@ namespace Biters
 			}
 
 		}
-
+		
 		public Transform Transform { 
 			
 			get {
 				return element.Transform;
+			}
+			
+		}
+
+		public Vector3 Position { 
+			
+			get {
+				return element.Position;
 			}
 			
 		}
@@ -59,32 +67,11 @@ namespace Biters
 			}
 		}
 
-		#region Movement Tweaks
-		
-		public void StepForward() {
-			this.StepForward (Time.deltaTime);
-		}
-		
-		public void StepForward(float timeDelta) {
-			
-		}
-		
-		public void StepBackwards() {
-			this.StepBackwards (Time.deltaTime);
-		}
-		
-		public void StepBackwards(float timeDelta) {
-			
+		public override string ToString ()
+		{
+			return string.Format ("[Movement: AutoPilot={0}, Position={2}]", AutoPilot, Transform, Position);
 		}
 
-		/*
-		 * TODO: Add additional helper functions for moving an element around.
-		 * - Set Heading/Direction
-		 * - Set Position
-		 * etc.
-		 */
-
-		#endregion
 	}
 
 	//TODO: Consider extending Movement with a class that supports a queue of auto pilots.
@@ -168,6 +155,11 @@ namespace Biters
 			//Nothing to do.
 		}
 
+		public override string ToString ()
+		{
+			return string.Format ("[WalkAutoPilot: Direction={0}]", this.direction);
+		}
+
 	}
 
 	/*
@@ -202,53 +194,98 @@ namespace Biters
 			return !this.HasTimeLeft;
 		}
 
+		public override string ToString ()
+		{
+			return string.Format ("[WalkForTimeAutoPilot: Timer={0}]", this.WalkTimer);
+		}
+
+	}
+
+	/*
+	 * Wrapper for a Vector3 to implement IPositionalElement
+	 */
+	public struct PositionalVectorWrapper : IPositionalElement
+	{
+		private readonly Vector3 position;
+		
+		public PositionalVectorWrapper(Vector3 Position) {
+			this.position = Position;
+		}
+		
+		public Vector3 Position {
+			get {
+				return this.position;
+			}
+		}
+		
 	}
 	
 	/*
+	 * Wrapper for offsetting an IPositionalElement.
+	 */
+	public struct PositionalElementOffset : IPositionalElement
+	{
+		private readonly IPositionalElement element;
+		private readonly Vector3 offset;
+		
+		public PositionalElementOffset(IPositionalElement Element, Vector3 Offset) {
+			this.element = Element;
+			this.offset = Offset;
+		}
+		
+		public Vector3 Position {
+			get {
+				return (this.element.Position + this.offset);
+			}
+		}
+		
+	}
+
+	/*
 	 * AutoPilot implementation that walks towards a position until it reaches that position.
 	 */
-	public class WalkToPositionAutoPilot : WalkAutoPilot {
+	public class WalkToTargetAutoPilot : IAutoPilot {
+
+		public IPositionalElement Target;
+		public IPositionalElement Element;
+		public float Speed;
 		
-		public Vector3 Position;
+		public WalkToTargetAutoPilot(Vector3 Target, IPositionalElement Element) : this(new PositionalVectorWrapper(Target), Element, 1.0f) {}
+		
+		public WalkToTargetAutoPilot(Vector3 Target, IPositionalElement Element, float Speed) : this(new PositionalVectorWrapper(Target), Element, Speed) {}
 
-		public WalkToPositionAutoPilot(Vector3 Position, Vector3 Speed) {
-			this.Position = Position;
-			this.SetSpeed (Speed);
-		}
-
-		public override Vector3 Direction {
-			set {}	//Disallow setting direction. Direction is set through SetSpeed.
+		public WalkToTargetAutoPilot(IPositionalElement Target, IPositionalElement Element) : this(Target, Element, 1.0f) {}
+		
+		public WalkToTargetAutoPilot(IPositionalElement Target, IPositionalElement Element, float Speed) {
+			this.Target = Target;
+			this.Element = Element;
+			this.Speed = Speed;
 		}
 		
-		protected override Vector3 GetNextMovePosition(Movement Movement) {
-			Vector3 move = base.GetNextMovePosition (Movement);
-
-			//TODO: If move is past the target position, then move straight to the target position.
-
-			return move;
+		public virtual bool AutoMove(Movement Movement) {
+			this.MakeMovement (Movement);
+			return this.IsComplete ();
+		}
+		
+		protected virtual void MakeMovement(Movement Movement) {
+			Vector3 move = Vector3.MoveTowards (Element.Position, Target.Position, Speed);
+			Movement.Transform.position = move;
 		}
 
-		private void SetSpeed(Vector3 Speed) {
-			
-			/*
-			 * TODO: Complete this. 
-			 * 
-			 * Set base.Direction to aim towards the target position, but the magnitude is based off Speed.
-			 * 
-			 * Will probably need the current object's position for all the math, 
-			 * so add it as an input variable, or calculate the new direction at first GetNextMovePosition.
-			 */
-
+		public virtual bool IsComplete() {
+			return Element.Position == Target.Position; 
+		}
+		
+		public virtual void CancelAutoPilot() {
+			//Nothing to do.
 		}
 
 	}
-
-
 
 	#endregion
 	
 	#region Auto Pilot Queue
-
+	
 	/*
 	 * AutoPilot that has a queue of AutoPilots to run.
 	 */

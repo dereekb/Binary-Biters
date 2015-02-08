@@ -10,7 +10,7 @@ namespace Biters.Game
 	public class DirectionalGameTile : BitersGameTile {
 
 		//Speed at which to move entites that enter this tile.
-		public Vector3 EntityMoveSpeed = new Vector3(1.0f, 1.0f);
+		public float EntityMoveSpeed = 1.0f;
 
 		//Direction to move units towards.
 		public Vector3 Direction = new Vector3(0.0f, 1.0f);
@@ -68,16 +68,24 @@ namespace Biters.Game
 
 			//If tile == this tile
 			IGameMapEntity entity = Info.Entity;
-			Vector3 middle = this.Map.GetPositionVector(this.MapTilePosition);
+			//Vector3 middle = this.Map.GetPositionVector(this.MapTilePosition);
 			
 			AutoPilotQueue movementQueue = new AutoPilotQueue();
-			
+
+			//Offset to keep element from entering this block.
+			PositionalElementOffset middle = new PositionalElementOffset (this, new Vector3 (0, 0, -BitersGameTileZOffset));
+
 			//Move Towards Middle
-			movementQueue.Add(new WalkToPositionAutoPilot(middle, this.EntityMoveSpeed));
-			
+			movementQueue.Add(new WalkToTargetAutoPilot(middle, entity, this.EntityMoveSpeed));
+
 			//Move To Redirected Direction
 			Vector3 direction = this.Direction;
-			direction.Scale(this.EntityMoveSpeed);
+			direction = direction * EntityMoveSpeed;
+			
+			Debug.Log ("Moving element to:");
+			Debug.Log (this.MapTilePosition);
+			Debug.Log (direction);
+
 			movementQueue.Add(new WalkAutoPilot(direction));
 			
 			//Set Movement

@@ -88,12 +88,11 @@ namespace Biters
 		}
 		
 		public WorldPosition? PositionForVector(Vector3 Vector) {
-			WorldPosition position = new WorldPosition ();
-
-			//Returns the coordinate at the top-left corner of the position tile.
-			position.X = Convert.ToInt32(Math.Floor(Vector.x / PositionWidth));
-			position.Y = Convert.ToInt32(Math.Floor(Vector.y / PositionHeight));
+			int X = Convert.ToInt32 (Math.Floor(Vector.x / PositionWidth));
+			int Y = Convert.ToInt32 (Math.Floor (Vector.y / PositionHeight));
 			
+			//Returns the coordinate at the top-left corner of the position tile, if it exists.
+			WorldPosition? position = WorldPosition.MakeValidPosition (X, Y);
 			return position;
 		}
 		

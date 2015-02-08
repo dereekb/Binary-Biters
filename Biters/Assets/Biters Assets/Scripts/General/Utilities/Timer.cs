@@ -66,6 +66,11 @@ namespace Biters.Utility
 			this.count = 0.0f;
 		}
 
+		public override string ToString ()
+		{
+			return string.Format ("[Timer: Remaining={0}, Elapsed={1}, Done={2}]", Remaining, Elapsed, Done);
+		}
+
 	}
 
 }

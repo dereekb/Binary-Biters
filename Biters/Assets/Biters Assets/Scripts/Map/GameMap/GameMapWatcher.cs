@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Biters.Utility;
+using UnityEngine;
 
 namespace Biters
 {
@@ -148,6 +149,8 @@ namespace Biters
 					if (position.HasValue) {
 						if (position.Value.Equals (pair.Value) == false) {
 							
+							Debug.Log (String.Format("Entity {0} moved from tile {1} to {2}.", entity, position.Value, pair.Value));
+
 							//Entered Tile Event
 							GameMapEventInfoBuilder<T,E> enteredTile = Map.GameMapEventInfoBuilder (GameMapEvent.EntityEnteredTile);
 							enteredTile.Entity = entity;
@@ -161,6 +164,7 @@ namespace Biters
 							events.Add (exitedTile);
 						}
 					} else {
+						Debug.Log ("Entity {0} was found out of bounds.");
 						
 						//Is out of bounds.
 						GameMapEventInfoBuilder<T,E> outOfBounds = Map.GameMapEventInfoBuilder (GameMapEvent.EntityOutsideWorld);

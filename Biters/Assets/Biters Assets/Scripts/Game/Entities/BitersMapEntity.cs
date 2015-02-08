@@ -61,11 +61,10 @@ namespace Biters.Game
 		
 		public override void Update() {
 			this.movement.Update();
-			this.Transform.rotation = Quaternion.AngleAxis(90, Vector3.forward);
-			//TODO: Update anything else.
 		}
 		
 		#endregion
+
 	}
 }
 

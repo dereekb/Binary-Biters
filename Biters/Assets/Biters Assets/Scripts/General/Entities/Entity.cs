@@ -38,6 +38,22 @@ namespace Biters
 			}
 
 		}
+		
+		public Transform Transform {
+			
+			get {
+				return this.GameObject.transform;
+			}
+			
+		}
+		
+		public Vector3 Position {
+			
+			get {
+				return this.Transform.position;
+			}
+			
+		}
 
 		public Material Material {
 
@@ -51,14 +67,6 @@ namespace Biters
 
 		}
 
-		public Transform Transform {
-
-			get {
-				return this.GameObject.transform;
-			}
-
-		}
-
 		#endregion
 
 		#region Functions
@@ -66,6 +74,16 @@ namespace Biters
 		public abstract void Update ();
 
 		#endregion
+
+		#region System
+
+		public override string ToString ()
+		{
+			return string.Format ("[Entity: Movement={1} ]", GameObject, Movement, Transform, Position, Material);
+		}
+
+		#endregion
+
 	}
 
 }

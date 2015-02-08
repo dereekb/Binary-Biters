@@ -162,12 +162,51 @@ namespace Biters
 			return (X < MAX_POSITION) ? ((X > MIN_POSITION) ? true : false) : false;
 		}
 		
-		public int X;
-		public int Y;
+		internal int x;
+		internal int y;
 		
+		public int X {
+			get {
+				return x;
+			}
+			
+			set {
+				this.x = SanitizePosition(value);
+			}
+		}
+		
+		public int Y {
+			get {
+				return y;
+			}
+
+			set {
+				this.y = SanitizePosition(value);
+			}
+		}
+		
+		internal WorldPosition(int sqr) {
+			this.x = sqr;
+			this.y = sqr;
+		}
+
 		public WorldPosition(int X, int Y) {
-			this.X = SanitizePosition(X);
-			this.Y = SanitizePosition(Y);
+			this.x = SanitizePosition (X);
+			this.y = SanitizePosition (Y);
+		}
+
+		public static WorldPosition? MakeValidPosition(int X, int Y) {
+			WorldPosition? position = null;
+
+			if (WorldPosition.IsValidPosition (X, Y)) {
+				WorldPosition temp = new WorldPosition(0);
+				temp.x = X;
+				temp.y = Y;
+				position = temp;
+			}
+
+			return position;
+
 		}
 		
 		//Direction
@@ -201,6 +240,11 @@ namespace Biters
 		public override int GetHashCode() {
 			//Cantor Pairing
 			return (X + Y) * (X + Y + 1) / 2 + X;
+		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[WorldPosition: X={0}, Y={0}]", X, Y);
 		}
 
 		public bool Equals(WorldPosition other)

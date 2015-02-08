@@ -37,8 +37,6 @@ namespace Biters.Testing
 		
 		public void Update ()
 		{
-			Debug.Log ("Update.");
-			//Debug.Log ("Updating: %s", Time.time);
 			Map.Update ();
 		}
 
@@ -51,9 +49,8 @@ namespace Biters.Testing
 	{
 		private TestMapGenerator TestMapGenerator;
 		private GameMap<BitersGameTile, BitersMapEntity> Map;
-		private GameMap<BitersGameTile, BitersMapEntity> MapB;
-		private GameMap<BitersGameTile, BitersMapEntity> MapC;
-		
+		//private GameMap<BitersGameTile, BitersMapEntity> MapB;
+
 		public MultipleMapTestGameBoard () {}
 		
 		public void Awake()
@@ -95,7 +92,7 @@ namespace Biters.Testing
 			Debug.Log ("Update.");
 			//Debug.Log ("Updating: %s", Time.time);
 			Map.Update ();
-			MapB.Update ();
+			//MapB.Update ();
 		}
 		
 	}

@@ -33,9 +33,19 @@ namespace Biters
 	#region Moving Element
 
 	/*
+	 * Element that has a position.
+	 */
+	public interface IPositionalElement
+	{
+
+		Vector3 Position { get; }
+
+	}
+
+	/*
 	 * Element that exposes it's transform directly.
 	 */
-	public interface ITransformableElement
+	public interface ITransformableElement : IPositionalElement
 	{
 
 		Transform Transform { get; }

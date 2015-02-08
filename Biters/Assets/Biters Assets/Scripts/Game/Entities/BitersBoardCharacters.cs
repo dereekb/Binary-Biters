@@ -24,6 +24,11 @@ namespace Biters.Game
 		}
 
 		#endregion
+		
+		public override string ToString ()
+		{
+			return string.Format ("[Unii: Position={0}]", this.Position);
+		}
 
 	}
 
@@ -51,6 +56,11 @@ namespace Biters.Game
 		}
 
 		#endregion
+
+		public override string ToString ()
+		{
+			return string.Format ("[Nili: Position={0}]", this.Position);
+		}
 
 	}
 
