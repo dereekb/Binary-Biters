@@ -6,56 +6,20 @@ namespace Biters.Game
 	/*
 	 * Represents a Default Biters Map Entity.
 	 */ 
-	public abstract class BitersMapEntity : Entity, IGameMapEntity
+	public abstract class BitersMapEntity : BitersGameEntity, IGameMapEntity
 	{
 
 		public BitersMapEntity () : this (GameObject.CreatePrimitive(PrimitiveType.Cube)) {}
 
 		public BitersMapEntity (GameObject GameObject) : base (GameObject) {}
 
-		private IGameMap<BitersGameTile, BitersMapEntity> map;
-
-		#region Entity
-
-		public abstract string BitersId { get; }
-
-		#endregion
-		
 		#region Map
 
-		public IGameMap<BitersGameTile, BitersMapEntity> Map {
-
-			get {
-				return this.map;
-			}
-
-			set {
-				if (this.map == null) {
-					this.map = value;
-				}
-			}
-
-		}
-
-		public virtual void Initialize() {
-			//Override to initialize entity further.
-		}
-		
-		public virtual void Destroy() {
-			//Override to initialize entity further.
-		}
-
-		public void AddedToGameMap(WorldPosition Position) {
+		public sealed override void AddedToGameMap(WorldPosition Position) {
 			this.GameObject.transform.position = this.Map.GetPositionVector (Position);
-			this.Initialize ();
+			base.AddedToGameMap (Position);
 		}
-		
-		public void RemovedFromGameMap() {
-			this.map = null;
-			this.Destroy ();
-			GameObject.Destroy (this.GameObject);
-		}
-		
+
 		#endregion
 
 		#region Update

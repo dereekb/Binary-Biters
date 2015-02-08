@@ -89,8 +89,18 @@ namespace Biters
 			}
 			
 			foreach (KeyValuePair<WorldPosition, T> pair in newWorld.ElementPairs) {
-				base.InsertTileAtPosition(pair.Value, pair.Key);
+				this.InsertTileAtPosition(pair.Value, pair.Key);
 			}
+		}
+		
+		protected override void InsertTileAtPosition(T Element, WorldPosition Position) {
+			base.InsertTileAtPosition (Element, Position);
+			Element.AddedToGameMap (Position);
+		}
+		
+		protected override void RemoveTileFromPosition(T Removed, WorldPosition Position) {
+			base.RemoveTileFromPosition (Removed, Position);
+			Removed.RemovedFromGameMap ();
 		}
 
 		#endregion
@@ -322,7 +332,7 @@ namespace Biters
 
 	}
 
-	public interface IGameMapTile : IMapTile {
+	public interface IGameMapTile : IGameMapEntity, IMapTile {
 		//TODO: Add anything if necessary.
 	}
 	

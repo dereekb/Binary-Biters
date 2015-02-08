@@ -5,46 +5,44 @@ using Biters.Utility;
 
 namespace Biters.Game
 {
+
 	/*
-	 * Base class for Biters game tiles. 
+	 * Basic Game Entity that attaches to a GameMap of BitersGameTiles and BitersMapEntities. 
 	 */
-	public abstract class BitersGameTile : Entity, IGameMapTile, IEventListener 
+	public abstract class BitersGameEntity : Entity, IEventListener
 	{
-		public const float BitersGameTileZOffset = 2.0f;
-
-		//Position in the map's world. Should only be changed by the Map.
-		private WorldPosition mapTilePosition;
-
 		//Game Map of the tile.
 		private IGameMap<BitersGameTile, BitersMapEntity> map = null;
 
-		public BitersGameTile() : base(GameObject.CreatePrimitive(PrimitiveType.Cube)) {}
+		public BitersGameEntity (GameObject GameObject) : base(GameObject) {}
 
-		public BitersGameTile(GameObject GameObject) : base(GameObject) {}
-
-		#region Map
-
-		public WorldPosition MapTilePosition {
-
-			get {
-				return this.mapTilePosition;
-			}
-
-		}
+		#region Accessors
 
 		public IGameMap<BitersGameTile, BitersMapEntity> Map {
 			
 			get {
 				return this.map;
 			}
-		
+			
 			set {
 				if (this.map == null) {
 					this.map = value;
 				}
 			}
-
+			
 		}
+
+		#endregion
+		
+		#region Entity
+		
+		public abstract string EntityId { get; }
+		
+		#endregion
+
+		#region Initialization
+
+		#region Optional
 
 		public virtual void Initialize() {
 			//Override to initialize entity further.
@@ -61,35 +59,35 @@ namespace Biters.Game
 		public virtual void UnregisterFromEvents() {
 			//Override to unregister from other events. Is called before destroy.
 		}
+
+		#endregion
+
+		#region Required
 		
 		private void UnregisterFromGameMapEvents() {
 			//Automatically unregisters from the map.
 			this.map.UnregisterFromGameMapEvents (this);
 		}
-
-		public void AddedToMap(WorldPosition Position) {
-			Vector3 position = Map.GetPositionVector (Position);
-			position.z = BitersGameTileZOffset;
-			this.GameObject.transform.position = position;
-
-			//Override to initialize and/or capture map if necessary.
-			this.mapTilePosition = Position;
+		
+		public virtual void AddedToGameMap(WorldPosition Position) {
 			this.Initialize ();
 			this.RegisterForEvents ();
 		}
 		
-		public void RemovedFromMap() {
-			//TODO: Remove object from view?
+		public virtual void RemovedFromGameMap() {
 			this.UnregisterFromGameMapEvents ();
 			this.UnregisterFromEvents ();
 			this.map = null;
 			this.Destroy ();
+			GameObject.Destroy (this.GameObject);
 		}
+
+		#endregion
 
 		#endregion
 		
 		#region Update
-
+		
 		public override void Update() {
 			//Override to do something with the update.	
 		}
@@ -97,13 +95,11 @@ namespace Biters.Game
 		#endregion
 
 		#region Events
-
+		
 		/*
 		 * Helper function that automatically casts the known event types.
 		 */
 		public void HandleEvent(IEventInfo eventInfo) {
-
-
 
 			switch (eventInfo.EventInfoId) {
 			case MapEventInfo.MapEventInfoId: 
@@ -111,9 +107,9 @@ namespace Biters.Game
 			case GameMapEventInfo.GameMapEventInfoId:
 				this.HandleGameMapEvent((GameMapEventInfo) eventInfo); break;
 			}
-
+			
 		}
-
+		
 		protected virtual void HandleMapEvent(MapEventInfo Info) {
 			//Override in sub class.
 		}
@@ -121,7 +117,7 @@ namespace Biters.Game
 		protected virtual void HandleGameMapEvent(GameMapEventInfo Info) {
 			//Override in sub class.
 		}
-
+		
 		#endregion
 
 	}

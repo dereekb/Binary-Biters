@@ -6,7 +6,7 @@ using Biters;
 using Biters.Game;
 using Biters.Utility;
 
-namespace Biters.Testing
+namespace Biters.Debugging
 {
 
 	public class TestMapGenerator : IGameMapTileImporter<BitersGameTile, BitersMapEntity>, IFactory<IGameMapDelegate<BitersGameTile, BitersMapEntity>>

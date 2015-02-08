@@ -40,6 +40,7 @@ namespace Biters.Game
 		public override void Initialize ()
 		{
 			this.GameObject.renderer.material = SpawnerMat;
+			base.Initialize ();
 		}
 
 		#endregion
@@ -48,6 +49,7 @@ namespace Biters.Game
 
 		public override void Update() {
 			this.TrySpawning ();
+			base.Update ();
 		}
 	
 		#endregion

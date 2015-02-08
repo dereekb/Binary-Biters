@@ -9,6 +9,8 @@ namespace Biters.Game
 	 */
 	public class DirectionalGameTile : BitersGameTile {
 
+		public static readonly string DirectionalTileId = "Entity.Direction";
+
 		//Speed at which to move entites that enter this tile.
 		public float EntityMoveSpeed = 1.0f;
 
@@ -27,6 +29,16 @@ namespace Biters.Game
 			this.SetDirection (Direction);
 		}
 
+		#endregion
+
+		#region Entity
+		
+		public override string EntityId {
+			get {
+				return DirectionalTileId;
+			}
+		}
+		
 		#endregion
 
 		#region Accessors

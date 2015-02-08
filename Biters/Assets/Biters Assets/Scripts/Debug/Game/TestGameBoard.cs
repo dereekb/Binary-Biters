@@ -3,7 +3,7 @@ using UnityEngine;
 using Biters.Game;
 using Biters;
 
-namespace Biters.Testing
+namespace Biters.Debugging
 {
 	/*
 	 * Test Gameboard. The first of it's kind.
