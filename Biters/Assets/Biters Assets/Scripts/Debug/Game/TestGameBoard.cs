@@ -29,9 +29,11 @@ namespace Biters.Debugging
 			this.Map = new GameMap<BitersGameTile, BitersMapEntity> (MapObject, MapDelegate);
 
 			Debug.Log ("Creating new world...");
+		}
 
+		public void Start ()
+		{
 			Map.ResetWorld ();
-
 			Debug.Log ("Finished resetting world...");
 		}
 		

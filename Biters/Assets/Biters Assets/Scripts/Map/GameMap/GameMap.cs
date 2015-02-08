@@ -13,7 +13,7 @@ namespace Biters
 	 * 
 	 * Game Logic should be handled through available accessors.
 	 */
-	public interface IGameMap<T, E> : IMap<T>, IGameMapEventSystem<T, E>
+	public interface IGameMap<T, E> : IMap<T>, IGameMapEventSystem<T, E>, IEntityWorldPositionQueriable<E>
 		where T : class, IGameMapTile
 		where E : class, IGameMapEntity {
 
@@ -25,10 +25,12 @@ namespace Biters
 		bool ContainsEntity (E Entity);
 		
 		WorldPosition? GetPositionForEntity (E Entity);
-		List<E> GetEntitiesAtPosition (WorldPosition Position);
 
 		//World
 		T GetTileUnderEntity (E Entity);
+
+		//Query
+		IEntityWorldPositionQuery<E> EntityPositionQuery;
 
 		//Watcher
 		IGameMapWatcher<T, E> Watcher { get; set; }
@@ -113,6 +115,12 @@ namespace Biters
 			}
 		}
 
+		public ICollection<E> QueriableEntities {
+			get {
+				return this.entities;
+			}
+		}
+
 		#region Accessors
 
 		public void AddEntity(E Entity, WorldPosition Position) {
@@ -161,7 +169,18 @@ namespace Biters
 			Entity.Transform.position = entityPosition;
 
 		}
-		
+
+		public bool EntityIsAtWorldPosition(E Entity, WorldPosition Position) {
+			bool isAtPosition = false;
+			WorldPosition? entityPosition = this.GetPositionForEntity (Entity);
+
+			if (entityPosition.HasValue) {
+				isAtPosition = (entityPosition == Position);
+			}
+
+			return isAtPosition;
+		}
+
 		/*
 		 * Returns the WorldPosition of an entity.
 		 */
@@ -179,7 +198,7 @@ namespace Biters
 		/*
 		 * Returns all entities at a given WorldPosition.
 		 */
-		public List<E> GetEntitiesAtPosition(WorldPosition Position) {
+		public List<E> EntitiesAtPosition(WorldPosition Position) {
 			List<E> result = new List<E> ();
 			
 			foreach (E entity in this.entities) {
@@ -193,7 +212,15 @@ namespace Biters
 			
 			return result;
 		}
-		
+
+		public IEntityWorldPositionQuery<E> EntityPositionQuery {
+
+			get {
+				return new EntityWorldPositionQuery<E>(this);
+			}
+
+		}
+
 		#endregion
 
 		#region World Position
