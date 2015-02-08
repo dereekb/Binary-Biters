@@ -115,6 +115,11 @@ namespace Biters
 			T result = World [Position];
 			return result;
 		}
+
+		public bool HasTileAtPosition (WorldPosition value)
+		{
+			return World.ContainsPosition (value);
+		}
 		
 		public void SetTile(T Element, WorldPosition Position) {
 			this.RemoveTile (Position);

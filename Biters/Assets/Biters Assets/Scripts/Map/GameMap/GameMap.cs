@@ -188,6 +188,17 @@ namespace Biters
 
 		#region World Position
 
+		public bool HasTileUnderEntity(E Entity) {
+			bool hasTile = false;
+			WorldPosition? position = this.GetPositionForEntity (Entity);
+			
+			if (position.HasValue) {
+				hasTile = base.HasTileAtPosition(position.Value);
+			}
+			
+			return hasTile;
+		}
+
 		public T GetTileUnderEntity(E Entity) {
 			T tile = null;
 			WorldPosition? position = this.GetPositionForEntity (Entity);

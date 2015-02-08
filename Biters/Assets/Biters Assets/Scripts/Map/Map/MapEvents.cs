@@ -136,8 +136,12 @@ namespace Biters
 				
 				if (this.tile != null) {
 					tile = this.tile;
-				} else if (this.Position.HasValue) {
-					tile = this.Map.GetTile(this.position.Value);
+				} else {
+					WorldPosition? position = this.Position;
+					
+					if (position.HasValue) {
+						tile = this.Map.GetTile(position.Value);
+					}
 				}
 				
 				return tile;

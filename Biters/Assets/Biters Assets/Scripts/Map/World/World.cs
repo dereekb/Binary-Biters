@@ -57,6 +57,11 @@ namespace Biters
 			
 		}
 
+		public bool ContainsPosition (WorldPosition value)
+		{
+			return Everything.ContainsKey (value);
+		}
+
 		public T GetAtPosition(WorldPosition Position) {
 			T result;
 			Everything.TryGetValue (Position, out result);
@@ -245,6 +250,11 @@ namespace Biters
 		public override string ToString ()
 		{
 			return string.Format ("[WorldPosition: X={0}, Y={0}]", X, Y);
+		}
+
+		public override bool Equals (object obj)
+		{
+			return base.Equals (obj);
 		}
 
 		public bool Equals(WorldPosition other)

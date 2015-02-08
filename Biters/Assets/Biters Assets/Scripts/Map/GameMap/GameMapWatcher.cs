@@ -156,7 +156,8 @@ namespace Biters
 					E entity = pair.Key;
 					
 					WorldPosition? position = Map.GetPositionForEntity (entity);
-					if (position.HasValue) {
+
+					if (position.HasValue && this.Map.HasTileUnderEntity(entity)) {
 						if (position.Value.Equals (pair.Value) == false) {
 							
 							//Debug.Log (String.Format("Entity {0} moved from tile {1} to {2}.", entity, position.Value, pair.Value));
@@ -174,7 +175,7 @@ namespace Biters
 							events.Add (exitedTile);
 						}
 					} else {
-						Debug.Log (String.Format("Entity {0} was found out of bounds.", entity));
+						//Debug.Log (String.Format("Entity {0} was found out of bounds.", entity));
 						
 						//Is out of bounds.
 						GameMapEventInfoBuilder<T,E> outOfBounds = Map.GameMapEventInfoBuilder (GameMapEvent.EntityOutsideWorld);

@@ -85,12 +85,16 @@ namespace Biters.Testing
 
 			//TODO: Spawn and make them go random directions.
 
-			float timer = RandomGenerator.Next (1, 2) / 4.0f;	//Between 1 and 5 seconds
-			int max = RandomGenerator.Next (5, 20);
+			float timer = 1; // RandomGenerator.Next (1, 2);	//Between 1 and 5 seconds
+			int max = 500; // RandomGenerator.Next (20, 500);
 			Vector3 direction = new Vector3 ();
-			direction.x = (RandomGenerator.Next (-5, 5) / 2.0f) - 2.5f;
-			direction.y = (RandomGenerator.Next (-5, 5) / 2.0f) - 2.5f;
-			
+			direction.x = RandomGenerator.Next (-1, 2);
+			direction.y = RandomGenerator.Next (-1, 2);
+
+			if (direction.x == 0 && direction.y == 0) {
+				direction.x = 1;
+			}
+
 			SpawnerGameTile spawnTile = new SpawnerGameTile (spawnerDelegate, direction);
 			spawnTile.SpawnTimer.Length = timer;
 			spawnTile.SpawnMax = max;
