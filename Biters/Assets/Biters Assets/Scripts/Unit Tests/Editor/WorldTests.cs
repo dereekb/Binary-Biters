@@ -29,6 +29,22 @@ namespace Biters.Testing
 
 		}
 
+		[Test()]
+		public void TestWorldAlignmentGetAlignment() {
+			
+			Vector2 u = new Vector2 (0, 1);
+			Vector2 d = new Vector2 (0, -1);
+			Vector2 c = new Vector2 (0, 0);
+			Vector2 l = new Vector2 (1, 0);
+			Vector2 r = new Vector2 (-1, 0);
+			
+			Console.WriteLine(Vector2.Angle (u, c).ToString());
+			Console.WriteLine(Vector2.Angle (c-d, c).ToString());
+			Console.WriteLine(Vector2.Angle (l, c).ToString());
+			Console.WriteLine(Vector2.Angle (r, c).ToString());
+			Console.WriteLine(Vector2.Angle (c, c).ToString());
+		}
+
 	}
 
 }

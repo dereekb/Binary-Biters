@@ -304,6 +304,14 @@ namespace Biters
 	//Directions on the board
 	public enum WorldDirection {
 		North, East, South, West
+
+		//None
+
+		/*
+		 * TODO: Add NE, NW, etc. if full support of corner moves is needed/wanted.
+		 * 
+		 * Watch for the other things that will need to be updated too.
+		 */
 	}
 
 	public static class WorldDirectionInfo
@@ -315,6 +323,18 @@ namespace Biters
 			get {
 				return all; //Public accessor.
 			}
+		}
+
+		public static ICollection<WorldDirection> AllExcept(this WorldDirection direction) 
+		{
+			HashSet<WorldDirection> elements = new HashSet<WorldDirection> ();
+
+			foreach (WorldDirection worldDirection in all) {
+				elements.Add(worldDirection);
+			}
+
+			elements.Remove (direction);
+			return elements;
 		}
 		
 		//Extension of WorldDirection enum with static functinon.

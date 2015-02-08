@@ -55,6 +55,42 @@ namespace Biters
 			
 			return vector;
 		}
+		
+		public static WorldPositionAlignment OppositeAlignment(this WorldPositionAlignment Alignment) {
+			WorldPositionAlignment opposite = WorldPositionAlignment.Center;
+			
+			switch (Alignment) {
+			case WorldPositionAlignment.Top: opposite = WorldPositionAlignment.Bottom; break;
+			case WorldPositionAlignment.Left: opposite = WorldPositionAlignment.Right; break;
+			case WorldPositionAlignment.Right: opposite = WorldPositionAlignment.Left; break;
+			case WorldPositionAlignment.Bottom: opposite = WorldPositionAlignment.Top; break;
+			case WorldPositionAlignment.Center: opposite = WorldPositionAlignment.Center; break; 
+			}
+			
+			return opposite;
+		}
+
+		public static WorldDirection SuggestedDirection(this WorldPositionAlignment Alignment) {
+			WorldDirection direction = WorldDirection.North;
+			
+			switch (Alignment) {
+			case WorldPositionAlignment.Top: direction = WorldDirection.North; break;
+			case WorldPositionAlignment.Left: direction = WorldDirection.West;  break;
+			case WorldPositionAlignment.Right: direction = WorldDirection.East;  break;
+			case WorldPositionAlignment.Bottom: direction = WorldDirection.South; break;
+				
+				//TODO: Add "None" direction later, potentially.
+			case WorldPositionAlignment.Center: direction = WorldDirection.North; break; 
+			}
+			
+			return direction;
+		}
+
+		public static WorldPositionAlignment GetAlignment(Vector3 Center, Vector3 Element) {
+			WorldPositionAlignment alignment = WorldPositionAlignment.Center;
+
+			return alignment;
+		}
 
 	}
 	/*
@@ -111,7 +147,7 @@ namespace Biters
 
 			return vector;
 		}
-		
+
 	}
 }
 
