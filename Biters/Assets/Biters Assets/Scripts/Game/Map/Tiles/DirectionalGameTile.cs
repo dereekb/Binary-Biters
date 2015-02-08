@@ -81,10 +81,6 @@ namespace Biters.Game
 			//Move To Redirected Direction
 			Vector3 direction = this.Direction;
 			direction = direction * EntityMoveSpeed;
-			
-			Debug.Log ("Moving element to:");
-			Debug.Log (this.MapTilePosition);
-			Debug.Log (direction);
 
 			movementQueue.Add(new WalkAutoPilot(direction));
 			

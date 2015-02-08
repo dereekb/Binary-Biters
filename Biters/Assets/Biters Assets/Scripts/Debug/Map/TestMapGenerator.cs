@@ -31,8 +31,11 @@ namespace Biters.Testing
 	
 	public class TestMapGeneratorMap : IImportedMap<BitersGameTile>, IGameMapDelegate<BitersGameTile, BitersMapEntity> {
 		
-		public int xSize = 5;
-		public int ySize = 5;
+		public int xSize = 25;
+		public int ySize = 15;
+		public int chance = 75;
+		
+		private System.Random RandomGenerator = new System.Random();
 
 		public IFactory<BitersGameTile> Factory;
 
@@ -45,9 +48,11 @@ namespace Biters.Testing
 
 			for (int x = 0; x < xSize; x += 1) {
 				for (int y = 0; y < ySize; y += 1) {
-					BitersGameTile tile = Factory.Make();
-					WorldPosition position = new WorldPosition(x, y);
-					world.SetAtPosition(tile, position);
+					if (chance > RandomGenerator.Next(100)) {
+						BitersGameTile tile = Factory.Make();
+						WorldPosition position = new WorldPosition(x, y);
+						world.SetAtPosition(tile, position);
+					}
 				}
 			}
 
@@ -85,7 +90,7 @@ namespace Biters.Testing
 
 			//TODO: Spawn and make them go random directions.
 
-			float timer = 1; // RandomGenerator.Next (1, 2);	//Between 1 and 5 seconds
+			float timer = RandomGenerator.Next (4, 10);	//Between 3 and 20 seconds
 			int max = 500; // RandomGenerator.Next (20, 500);
 			Vector3 direction = new Vector3 ();
 			direction.x = RandomGenerator.Next (-1, 2);
