@@ -56,12 +56,17 @@ namespace Biters
 		/*
 		 * Returns the first result that matches the query.
 		 */
-		T SearchEntity();
+		T SearchFirstEntity();
+
+		/*
+		 * Returns the entity that is closest and matches the query.
+		 */
+		T SearchClosestEntity();
 		
 		/*
 		 * Returns all entities that match the query.
 		 */
-		List<T> SearchNearbyEntities();
+		List<T> SearchEntities();
 
 	}
 
@@ -88,9 +93,9 @@ namespace Biters
 		public float? MaxDistance { get; set; }
 
 		//Results to Exclude
-		private HashSet<T> exclude = new HashSet<T> ();
+		protected HashSet<T> exclude = new HashSet<T> ();
 		
-		public HashSet<T> Exclude {
+		public virtual HashSet<T> Exclude {
 			get {
 				return this.exclude;
 			} 
@@ -110,12 +115,12 @@ namespace Biters
 			this.Queriable = Queriable;
 		}
 
-		public float DistanceToTarget(T Entity) {
+		public virtual float DistanceToTarget(T Entity) {
 			float distance = (TargetPosition - Entity.Position).magnitude;
 			return distance;
 		}
 
-		public bool IsWithinRange(T Entity) {
+		public virtual bool IsWithinRange(T Entity) {
 			bool withinRange = true;
 			float distance = this.DistanceToTarget (Entity);
 
@@ -140,7 +145,7 @@ namespace Biters
 			return isMatch;
 		}
 
-		public bool MatchesQuery(IEnumerable<T> Entities) {
+		public virtual bool MatchesQuery(IEnumerable<T> Entities) {
 			bool isMatch = true;
 			
 			foreach (T Entity in Entities) {
@@ -154,11 +159,11 @@ namespace Biters
 			return isMatch;
 		}
 
-		public List<T> EntitiesThatMatchQuery(ICollection<T> Entities) {
+		public virtual List<T> EntitiesThatMatchQuery(ICollection<T> Entities) {
 			return this.EntitiesThatMatchQuery (Entities, (this.Limit.HasValue) ? this.Limit.Value : Entities.Count);
 		}
 		
-		public List<T> EntitiesThatMatchQuery(ICollection<T> Entities, int Limit) {
+		public virtual List<T> EntitiesThatMatchQuery(ICollection<T> Entities, int Limit) {
 				List<T> entities = new List<T>();
 
 				foreach (T Entity in Entities) {
@@ -170,7 +175,7 @@ namespace Biters
 				return entities;
 		}
 
-		public T SearchEntity() {
+		public virtual T SearchFirstEntity() {
 			List<T> matches = this.EntitiesThatMatchQuery (this.Queriable.QueriableEntities, 1);
 			T entity = null;
 
@@ -181,7 +186,27 @@ namespace Biters
 			return entity;
 		}
 
-		public List<T> SearchNearbyEntities() {
+		public virtual T SearchClosestEntity() {
+			List<T> matches = this.SearchEntities ();
+			T entity = null;
+			
+			if (matches.Count > 0) {
+				float best = float.MaxValue;
+
+				foreach (T match in matches) {
+					float distance = this.DistanceToTarget (match);
+
+					if (distance < best) {
+						entity = match;
+						best = distance;
+					}
+				}
+			}
+			
+			return entity;
+		}
+
+		public virtual List<T> SearchEntities() {
 			return this.EntitiesThatMatchQuery (this.Queriable.QueriableEntities);
 		}
 
@@ -246,6 +271,19 @@ namespace Biters
 			}
 
 			return isMatch;
+		}
+		
+		public override List<T> SearchEntities() {
+			List<T> results;
+			
+			if (this.TargetWorldPosition.HasValue) {
+				List<T> localEntities = this.WorldQueriable.EntitiesAtPosition(this.TargetWorldPosition.Value);
+				results = this.EntitiesThatMatchQuery(localEntities);
+			} else {
+				results = base.SearchEntities();
+			}
+
+			return results;
 		}
 
 	}

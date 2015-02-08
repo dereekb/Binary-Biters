@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TestRecord xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Results />
   <Tests>
     <TestRecord Name="Biters">
+      <Results />
       <Tests>
         <TestRecord Name="Testing">
           <Results>
@@ -56,6 +58,7 @@ Execution time: 0.02ms</Message>
                       <ConsoleError />
                     </UnitTestResult>
                   </Results>
+                  <Tests />
                 </TestRecord>
                 <TestRecord Name="TestEventSystemCalling">
                   <Results>
@@ -76,6 +79,7 @@ Execution time: 0.00ms</Message>
                       <ConsoleError />
                     </UnitTestResult>
                   </Results>
+                  <Tests />
                 </TestRecord>
                 <TestRecord Name="TestEventSystemRemoving">
                   <Results>
@@ -96,6 +100,7 @@ Execution time: 0.00ms</Message>
                       <ConsoleError />
                     </UnitTestResult>
                   </Results>
+                  <Tests />
                 </TestRecord>
               </Tests>
             </TestRecord>
@@ -342,6 +347,34 @@ Execution time: 0.01ms</Message>
 
 Execution time: 0.01ms</Message>
                       <ConsoleOutput>0, 01, 1</ConsoleOutput>
+                      <ConsoleError />
+                    </UnitTestResult>
+                  </Results>
+                  <Tests />
+                </TestRecord>
+              </Tests>
+            </TestRecord>
+            <TestRecord Name="EntityPositionQueryTests">
+              <Tests>
+                <TestRecord Name="TestQueries">
+                  <Results>
+                    <UnitTestResult>
+                      <TestDate>2015-02-07T23:19:45</TestDate>
+                      <Passed>0</Passed>
+                      <Errors>1</Errors>
+                      <Failures>0</Failures>
+                      <Inconclusive>0</Inconclusive>
+                      <NotRunnable>0</NotRunnable>
+                      <Skipped>0</Skipped>
+                      <Ignored>0</Ignored>
+                      <Time />
+                      <Message>System.MissingMethodException : Cannot find the requested method.</Message>
+                      <StackTrace>  at (wrapper managed-to-native) UnityEngine.GameObject:CreatePrimitive (UnityEngine.PrimitiveType)
+  at Biters.Testing.UnitTestGameBoardFactory.Make () [0x00000] in /Users/dereekb/Documents/git/Biters-Demo/Biters/Assets/Biters Assets/Scripts/Unit Tests/Editor/Utilities/UnitTestGameBoard.cs:23 
+  at Biters.Testing.EntityPositionQueryTests.TestQueries () [0x00000] in /Users/dereekb/Documents/git/Biters-Demo/Biters/Assets/Biters Assets/Scripts/Unit Tests/Editor/EntityPositionQueryTests.cs:24 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (System.Reflection.MonoMethod,object,object[],System.Exception&amp;)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in &lt;filename unknown&gt;:0 </StackTrace>
+                      <ConsoleOutput />
                       <ConsoleError />
                     </UnitTestResult>
                   </Results>

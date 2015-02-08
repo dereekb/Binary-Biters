@@ -30,7 +30,7 @@ namespace Biters
 		T GetTileUnderEntity (E Entity);
 
 		//Query
-		IEntityWorldPositionQuery<E> EntityPositionQuery;
+		IEntityWorldPositionQuery<E> EntityPositionQuery { get; }
 
 		//Watcher
 		IGameMapWatcher<T, E> Watcher { get; set; }
