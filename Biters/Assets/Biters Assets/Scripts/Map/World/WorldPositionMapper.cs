@@ -71,7 +71,7 @@ namespace Biters
 			return opposite;
 		}
 
-		public static WorldDirection SuggestedDirection(this WorldPositionAlignment Alignment) {
+		public static WorldDirection ImpliedDirection(this WorldPositionAlignment Alignment) {
 			WorldDirection direction = WorldDirection.North;
 			
 			switch (Alignment) {

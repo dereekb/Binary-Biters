@@ -10,23 +10,43 @@ namespace Biters.Game
 
 	/*
 	 * Basic game tile that moves entities that enter it's tiles towards the center, and then in a new direction.
+	 * 
+	 * 
 	 */
-	public class DirectionalGameTile : BitersGameTile {
+	public abstract class DirectionalGameTile : BitersGameTile {
 
 		public const float DefaultMoveSpeed = 1.0f;
 		public const string DirectionalTileId = "Entity.Direction";
 
+		//TODO: Add material factory for handling TileSets.
+
 		//Factory which builds AutoPilots for entities that enter this tile.
 		public IAutoPilotFactory MovementFactory;
+
+		//Internal element to avoid need to cast to MovementFactory.
+		private DirectionalTileAutoPilotFactory tileDirectionFactory;
+
+		protected virtual DirectionalTileAutoPilotFactory TileDirectionFactory {
+
+			get {
+				return this.tileDirectionFactory;
+			}
+
+			set {
+				this.MovementFactory = value;
+				this.tileDirectionFactory = value;
+			}
+
+		}
 
 		#region Constructors
 		
 		public DirectionalGameTile () : this (DirectionalGameTileType.Vertical, DefaultMoveSpeed) {}
 		
-		public DirectionalGameTile (DirectionalGameTileType Type) : this (Type,  DefaultMoveSpeed) {}
+		public DirectionalGameTile (DirectionalGameTileType Type, WorldDirection Direction) : this (Type,  DefaultMoveSpeed) {}
 
-		public DirectionalGameTile (DirectionalGameTileType Type, float MoveSpeed) : base () {
-			this.SetTileType (Type, MoveSpeed);
+		public DirectionalGameTile (DirectionalGameTileType Type) : base () {
+			this.SetTileType (Type);
 		}
 
 		#endregion
@@ -41,13 +61,16 @@ namespace Biters.Game
 		
 		#endregion
 
-		#region Accessors
+		#region Initialization
 
-		public void SetTileType(DirectionalGameTileType Type, float MoveSpeed) {
-			this.MovementFactory = new DirectionalTileAutoPilotFactory (Type, MoveSpeed);
+		public void SetTileType(DirectionalGameTileType Type) {
 			this.GameObject.renderer.material = Type.TileMaterial();
 			Type.RotateTileObject(this);
+			this.UpdateDirectionFactory(DirectionalGameTileType Type);
 		}
+
+		//Updates
+		public abstract void UpdateDirectionToReflectTileTypeChange (DirectionalGameTileType Type);
 
 		#endregion
 		
@@ -186,20 +209,20 @@ namespace Biters.Game
 			
 			switch (Type) {
 				
-			case DirectionalGameTileType.Corner_Top_Left:
+			case DirectionalGameTileType.Corner_Bottom_Right:
 			case DirectionalGameTileType.T_Up:
 				Element.Transform.Rotate(0,0,90);
 				break;
 				
-			case DirectionalGameTileType.Corner_Top_Right:
+			case DirectionalGameTileType.Corner_Bottom_Left:
 			case DirectionalGameTileType.T_Left:
 				//No Rotation.
 				break;
-			case DirectionalGameTileType.Corner_Bottom_Left:
+			case DirectionalGameTileType.Corner_Top_Right:
 			case DirectionalGameTileType.T_Right:
 				Element.Transform.Rotate(0,90,0);
 				break;
-			case DirectionalGameTileType.Corner_Bottom_Right:
+			case DirectionalGameTileType.Corner_Top_Left:
 			case DirectionalGameTileType.T_Down:
 				Element.Transform.Rotate(0,0,270);
 				break;
@@ -210,7 +233,7 @@ namespace Biters.Game
 
 	}
 
-	#region Auto Pilot Factory
+	#region Directional Auto Pilot Factory
 
 	/*
 	 * Default Implementation.
@@ -219,13 +242,11 @@ namespace Biters.Game
 
 		public float MoveSpeed = 1.0f;
 		public Vector3 Offset = new Vector3 (0, 0, -BitersGameTile.BitersGameTileZOffset);
+		public IDirectionalTileAutoPilotFactoryDelegate Delegate;
 
-		private DirectionalGameTileType Type;
-		public IDirectionalTileAutoPilotFactoryDelegate Delegate = new DirectionalTileAutoPilotFactoryDelegate();
-
-		public DirectionalTileAutoPilotFactory(DirectionalGameTileType Type, float MoveSpeed) {
-			this.Type = Type;
+		public DirectionalTileAutoPilotFactory(float MoveSpeed, IDirectionalTileAutoPilotFactoryDelegate Delegate) {
 			this.MoveSpeed = MoveSpeed;
+			this.Delegate = Delegate;
 		}
 
 		public IAutoPilot Make() {
@@ -245,66 +266,38 @@ namespace Biters.Game
 		}
 		
 		public virtual IAutoPilot MoveOutOfSquare(IPositionalElement Target, IPositionalElement Element) {
-			Vector3 direction = this.Delegate.DirectionForElement(Target, Element, this.Type);
+			Vector3 direction = this.Delegate.DirectionForElement(Target, Element);
 			Vector3 moveDirection = (direction * this.MoveSpeed);
 			return new WalkAutoPilot(moveDirection);
 		}
+
 	}
 	
 	public interface IDirectionalTileAutoPilotFactoryDelegate {
 		
 		/*
-		 * Returns the direction.
+		 * Returns the direction to send the element after reaching the middle of the tile.
 		 */
-		Vector3 DirectionForElement(IPositionalElement Target, IPositionalElement Element, DirectionalGameTileType type);
+		Vector3 DirectionForElement(IPositionalElement Target, IPositionalElement Element);
 		
 	}
-
+	
 	/*
-	 * Default Implementation. Uses an IDirectionalTileMoveSuggestion.
+	 * Basic implementation that has a direction to send elements.
 	 */
 	public class DirectionalTileAutoPilotFactoryDelegate : IDirectionalTileAutoPilotFactoryDelegate {
-
-		private readonly static Dictionary<DirectionalGameTileType, IDirectionSuggestion> Suggestions = DefaultSuggestions;
-
-		private static Dictionary<DirectionalGameTileType, IDirectionSuggestion> DefaultSuggestions {
-			get {
-				Dictionary<DirectionalGameTileType, IDirectionSuggestion> s 
-					= new Dictionary<DirectionalGameTileType, IDirectionSuggestion>();
-
-				//Straight
-				s.Add(DirectionalGameTileType.Vertical, new DirectionSuggestion(WorldDirection.North).AvoidEastWest());
-				s.Add(DirectionalGameTileType.Horizontal, new DirectionSuggestion(WorldDirection.East).AvoidUpDown());
-				
-				//T_Sections
-				s.Add(DirectionalGameTileType.T_Up, new DirectionSuggestion().AllowAllBut(WorldDirection.South));
-				s.Add(DirectionalGameTileType.T_Down, new DirectionSuggestion().AllowAllBut(WorldDirection.North));
-				s.Add(DirectionalGameTileType.T_Left, new DirectionSuggestion().AllowAllBut(WorldDirection.East));
-				s.Add(DirectionalGameTileType.T_Right, new DirectionSuggestion().AllowAllBut(WorldDirection.West));
-				
-				//Corner_Sections
-				s.Add(DirectionalGameTileType.Corner_Top_Left, new DirectionSuggestion().Avoid(WorldDirection.South, WorldDirection.East));
-				s.Add(DirectionalGameTileType.Corner_Top_Right, new DirectionSuggestion().Avoid(WorldDirection.South, WorldDirection.West));
-				s.Add(DirectionalGameTileType.Corner_Bottom_Left, new DirectionSuggestion().Avoid(WorldDirection.North, WorldDirection.East));
-				s.Add(DirectionalGameTileType.Corner_Bottom_Right, new DirectionSuggestion().Avoid(WorldDirection.North, WorldDirection.West));
-
-				return s;
-			}
-		}
 		
-		public DirectionalTileAutoPilotFactoryDelegate() {}
-		
-		public Vector3 DirectionForElement(IPositionalElement Target, IPositionalElement Element, DirectionalGameTileType type) {
-			IDirectionSuggestion suggestion = Suggestions [type];
-			WorldPositionAlignment side = WorldPositionAlignmentInfo.GetAlignment(Target.Position, Element.Position);
+		public WorldDirection Direction;
 
-			WorldDirection heading = suggestion.GetSuggestion (side);
-			Vector3 direction = heading.Vector ();
-			return direction;
+		public DirectionalTileAutoPilotFactoryDelegate(WorldDirection Direction) {
+			this.Direction = Direction;
 		}
 
+		public Vector3 DirectionForElement(IPositionalElement Target, IPositionalElement Element) {
+			return this.Direction.Vector ();
+		}
+		
 	}
-
 
 	#endregion
 
