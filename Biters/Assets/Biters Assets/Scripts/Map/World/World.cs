@@ -345,13 +345,13 @@ namespace Biters
 			
 			switch (direction) {
 			case WorldDirection.North:
-				change.dY = -1; 
+				change.dY = 1;
 				break;
 			case WorldDirection.East:
 				change.dX = 1;
 				break;
 			case WorldDirection.South:
-				change.dY = 1;
+				change.dY = -1;
 				break;
 			case WorldDirection.West:
 				change.dX = -1;

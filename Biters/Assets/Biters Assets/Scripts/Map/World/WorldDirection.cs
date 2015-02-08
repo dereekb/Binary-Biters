@@ -1,8 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
-namespace Biters
+namespace Biters.World
 {
 	
 	/*
@@ -24,7 +25,7 @@ namespace Biters
 	/*
 	 * Wraps a direction to implement IDirectionSuggestion.
 	 */
-	public struct DirectionSuggestion : IDirectionSuggestion 
+	public class DirectionSuggestion : IDirectionSuggestion 
 	{
 		public WorldDirection Direction;
 
@@ -35,9 +36,13 @@ namespace Biters
 		public WorldDirection? GetSuggestion(WorldPositionAlignment Alignment) { return this.Direction; }
 		
 		public WorldDirection? GetSuggestion(WorldDirection Direction) { return this.Direction; }
-	}
 
-	//TODO: Add "Random" Direction suggestion.
+		public override string ToString ()
+		{
+			return string.Format ("[DirectionSuggestion: {0}]", this.Direction);
+		}
+
+	}
 
 	/*
 	 * Wraps an If/Else statement to implement IDirectionSuggestion.
@@ -47,15 +52,18 @@ namespace Biters
 		public readonly WorldDirection IfDirection;
 		public readonly IDirectionSuggestion Then;
 		
-		public IfThenSuggestion(WorldDirection IfDirection, WorldDirection Then) {
+		public IfThenSuggestion(WorldDirection IfDirection, WorldDirection Then)
+			: this (IfDirection, new DirectionSuggestion (Then)) {}
+
+		public IfThenSuggestion(WorldDirection IfDirection, IDirectionSuggestion Then) {
 			this.IfDirection = IfDirection;
-			this.Then = new DirectionSuggestion (Then);
+			this.Then = Then;
 		}
-		
+
 		public WorldDirection? GetSuggestion(WorldPositionAlignment Alignment) { return null; }
 		
 		public WorldDirection? GetSuggestion(WorldDirection Direction) {
-			WorldDirection? suggestion;
+			WorldDirection? suggestion = null;
 			
 			if (IfDirection == Direction) {
 				suggestion = Then.GetSuggestion(Direction);
@@ -69,12 +77,94 @@ namespace Biters
 		}
 		
 		public static IfThenSuggestion Random(WorldDirection Direction, params WorldDirection[] Randoms) {
-			//TODO: Add Random Suggestion.
-			return new IfThenSuggestion (Direction, Direction.Opposite ());
+			return new IfThenSuggestion (Direction, new RandomSuggestion(Randoms));
+		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[IfThenSuggestion: If={0} Then={1}]", IfDirection, Then);
 		}
 		
 	}
+
+	public class DirectionSuggestionList : IDirectionSuggestion {
+		
+		public List<IDirectionSuggestion> Suggestions = new List<IDirectionSuggestion>();
+		
+		public DirectionSuggestionList() {}
+
+		public DirectionSuggestionList(params IDirectionSuggestion[] Suggestions) {
+			this.Suggest (Suggestions);
+		}
+
+		public DirectionSuggestionList Suggest(params IDirectionSuggestion[] Suggestions) {
+			foreach (IDirectionSuggestion suggestion in Suggestions) {
+				this.Suggestions.Add(suggestion);
+			}
+			return this;
+		}
+		
+		protected virtual WorldDirection? CheckSuggestions(WorldDirection Direction) {
+			WorldDirection? directionSuggestion = null;
+			
+			foreach (IDirectionSuggestion suggestion in this.Suggestions) {
+				directionSuggestion = suggestion.GetSuggestion(Direction);
+				
+				if (directionSuggestion.HasValue) {
+					break;
+				}
+			}
+			
+			return directionSuggestion;
+		}
+		
+		public virtual WorldDirection? GetSuggestion(WorldDirection Heading) {
+			return this.CheckSuggestions(Heading);
+		}
+		
+		public virtual WorldDirection? GetSuggestion(WorldPositionAlignment Alignment) {
+			throw new InvalidOperationException ("Invalid.");
+		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[DirectionSuggestionList: {0}-{1}]",this.Suggestions,this.Suggestions.Count);
+		}
+
+	}
 	
+	
+	//TODO: Add "Random" Direction suggestion.
+	public class RandomSuggestion : DirectionSuggestionList {
+
+		public System.Random Random = new System.Random ();
+
+		public RandomSuggestion() : base () {}
+		
+		public RandomSuggestion (params WorldDirection[] Directions) : base () {
+			foreach (WorldDirection Direction in Directions) {
+				this.Suggestions.Add (new DirectionSuggestion (Direction));
+			}
+		}
+
+		public RandomSuggestion (params IDirectionSuggestion[] Suggestions) : base () {}
+
+		public IDirectionSuggestion Next() {
+			return this.Suggestions [this.Random.Next (0, this.Suggestions.Count)];
+		}
+
+		public override WorldDirection? GetSuggestion(WorldDirection Heading) {
+			IDirectionSuggestion random = this.Next ();
+			return random.GetSuggestion (Heading);
+		}
+		
+		public override WorldDirection? GetSuggestion(WorldPositionAlignment Alignment) {
+			IDirectionSuggestion random = this.Next ();
+			return random.GetSuggestion(Alignment);
+		}
+	}
+
+
 	/*
 	 * Tells a possible movement whether or not the current direction is acceptable or not.
 	 * 
@@ -83,34 +173,21 @@ namespace Biters
 	public sealed class HeadingSuggestion : IDirectionSuggestion {
 
 		public IDirectionSuggestion DefaultSuggestion;
-		public List<IDirectionSuggestion> Suggestions = new List<IDirectionSuggestion>();
+		public IDirectionSuggestion Suggestions;
 		private HashSet<WorldDirection> avoid = new HashSet<WorldDirection>();
 		
 		public HeadingSuggestion() : this (WorldDirection.North) {}
 		
 		public HeadingSuggestion(WorldDirection direction) : this (new DirectionSuggestion(direction)) {}
 		
-		public HeadingSuggestion(IDirectionSuggestion Suggestion) {
-			this.DefaultSuggestion = Suggestion;
+		public HeadingSuggestion(IDirectionSuggestion Default) {
+			this.DefaultSuggestion = Default;
+			this.Suggestions = Default;
 		}
 
-		public HeadingSuggestion(IDirectionSuggestion Suggestion, IDirectionSuggestion Suggestions) {
-			this.DefaultSuggestion = Suggestion;
-			this.Suggestions.Add (Suggestions);
-		}
-
-		public HeadingSuggestion(IDirectionSuggestion Suggestion, List<IDirectionSuggestion> Suggestions) {
-			this.DefaultSuggestion = Suggestion;
+		public HeadingSuggestion(IDirectionSuggestion Default, IDirectionSuggestion Suggestions) {
+			this.DefaultSuggestion = Default;
 			this.Suggestions = Suggestions;
-		}
-		
-		public HeadingSuggestion Suggest(params IDirectionSuggestion[] Suggestions) {
-			
-			foreach (IDirectionSuggestion suggestion in Suggestions) {
-				this.Suggestions.Add(suggestion);
-			}
-			
-			return this;
 		}
 
 		public HeadingSuggestion Avoid(WorldDirection Direction) {
@@ -154,38 +231,36 @@ namespace Biters
 			this.Avoid (Direction);
 			return this;
 		}
-
-		private WorldDirection? CheckSuggestions(WorldDirection Direction) {
-			WorldDirection? directionSuggestion;
-
-			foreach (IDirectionSuggestion suggestion in this.Suggestions) {
-				directionSuggestion = suggestion.GetSuggestion(Direction);
-
-				if (directionSuggestion.HasValue) {
-					break;
-				}
-			}
-
-			return directionSuggestion;
+		
+		public HeadingSuggestion Suggest(params IDirectionSuggestion[] Suggestions) {
+			this.Suggestions = new DirectionSuggestionList(Suggestions);
+			return this;
 		}
 
 		public WorldDirection? GetSuggestion(WorldDirection Heading) {
-			return this.CheckSuggestions(Heading);
+			WorldDirection? suggestion = null;
+
+			if (this.avoid.Contains (Heading)) {
+				/*
+				 * If the primary Suggestions return null, return the default suggestion's answer, if a Default is set.
+				 */
+				Debug.Log (String.Format ("Get Suggestion fro: {0} and {1}.", this.Suggestions, this.DefaultSuggestion));
+				suggestion = this.Suggestions.GetSuggestion (Heading) ?? this.DefaultSuggestion.GetSuggestion (Heading);
+			} else {
+				//Continue on current path.
+				suggestion = Heading;
+			}
+
+			return suggestion;
 		}
 
 		public WorldDirection? GetSuggestion(WorldPositionAlignment Alignment) {
+
 			//Reverse the alignment to show where the entity is moving TO.
 			WorldDirection heading = Alignment.OppositeAlignment().ImpliedDirection();
-			
-			if (this.avoid.Contains(heading)) {
-				WorldDirection? suggestion = this.GetSuggestion(heading) ?? this.DefaultSuggestion.GetSuggestion();
 
-				if (suggestion.HasValue) {
-					heading = suggestion.Value;
-				}
-			}
-			
-			return heading;
+			WorldDirection? suggestion = this.GetSuggestion(heading);
+			return suggestion;
 		}
 		
 	}

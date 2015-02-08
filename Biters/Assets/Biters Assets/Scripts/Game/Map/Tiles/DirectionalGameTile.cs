@@ -15,8 +15,20 @@ namespace Biters.Game
 	 */
 	public class DirectionalGameTile : MoveEntityGameTile
 	{
-		public const float DefaultMoveSpeed = 1.0f;
 		public const string DirectionalTileId = "Entity.Direction";
+		
+		private DirectionalGameTileType tileType;
+		
+		public DirectionalGameTileType TileType {
+			get {
+				return this.tileType;
+			}
+			
+			set {
+				this.SetTileType(value);
+			}
+			
+		}
 
 		//Internal element to avoid need to cast to MovementFactory.
 		private DirectionalTileAutoPilotFactory tileDirectionFactory;
@@ -29,17 +41,44 @@ namespace Biters.Game
 
 		}
 
+		public virtual IDirectionalTileAutoPilotFactoryDelegate DirectionDelegate {
+
+			get {
+				return this.tileDirectionFactory.Delegate;
+			}
+
+			set {
+				this.tileDirectionFactory.Delegate = value;
+			}
+
+		}
+
 		#region Constructor
 		
 		public DirectionalGameTile () : this(new DirectionalTileAutoPilotFactory()) {}
 		
-		public DirectionalGameTile (DirectionalGameTileType Type, WorldDirection Direction) : this(new DirectionalTileAutoPilotFactory()) {
+		public DirectionalGameTile (DirectionalGameTileType Type)
+		: this(new DirectionalTileAutoPilotFactory()) {
+			this.SetTileType (Type);
+		}
+
+		public DirectionalGameTile (DirectionalGameTileType Type, WorldDirection Direction)
+			: this(new DirectionalTileAutoPilotFactory()) {
 			this.SetTileType (Type);
 			this.SetTileDirection (Direction);
 		}
+		
+		public DirectionalGameTile (IDirectionalTileAutoPilotFactoryDelegate Delegate)
+			: this(new DirectionalTileAutoPilotFactory(), Delegate) {}
 
-		public DirectionalGameTile (DirectionalTileAutoPilotFactory Factory) : base(Factory) {
+		public DirectionalGameTile (DirectionalTileAutoPilotFactory Factory) : this(Factory, null) {
 			this.tileDirectionFactory = Factory;
+		}
+		
+		public DirectionalGameTile (DirectionalTileAutoPilotFactory Factory, IDirectionalTileAutoPilotFactoryDelegate Delegate)
+			: base (Factory) {
+			this.tileDirectionFactory = Factory;
+			this.DirectionDelegate = Delegate;
 		}
 
 		#endregion
@@ -57,6 +96,7 @@ namespace Biters.Game
 		#region Initialization
 		
 		public void SetTileType(DirectionalGameTileType Type) {
+			this.tileType = Type;
 			this.GameObject.renderer.material = Type.TileMaterial();
 			Type.RotateTileObject(this);
 		}

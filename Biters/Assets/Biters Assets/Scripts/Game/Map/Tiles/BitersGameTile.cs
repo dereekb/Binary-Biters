@@ -50,6 +50,11 @@ namespace Biters.Game
 
 		#endregion
 
+		public override string ToString ()
+		{
+			return string.Format ("[BitersGameTile: MapTilePosition={0}]", MapTilePosition);
+		}
+
 	}
 
 }

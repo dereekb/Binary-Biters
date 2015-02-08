@@ -18,7 +18,9 @@ namespace Biters.Game
 
 		#region Constructors
 		
-		protected MoveEntityGameTile (IAutoPilotFactory MovementFactory) : base() {}
+		protected MoveEntityGameTile (IAutoPilotFactory MovementFactory) : base() {
+			this.MovementFactory = MovementFactory;
+		}
 
 		#endregion
 
