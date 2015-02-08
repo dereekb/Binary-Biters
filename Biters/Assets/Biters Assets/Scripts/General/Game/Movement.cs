@@ -364,6 +364,19 @@ namespace Biters
 	}
 
 	#endregion
+	
+	#region Auto Pilot Factory
+
+	/*
+	 * Factory for making IAutoPilot instances. Make is given two optional inputs.
+	 */
+	public interface IAutoPilotFactory : IFactory<IAutoPilot> {
+
+		IAutoPilot Make(IPositionalElement Target, IPositionalElement Element);
+
+	}
+
+	#endregion
 
 	#region More Auto Pilots
 
@@ -371,7 +384,7 @@ namespace Biters
 	 * Units wander aimlessly.
 	 */
 	/*
-	 * TODO: COmplete
+	 * TODO: Complete
 	public class WanderAutoPilot : WalkAutoPilot {
 
 		public WanderAutoPilot(Vector3 Direction, float WalkTime) : base(Direction) {

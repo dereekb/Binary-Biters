@@ -20,11 +20,20 @@ namespace Biters.Game
 		public ISpawnerGameTileDelegate SpawnDelegate;
 
 		#region Constructors
-
+		
 		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate) : base () {
 			this.SpawnDelegate = SpawnDelegate;
 		}
 
+		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate, DirectionalGameTileType Type) : base (Type) {
+			this.SpawnDelegate = SpawnDelegate;
+		}
+
+		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate, DirectionalGameTileType Type, float MoveSpeed) : base (Type, MoveSpeed) {
+			this.SpawnDelegate = SpawnDelegate;
+		}
+
+		/*
 		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate, WorldDirection Direction) : base (Direction) {
 			this.SpawnDelegate = SpawnDelegate;	
 		}
@@ -32,14 +41,15 @@ namespace Biters.Game
 		public SpawnerGameTile (ISpawnerGameTileDelegate SpawnDelegate, Vector3 Direction) : base (Direction) {
 			this.SpawnDelegate = SpawnDelegate;	
 		}
-		
+		*/
+
 		#endregion
 
 		#region Initialize
 
 		public override void Initialize ()
 		{
-			this.GameObject.renderer.material = SpawnerMat;
+			//this.GameObject.renderer.material = SpawnerMat;
 			base.Initialize ();
 		}
 

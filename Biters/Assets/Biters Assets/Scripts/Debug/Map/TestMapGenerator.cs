@@ -92,6 +92,12 @@ namespace Biters.Debugging
 
 			float timer = RandomGenerator.Next (4, 10);	//Between 3 and 20 seconds
 			int max = 500; // RandomGenerator.Next (20, 500);
+
+			int directionNumber = RandomGenerator.Next (-1, (int) DirectionalGameTileType.T_Right);
+
+			DirectionalGameTileType direction = (DirectionalGameTileType) directionNumber+1;
+
+			/*
 			Vector3 direction = new Vector3 ();
 			direction.x = RandomGenerator.Next (-1, 2);
 			direction.y = RandomGenerator.Next (-1, 2);
@@ -99,6 +105,7 @@ namespace Biters.Debugging
 			if (direction.x == 0 && direction.y == 0) {
 				direction.x = 1;
 			}
+			*/
 
 			SpawnerGameTile spawnTile = new SpawnerGameTile (spawnerDelegate, direction);
 			spawnTile.SpawnTimer.Length = timer;
