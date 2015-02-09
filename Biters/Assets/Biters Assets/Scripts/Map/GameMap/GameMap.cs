@@ -278,13 +278,19 @@ namespace Biters
 		
 		#region Update
 
+		/*
+		 *
+		 * TODO: Protect against state changes during Update stage.
+		 * 
+		 * For example, add an "action queue" that is called at the end of update to apply any game-map related changes.
+		 */
 		public override void Update() {
 			this.UpdateEntities();
 			this.UpdateWatcher();
 			base.Update();
 		}
 
-		protected void UpdateEntities() {	
+		protected void UpdateEntities() {
 			foreach (E entity in this.entities) {
 				entity.Update();
 			}

@@ -275,8 +275,8 @@ namespace Biters.Game
 		
 		public IAutoPilot Make(IPositionalElement Target, IPositionalElement Element) {
 			AutoPilotQueue queue = new AutoPilotQueue ();
-			queue.Add (this.MoveToCenter (Target, Element));
-			queue.Add (this.MoveOutOfSquare (Target, Element));
+			queue.Enqueue (this.MoveToCenter (Target, Element));
+			queue.Enqueue (this.MoveOutOfSquare (Target, Element));
 			return queue;
 		}
 		

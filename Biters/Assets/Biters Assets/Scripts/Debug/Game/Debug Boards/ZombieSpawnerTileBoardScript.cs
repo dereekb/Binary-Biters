@@ -2,24 +2,25 @@ using System;
 using UnityEngine;
 using Biters.Game;
 using Biters;
+using Biters.Debugging.Zombies;
 using Biters.Debugging.Generators;
 
-namespace Biters.Debugging.Board.Script
+namespace AssemblyCSharp
 {
-	
 	/*
-	 * Test Gameboard. The first of it's kind.
+	 * Zombies!!!
 	 */
-	public class RandomSpawnerTileBoardScript : MonoBehaviour
+	public class ZombieSpawnerTileBoardScript : MonoBehaviour
 	{
 		private GameMap<BitersGameTile, BitersMapEntity> Map;
 		
-		public RandomSpawnerTileBoardScript() {}
+		public ZombieSpawnerTileBoardScript () {}
 		
 		public void Awake()
 		{
 			DebugGameBoardFactory BoardFactory = new DebugGameBoardFactory ();
-			BoardFactory.Factory = new DebugRandomTileMapGeneratorFactory ();
+			DebugZombieMapGeneratorFactory zombies = new DebugZombieMapGeneratorFactory ();
+			BoardFactory.Factory = zombies;
 			this.Map = BoardFactory.Make();
 		}
 		
@@ -32,8 +33,7 @@ namespace Biters.Debugging.Board.Script
 		{
 			Map.Update ();
 		}
-		
-	}
 
+	}
 }
 

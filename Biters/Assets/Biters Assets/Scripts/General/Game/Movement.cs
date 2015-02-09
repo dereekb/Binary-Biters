@@ -10,20 +10,34 @@ namespace Biters
 	#region Movement
 
 	/*
+	 * Movement with an AutoPilot.
+	 */
+	public interface IMovement : ITransformableElement, IPositionalElement, IUpdatingElement {
+		
+		IAutoPilot AutoPilot { get; set; }
+
+		bool CanSetMovement();
+
+	}
+
+	/*
 	 * Acts as the movement of a game object. Is moved via autopilots.
 	 * 
 	 * Wraps a Transformable element to performe movements.
 	 */
-	public class Movement : ITransformableElement, IPositionalElement, IUpdatingElement {
+	public class Movement : IMovement {
 		
 		private IAutoPilot autoPilot;
 		private ITransformableElement element;
 		
-		public Movement(ITransformableElement Element) {
-			this.element = Element;
-		}
+		public Movement(ITransformableElement Element) : this (Element, null) {}
 		
-		public IAutoPilot AutoPilot {
+		protected Movement(ITransformableElement Element, IAutoPilot AutoPilot) {
+			this.element = Element;
+			this.autoPilot = AutoPilot;
+		}
+
+		public virtual IAutoPilot AutoPilot {
 
 			get {
 				return this.autoPilot;
@@ -54,6 +68,10 @@ namespace Biters
 			}
 			
 		}
+
+		public virtual bool CanSetMovement() {
+			return true;
+		}
 		
 		public virtual void Update() {
 			this.UpdateWithAutoPilot ();
@@ -74,8 +92,45 @@ namespace Biters
 
 	}
 
-	//TODO: Consider extending Movement with a class that supports a queue of auto pilots.
-	
+	/*
+	 * Movement that has a single, locked AutoPilot. 
+	 */
+	public class ProtectedMovement : Movement {
+
+		private AutoPilotQueue autoPilotQueue;
+
+		public ProtectedMovement(ITransformableElement Element) : this (Element, new AutoPilotQueue()) {}
+
+		protected ProtectedMovement(ITransformableElement Element, AutoPilotQueue AutoPilot) : base (Element, AutoPilot) {
+			this.autoPilotQueue = AutoPilot;
+		}
+		
+		public override IAutoPilot AutoPilot {
+
+			set {
+				//Prevent overriding of Auto Pilot. 
+			}
+			
+		}
+		
+		public override bool CanSetMovement() {
+			return false;
+		}
+		
+		#region Queue
+		
+		public void Enqueue(IAutoPilot AutoPilot) {
+			this.autoPilotQueue.Enqueue (AutoPilot);
+		}
+		
+		public void Clear() {
+			this.autoPilotQueue.Clear ();
+		}
+		
+		#endregion
+
+	}
+
 	#endregion
 
 	#region Auto Pilot
@@ -355,8 +410,12 @@ namespace Biters
 
 		#region Queue
 
-		public void Add(IAutoPilot AutoPilot) {
+		public void Enqueue(IAutoPilot AutoPilot) {
 			queue.Enqueue (AutoPilot);
+		}
+
+		public void Clear() {
+			this.queue.Clear ();
 		}
 
 		#endregion

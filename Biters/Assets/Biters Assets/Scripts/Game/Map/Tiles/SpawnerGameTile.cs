@@ -10,8 +10,6 @@ namespace Biters.Game
 	 */ 
 	public class SpawnerGameTile : DirectionalGameTile
 	{
-		public static readonly Material SpawnerMat = ResourceLoader.Load["Tiles_Concrete"].Material;
-
 		public int SpawnCount = 0;
 		public int SpawnMax = 100;
 		public Timer SpawnTimer = new Timer(1.5f);
@@ -35,16 +33,6 @@ namespace Biters.Game
 
 		#endregion
 
-		#region Initialize
-
-		public override void Initialize ()
-		{
-			//this.GameObject.renderer.material = SpawnerMat;
-			base.Initialize ();
-		}
-
-		#endregion
-
 		#region Update
 
 		public override void Update() {
@@ -57,14 +45,16 @@ namespace Biters.Game
 		#region Spawning
 
 		public void TrySpawning() {
-			if (this.SpawnCount < SpawnMax) {
-				if (this.SpawnTimer.UpdateAndCheck ()) {
-						this.SpawnEntity ();
-				}
+			if (this.CanSpawn()) {
+				this.SpawnEntity ();
 			}
 		}
 
-		public void SpawnEntity() {
+		public virtual bool CanSpawn() {
+			return (this.SpawnCount < SpawnMax) && (this.SpawnTimer.UpdateAndCheck ());
+		}
+
+		public virtual void SpawnEntity() {
 			BitersMapEntity entity = this.SpawnDelegate.Make ();
 			entity.Map = this.Map;	//Share the map.
 

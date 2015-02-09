@@ -12,7 +12,7 @@ namespace Biters
 	 * Used for tiles management.
 	 */
 	public class World<T> : IEnumerable {
-		
+
 		private Dictionary<WorldPosition, T> Everything;
 		
 		public World() {

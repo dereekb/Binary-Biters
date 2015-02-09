@@ -68,6 +68,21 @@ namespace Biters
 		 */
 		List<T> SearchEntities();
 
+		/*
+		 * Returns a random entity that matches the query.
+		 */
+		T RandomEntity();
+
+		/*
+		 * Returns a random entity. Searches up to the limit before picking a random element.
+		 */ 
+		T RandomEntity(int Limit);
+
+		/*
+		 * Returns random entities.
+		 */
+		List<T> RandomEntities(int Limit);
+
 	}
 
 	/*
@@ -85,7 +100,7 @@ namespace Biters
 		
 		//Result Limit
 		public int? Limit { get; set; }
-		
+
 		//Min Distance from the Target Position
 		public float? MinDistance { get; set; }
 		
@@ -169,6 +184,10 @@ namespace Biters
 				foreach (T Entity in Entities) {
 					if (this.MatchesQuery(Entity)) {
 						entities.Add (Entity);
+
+						if (entities.Count >= Limit) {
+							break;
+						}
 					}
 				}
 
@@ -208,6 +227,48 @@ namespace Biters
 
 		public virtual List<T> SearchEntities() {
 			return this.EntitiesThatMatchQuery (this.Queriable.QueriableEntities);
+		}
+		
+		public virtual T RandomEntity() {
+			return this.RandomEntity (10);
+		}
+
+		public virtual T RandomEntity(int Limit) {
+			T result = null;
+
+			List<T> results = this.RandomEntities (Limit, 1);
+
+			if (results.Count > 0) {
+				result = results[0];
+			}
+
+			return result;
+		}
+		
+		public virtual List<T> RandomEntities(int Limit) {
+			return this.RandomEntities (Math.Max(Limit * 2, 10), Limit);
+		}
+		
+		public virtual List<T> RandomEntities(int RandomSearchLimit, int Limit) {
+			return this.RandomEntities (this.Queriable.QueriableEntities, RandomSearchLimit, Limit);
+		}
+		
+		protected virtual List<T> RandomEntities(ICollection<T> Entities, int RandomSearchLimit, int Limit) {
+			List<T> results = new List<T> ();
+			List<T> searchResults = this.EntitiesThatMatchQuery (Entities, RandomSearchLimit);
+			System.Random random = new System.Random ();
+			
+			if (searchResults.Count <= Limit) {
+				results = searchResults;
+			} else {
+				for (int i = 0; i < Limit; i += 1) {
+					int index = random.Next (0, searchResults.Count);
+					results.Add(searchResults[index]);
+					searchResults.RemoveAt(index);
+				}
+			}
+			
+			return results;
 		}
 
 	}
@@ -283,6 +344,19 @@ namespace Biters
 				results = base.SearchEntities();
 			}
 
+			return results;
+		}
+		
+		public override List<T> RandomEntities(int RandomSearchLimit, int Limit) {
+			List<T> results;
+			
+			if (this.TargetWorldPosition.HasValue) {
+				List<T> localEntities = this.WorldQueriable.EntitiesAtPosition(this.TargetWorldPosition.Value);
+				results = base.RandomEntities(localEntities, RandomSearchLimit, Limit);
+			} else {
+				results = base.RandomEntities(RandomSearchLimit, Limit);
+			}
+			
 			return results;
 		}
 

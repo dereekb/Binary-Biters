@@ -15,9 +15,9 @@ namespace Biters.Debugging.Generators
 	 */
 	public class DebugRandomTileMapGeneratorFactory : IFactory<BitersGameTile> {
 		
-		private System.Random RandomGenerator = new System.Random();
+		public System.Random RandomGenerator = new System.Random();
 
-		public BitersGameTile Make() {
+		public virtual BitersGameTile Make() {
 			BitersGameTile tile = null;
 
 			/*
