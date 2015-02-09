@@ -4,7 +4,7 @@ using Biters.Utility;
 using Biters.Game;
 using Biters;
 
-namespace Biters.Testing
+namespace Biters.Debugging.Generators
 {
 
 	/*
@@ -12,39 +12,62 @@ namespace Biters.Testing
 	 * 
 	 * Used for testing other functionality.
 	 */
-	public class UnitTestGameBoardFactory : IFactory<GameMap<BitersGameTile, BitersMapEntity>>
+	public class DebugGameBoardFactory : IFactory<GameMap<BitersGameTile, BitersMapEntity>>
 	{
+		internal DebugGameBoardGenerator generator = new DebugGameBoardGenerator();
+	
+		public DebugGameBoardGenerator Generator {
+			get {
+				return this.generator;
+			}
+		}
 
-		internal UnitTestGameBoardGenerator Generator = new UnitTestGameBoardGenerator();
+		public IFactory<BitersGameTile> Factory {
+			get {
+				return this.generator.Factory;
+			}
+
+			set {
+				this.generator.Factory = value;
+			}
+		}
 
 		public GameMap<BitersGameTile, BitersMapEntity> Make() {
-			GameObject MapObject = GameObject.CreatePrimitive (PrimitiveType.Plane);
-			IGameMapDelegate<BitersGameTile, BitersMapEntity> MapDelegate = Generator.Make ();
+			GameObject MapObject = GameObject.CreatePrimitive (PrimitiveType.Sphere);
+			MapObject.transform.localScale = new Vector3 (0.2f, 0.2f, 0.2f);
+			IGameMapDelegate<BitersGameTile, BitersMapEntity> MapDelegate = generator.Make ();
 			return new GameMap<BitersGameTile, BitersMapEntity> (MapObject, MapDelegate);
 		}
 
-		internal class UnitTestGameBoardGenerator : IFactory<IGameMapDelegate<BitersGameTile, BitersMapEntity>> {
+		public class DebugGameBoardGenerator : IFactory<IGameMapDelegate<BitersGameTile, BitersMapEntity>> {
 			
-			public IFactory<BitersGameTile> Factory = new UnitTestMapTileFactory();
+			public IFactory<BitersGameTile> Factory = new DebugMapTileFactory();
+			
+			public int BoardXSize = 10;
+			public int BoardYSize = 10;
+			public int BoardTileChance = 100;
 
 			public IGameMapDelegate<BitersGameTile, BitersMapEntity> Make() {
-				UnitTestGameMapDelegate import = new UnitTestGameMapDelegate(this.Factory);
+				DebugGameMapDelegate import = new DebugGameMapDelegate(this.Factory);
+				import.BoardXSize = this.BoardXSize;
+				import.BoardYSize = this.BoardYSize;
+				import.BoardTileChance = this.BoardTileChance;
 				return import;
 			}
 
 		}
 		
-		internal class UnitTestGameMapDelegate : IGameMapDelegate<BitersGameTile, BitersMapEntity> {
+		internal class DebugGameMapDelegate : IGameMapDelegate<BitersGameTile, BitersMapEntity> {
 
-			public int BoardXSize = 5;
-			public int BoardYSize = 5;
+			public int BoardXSize = 10;
+			public int BoardYSize = 10;
 			public int BoardTileChance = 100;
 
 			private System.Random RandomGenerator = new System.Random();
 			
 			public IFactory<BitersGameTile> Factory;
 			
-			public UnitTestGameMapDelegate(IFactory<BitersGameTile> Factory) {
+			public DebugGameMapDelegate(IFactory<BitersGameTile> Factory) {
 				this.Factory = Factory;
 			}
 			
@@ -76,7 +99,7 @@ namespace Biters.Testing
 			
 		}
 		
-		internal class UnitTestMapTileFactory : IFactory<BitersGameTile> {
+		internal class DebugMapTileFactory : IFactory<BitersGameTile> {
 
 			public BitersGameTile Make() {
 				BitersGameTile tile  = new DirectionalGameTile ();

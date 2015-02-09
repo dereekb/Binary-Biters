@@ -214,7 +214,7 @@ namespace Biters.World
 			}
 		}
 		
-		public virtual IDirectionSuggestion Next() {
+		public override IDirectionSuggestion Next() {
 			int index = this.NextIndex;
 			IDirectionSuggestion suggestion = this.Suggestions [index];
 			return suggestion;
