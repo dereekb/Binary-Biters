@@ -132,10 +132,59 @@ namespace Biters.World
 		}
 
 	}
-	
-	
-	//TODO: Add "Random" Direction suggestion.
-	public class RandomSuggestion : DirectionSuggestionList {
+
+	/*
+	 * Suggestion that iterates through the Suggestion List.
+	 */
+	public class IndexingSuggestion : DirectionSuggestionList {
+		
+		private int previous = 0;
+
+		public IndexingSuggestion() : base () {}
+		
+		public IndexingSuggestion (params WorldDirection[] Directions) : base () {
+			foreach (WorldDirection Direction in Directions) {
+				this.Suggestions.Add (new DirectionSuggestion (Direction));
+			}
+		}
+		
+		public IndexingSuggestion (params IDirectionSuggestion[] Suggestions) : base () {}
+
+		public virtual int NextIndex {
+			get {
+				return (this.previous + 1) % this.Suggestions.Count;
+			}
+		}
+
+		public int PreviousIndex {
+			get {
+				return this.previous;
+			}
+		}
+
+		public IDirectionSuggestion Next() {
+			int index = this.NextIndex;
+			this.previous = index;
+			IDirectionSuggestion suggestion = this.Suggestions [index];
+			return suggestion;
+		}
+		
+		public override WorldDirection? GetSuggestion(WorldDirection Heading) {
+			IDirectionSuggestion next = this.Next ();
+			return next.GetSuggestion (Heading);
+		}
+		
+		public override WorldDirection? GetSuggestion(WorldPositionAlignment Alignment) {
+			IDirectionSuggestion next = this.Next ();
+			return next.GetSuggestion(Alignment);
+		}
+
+	}
+
+	/*
+	 * Returns a random suggestion.
+	 */
+	public class RandomSuggestion : IndexingSuggestion {
 
 		public System.Random Random = new System.Random ();
 
@@ -148,24 +197,14 @@ namespace Biters.World
 		}
 
 		public RandomSuggestion (params IDirectionSuggestion[] Suggestions) : base () {}
-
-		public IDirectionSuggestion Next() {
-			int index = this.Random.Next (0, this.Suggestions.Count);
-			IDirectionSuggestion suggestion = this.Suggestions [index];
-			return suggestion;
-		}
-
-		public override WorldDirection? GetSuggestion(WorldDirection Heading) {
-			IDirectionSuggestion random = this.Next ();
-			return random.GetSuggestion (Heading);
-		}
 		
-		public override WorldDirection? GetSuggestion(WorldPositionAlignment Alignment) {
-			IDirectionSuggestion random = this.Next ();
-			return random.GetSuggestion(Alignment);
+		public override int NextIndex {
+			get {
+				return this.Random.Next (0, this.Suggestions.Count);
+			}
 		}
-	}
 
+	}
 
 	/*
 	 * Tells a possible movement whether or not the current direction is acceptable or not.

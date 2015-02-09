@@ -9,25 +9,46 @@ using Biters.Utility;
 namespace Biters.Game
 {	
 
-	public static class DirectionalGameTileMazeExtension
-	{
-
-		/*
-		 * Changes the delegate to be a Maze Tile intead.
-		 */
-		public static T MakeMazeTile<T>(this T Tile) where T : DirectionalGameTile {
-			Tile.DirectionDelegate = new MazeTileAutoPilotFactoryDelegate(Tile.TileType);
-			return Tile;
-		}
-
-	}
+	#region Custom
 
 	/*
-	 * More complex implementation of IDirectionalTileAutoPilotFactoryDelegate that will keep elements moving forward as best as possible.
+	 * Custom type that uses a "Script" built from a Dictionary of IDirectionSuggestions.
+	 */
+	public abstract class CustomTileAutoPilotFactoryDelegate : IDirectionalTileAutoPilotFactoryDelegate {
+
+		public abstract Dictionary<DirectionalGameTileType, IDirectionSuggestion> Script { get; }
+		
+		public readonly DirectionalGameTileType Type;
+		
+		public CustomTileAutoPilotFactoryDelegate(DirectionalGameTileType Type) {
+			this.Type = Type;
+		}
+		
+		public virtual WorldDirection HeadingForElement(IPositionalElement Target, IPositionalElement Element) {
+			IDirectionSuggestion suggestion = this.Script [this.Type];
+			
+			WorldPositionAlignment side = WorldPositionAlignmentInfo.GetAlignment(Target.Position, Element.Position);
+			WorldDirection heading = suggestion.GetSuggestion(side).Value;
+			return heading;
+		}
+		
+		public virtual Vector3 DirectionForElement(IPositionalElement Target, IPositionalElement Element) {
+			Vector3 direction = this.HeadingForElement(Target, Element).Vector();
+			return direction;
+		}
+		
+	}
+
+	#endregion
+
+	#region Maze
+
+	/*
+	 * Keep elements moving forward as best as possible, and from passing over tile "boundaries".
 	 * 
 	 * When elements cannot move forward, they choose a new direction randomly that is acceptable to the tile.
 	 */
-	public class MazeTileAutoPilotFactoryDelegate : IDirectionalTileAutoPilotFactoryDelegate {
+	public class MazeTileAutoPilotFactoryDelegate : CustomTileAutoPilotFactoryDelegate {
 		
 		private readonly static Dictionary<DirectionalGameTileType, IDirectionSuggestion> Suggestions = DefaultSuggestions;
 
@@ -82,28 +103,27 @@ namespace Biters.Game
 				return s;
 			}
 		}
+		
+		public override Dictionary<DirectionalGameTileType, IDirectionSuggestion> Script { get { return Suggestions; } }
 
-		public readonly DirectionalGameTileType Type;
+		public MazeTileAutoPilotFactoryDelegate(DirectionalGameTileType Type) : base(Type) {}
 
-		public MazeTileAutoPilotFactoryDelegate(DirectionalGameTileType Type) {
-			this.Type = Type;
-		}
-
-		public WorldDirection HeadingForElement(IPositionalElement Target, IPositionalElement Element) {
-			IDirectionSuggestion suggestion = MazeTileAutoPilotFactoryDelegate.Suggestions [this.Type];
-			
-			WorldPositionAlignment side = WorldPositionAlignmentInfo.GetAlignment(Target.Position, Element.Position);
-			WorldDirection heading = suggestion.GetSuggestion(side).Value;
-			return heading;
-		}
-
-		public Vector3 DirectionForElement(IPositionalElement Target, IPositionalElement Element) {
-			Vector3 direction = this.HeadingForElement(Target, Element).Vector();
-			return direction;
+	}
+	
+	public static class DirectionalGameTileMazeExtension
+	{
+		
+		/*
+		 * Changes the delegate to be a Maze Tile intead.
+		 */
+		public static T MakeMazeTile<T>(this T Tile) where T : DirectionalGameTile {
+			Tile.DirectionDelegate = new MazeTileAutoPilotFactoryDelegate(Tile.TileType);
+			return Tile;
 		}
 		
 	}
-	
+
+	#endregion
 
 }
 
