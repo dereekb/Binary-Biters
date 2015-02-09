@@ -12,7 +12,7 @@ namespace Biters.Debugging.Board.Script
 	 */
 	public class RandomSpawnerTileBoardScript : MonoBehaviour
 	{
-		private GameMap<BitersGameTile, BitersMapEntity> Map;
+		private BitersGameMap Map;
 		
 		public RandomSpawnerTileBoardScript() {}
 		

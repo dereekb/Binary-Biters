@@ -12,13 +12,13 @@ namespace Biters.Game
 	public abstract class BitersGameEntity : Entity, IEventListener
 	{
 		//Game Map of the tile.
-		private IGameMap<BitersGameTile, BitersMapEntity> map = null;
+		private BitersGameMap map = null;
 
 		public BitersGameEntity (GameObject GameObject) : base(GameObject) {}
 
 		#region Accessors
 
-		public IGameMap<BitersGameTile, BitersMapEntity> Map {
+		public BitersGameMap Map {
 			
 			get {
 				return this.map;

@@ -56,8 +56,6 @@ namespace Biters.Game
 
 		public virtual void SpawnEntity() {
 			BitersMapEntity entity = this.SpawnDelegate.Make ();
-			entity.Map = this.Map;	//Share the map.
-
 			this.Map.AddEntity(entity, this.MapTilePosition);
 			this.SpawnTimer.Reset ();
 			this.SpawnCount += 1;

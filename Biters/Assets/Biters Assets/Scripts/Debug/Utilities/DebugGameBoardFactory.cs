@@ -12,7 +12,7 @@ namespace Biters.Debugging.Generators
 	 * 
 	 * Used for testing other functionality.
 	 */
-	public class DebugGameBoardFactory : IFactory<GameMap<BitersGameTile, BitersMapEntity>>
+	public class DebugGameBoardFactory : IFactory<BitersGameMap>
 	{
 		internal DebugGameBoardGenerator generator = new DebugGameBoardGenerator();
 	
@@ -32,14 +32,14 @@ namespace Biters.Debugging.Generators
 			}
 		}
 
-		public GameMap<BitersGameTile, BitersMapEntity> Make() {
-			GameObject MapObject = GameObject.CreatePrimitive (PrimitiveType.Sphere);
-			MapObject.transform.localScale = new Vector3 (0.2f, 0.2f, 0.2f);
-			IGameMapDelegate<BitersGameTile, BitersMapEntity> MapDelegate = generator.Make ();
-			return new GameMap<BitersGameTile, BitersMapEntity> (MapObject, MapDelegate);
+		public BitersGameMap Make() {
+			GameObject mapObject = GameObject.CreatePrimitive (PrimitiveType.Sphere);
+			mapObject.transform.localScale = new Vector3 (0.2f, 0.2f, 0.2f);
+			IMapWorldFactory<BitersGameTile> worldFactory = generator.Make ();
+			return new BitersGameMap (mapObject, worldFactory);
 		}
 
-		public class DebugGameBoardGenerator : IFactory<IGameMapDelegate<BitersGameTile, BitersMapEntity>> {
+		public class DebugGameBoardGenerator : IFactory<IMapWorldFactory<BitersGameTile>> {
 			
 			public IFactory<BitersGameTile> Factory = new DebugMapTileFactory();
 			
@@ -47,7 +47,7 @@ namespace Biters.Debugging.Generators
 			public int BoardYSize = 10;
 			public int BoardTileChance = 100;
 
-			public IGameMapDelegate<BitersGameTile, BitersMapEntity> Make() {
+			public IMapWorldFactory<BitersGameTile> Make() {
 				DebugGameMapDelegate import = new DebugGameMapDelegate(this.Factory);
 				import.BoardXSize = this.BoardXSize;
 				import.BoardYSize = this.BoardYSize;
@@ -57,7 +57,7 @@ namespace Biters.Debugging.Generators
 
 		}
 		
-		internal class DebugGameMapDelegate : IGameMapDelegate<BitersGameTile, BitersMapEntity> {
+		internal class DebugGameMapDelegate : IMapWorldFactory<BitersGameTile> {
 
 			public int BoardXSize = 10;
 			public int BoardYSize = 10;
@@ -71,7 +71,7 @@ namespace Biters.Debugging.Generators
 				this.Factory = Factory;
 			}
 			
-			public World<BitersGameTile> Make() {
+			public World<BitersGameTile> MakeNewWorld() {
 				World<BitersGameTile> world = new World<BitersGameTile> ();
 				
 				for (int x = 0; x < BoardXSize; x += 1) {
@@ -86,17 +86,7 @@ namespace Biters.Debugging.Generators
 				
 				return world;
 			}
-			
-			public World<BitersGameTile> GenerateNewWorld(IGameMap<BitersGameTile, BitersMapEntity> Map) {
-				World<BitersGameTile> world = this.Make ();
-				
-				foreach (BitersGameTile tile in world) {
-					tile.Map = Map;
-				}
-				
-				return world;
-			}
-			
+
 		}
 		
 		internal class DebugMapTileFactory : IFactory<BitersGameTile> {

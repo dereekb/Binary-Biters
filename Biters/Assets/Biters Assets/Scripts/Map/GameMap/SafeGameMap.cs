@@ -27,14 +27,8 @@ namespace Biters
 		private bool enabled;
 		private Queue<ISafeMapChange<T, E>> Changes = new Queue<ISafeMapChange<T, E>>();
 
-		public SafeGameMap(GameObject GameObject, IGameMapDelegate<T, E> MapDelegate)
-			: base (GameObject, MapDelegate) {}
-		
-		public SafeGameMap(GameObject GameObject, IGameMapDelegate<T, E> MapDelegate, IWorldPositionMapper PositionMapper)
-			: base (GameObject, MapDelegate, PositionMapper) {}
-		
-		public SafeGameMap(GameObject GameObject, IGameMapDelegate<T, E> MapDelegate, IGameMapWatcher<T, E> Watcher, IWorldPositionMapper PositionMapper)
-			: base (GameObject, MapDelegate, Watcher, PositionMapper) {}
+		public SafeGameMap(GameObject GameObject, IMapWorldFactory<T> MapWorldFactory)
+			: base (GameObject, MapWorldFactory) {}
 
 		#region Safety
 
@@ -116,6 +110,9 @@ namespace Biters
 
 		#region Update
 
+		/*
+		 * Protects against entities being removed from the map accidentally.
+		 */
 		protected override void UpdateEntities ()
 		{
 			this.enabled = true;
@@ -124,11 +121,15 @@ namespace Biters
 			this.RunQueue ();
 		}
 
+		/*
+		 * Protects against other events from firing off events that may form an infinite loop.
+		 */
 		protected override void UpdateWatcher ()
 		{
 			this.enabled = true;
 			base.UpdateWatcher ();
 			this.enabled = false;
+			this.RunQueue ();
 		}
 
 		#endregion

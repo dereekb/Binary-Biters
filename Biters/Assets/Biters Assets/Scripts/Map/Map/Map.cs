@@ -43,6 +43,15 @@ namespace Biters
 	}
 
 	/*
+	 * Interface for building new worlds.
+	 */
+	public interface IMapWorldFactory<T> {
+		
+		World<T> MakeNewWorld();
+		
+	}
+
+	/*
 	 * Default map implementation.
 	 */
 	public class Map<T> : Entity, IMap<T>
@@ -51,16 +60,35 @@ namespace Biters
 		private IWorldPositionMapper positionMapper;
 		private EventSystem<MapEvent, MapEventInfo> mapEvents;
 
-		protected World<T> World;
+		protected World<T> World = new World<T>();
+		protected IMapWorldFactory<T> mapWorldFactory;
 		
-		public Map(GameObject GameObject) : this(GameObject, new WorldPositionMapper()) {}
+		public Map(GameObject GameObject) 
+		: this(GameObject, null) {}
 
-		public Map(GameObject GameObject, IWorldPositionMapper PositionMapper) : base(GameObject) {
+		public Map(GameObject GameObject, IMapWorldFactory<T> MapWorldFactory) 
+			: this(GameObject, MapWorldFactory, new WorldPositionMapper()) {}
+
+		public Map(GameObject GameObject, IMapWorldFactory<T> MapWorldFactory, IWorldPositionMapper PositionMapper)
+			: base(GameObject) {
 			this.positionMapper = PositionMapper;
+			this.mapWorldFactory = MapWorldFactory;
 			this.mapEvents = new EventSystem<MapEvent, MapEventInfo> ();
 		}
 
 		#region World
+
+		public virtual IMapWorldFactory<T> MapWorldFactory {
+
+			get {
+				return this.mapWorldFactory;
+			}
+
+			set {
+				this.mapWorldFactory = value;
+			}
+
+		}
 
 		/*
 		 * Resets the world to its original state.
@@ -68,8 +96,22 @@ namespace Biters
 		public virtual void ResetWorld() {
 			this.ClearWorld();
 
-			World<T> newWorld = new World<T> (); 
-			this.World = newWorld;
+			World<T> world = this.mapWorldFactory.MakeNewWorld ();
+			
+			if (world == null) {
+				throw new Exception("Map World Factory produced a null world.");
+			}
+
+			this.InitializeMap (world);
+		}
+
+		/*
+		 * Initializes the map by inserting elements from the specified world.
+		 */
+		protected virtual void InitializeMap(World<T> World) {
+			foreach (KeyValuePair<WorldPosition, T> pair in World.ElementPairs) {
+				this.InsertTileAtPosition(pair.Value, pair.Key);
+			}
 		}
 
 		/*
@@ -143,9 +185,14 @@ namespace Biters
 		}
 		
 		protected virtual void InsertTileAtPosition(T Element, WorldPosition Position) {
+			this.InitializeTile (Element, Position);
 			this.World.SetAtPosition(Element, Position);
 			Element.Transform.SetParent (this.Transform);
 			Element.AddedToMap(Position);
+		}
+
+		protected virtual void InitializeTile(T Element, WorldPosition Position) {
+			//Override to initialoze
 		}
 
 		protected virtual void RemoveTileFromPosition(T Removed, WorldPosition Position) {

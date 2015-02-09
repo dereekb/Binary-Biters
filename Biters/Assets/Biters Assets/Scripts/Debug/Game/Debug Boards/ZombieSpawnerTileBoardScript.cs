@@ -12,7 +12,7 @@ namespace AssemblyCSharp
 	 */
 	public class ZombieSpawnerTileBoardScript : MonoBehaviour
 	{
-		private GameMap<BitersGameTile, BitersMapEntity> Map;
+		private BitersGameMap Map;
 		
 		public ZombieSpawnerTileBoardScript () {}
 		
