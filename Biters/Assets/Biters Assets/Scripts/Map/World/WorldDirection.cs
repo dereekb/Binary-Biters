@@ -79,6 +79,10 @@ namespace Biters.World
 		public static IfThenSuggestion Random(WorldDirection Direction, params WorldDirection[] Randoms) {
 			return new IfThenSuggestion (Direction, new RandomSuggestion(Randoms));
 		}
+		
+		public static IfThenSuggestion Rotate(WorldDirection Direction, params WorldDirection[] Rotating) {
+			return new IfThenSuggestion (Direction, new RotatingSuggestion(Rotating));
+		}
 
 		public override string ToString ()
 		{
@@ -136,23 +140,29 @@ namespace Biters.World
 	/*
 	 * Suggestion that iterates through the Suggestion List.
 	 */
-	public class IndexingSuggestion : DirectionSuggestionList {
+	public class RotatingSuggestion : DirectionSuggestionList {
 		
 		private int previous = 0;
 
-		public IndexingSuggestion() : base () {}
+		public RotatingSuggestion() : base () {}
 		
-		public IndexingSuggestion (params WorldDirection[] Directions) : base () {
+		public RotatingSuggestion (params WorldDirection[] Directions) : base () {
 			foreach (WorldDirection Direction in Directions) {
 				this.Suggestions.Add (new DirectionSuggestion (Direction));
 			}
 		}
 		
-		public IndexingSuggestion (params IDirectionSuggestion[] Suggestions) : base () {}
+		public RotatingSuggestion (params IDirectionSuggestion[] Suggestions) : base () {}
 
 		public virtual int NextIndex {
 			get {
-				return (this.previous + 1) % this.Suggestions.Count;
+				int next = (this.previous + 1);
+
+				if (next >= Suggestions.Count) {
+					next = 0;
+				}
+
+				return next;
 			}
 		}
 
@@ -162,9 +172,9 @@ namespace Biters.World
 			}
 		}
 
-		public IDirectionSuggestion Next() {
-			int index = this.NextIndex;
-			this.previous = index;
+		public virtual IDirectionSuggestion Next() {
+			int index = this.NextIndex;		//0 -> 1
+			this.previous = index;				//1
 			IDirectionSuggestion suggestion = this.Suggestions [index];
 			return suggestion;
 		}
@@ -184,7 +194,7 @@ namespace Biters.World
 	/*
 	 * Returns a random suggestion.
 	 */
-	public class RandomSuggestion : IndexingSuggestion {
+	public class RandomSuggestion : RotatingSuggestion {
 
 		public System.Random Random = new System.Random ();
 
@@ -202,6 +212,12 @@ namespace Biters.World
 			get {
 				return this.Random.Next (0, this.Suggestions.Count);
 			}
+		}
+		
+		public virtual IDirectionSuggestion Next() {
+			int index = this.NextIndex;
+			IDirectionSuggestion suggestion = this.Suggestions [index];
+			return suggestion;
 		}
 
 	}
@@ -256,6 +272,11 @@ namespace Biters.World
 			this.avoid.Add(WorldDirection.West);
 			return this;
 		}
+		
+		public HeadingSuggestion AvoidAll() {
+			this.avoid = new HashSet<WorldDirection> (WorldDirectionInfo.All);
+			return this;
+		}
 
 		public HeadingSuggestion AvoidAllBut(WorldDirection Direction) {
 			this.avoid = new HashSet<WorldDirection> (Direction.AllExcept());
@@ -290,7 +311,11 @@ namespace Biters.World
 				/*
 				 * If the primary Suggestions return null, return the default suggestion's answer, if a Default is set.
 				 */
-				suggestion = this.Suggestions.GetSuggestion (Heading) ?? this.DefaultSuggestion.GetSuggestion (Heading);
+				suggestion = this.Suggestions.GetSuggestion (Heading);
+
+				if (suggestion.HasValue == false) {
+					suggestion = this.DefaultSuggestion.GetSuggestion (Heading);
+				}
 			} else {
 				//Continue on current path.
 				suggestion = Heading;

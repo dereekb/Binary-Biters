@@ -133,7 +133,7 @@ namespace Biters.Debugging
 			}
 			*/
 
-			SpawnerGameTile spawnTile = new SpawnerGameTile (spawnerDelegate, direction).MakeMazeTile();
+			SpawnerGameTile spawnTile = new SpawnerGameTile (spawnerDelegate, direction).MakeRotationTile ();
 			spawnTile.SpawnTimer.Length = timer;
 			spawnTile.TileDirectionFactory.MoveSpeed = RandomGenerator.Next (1, 5) / 2.0f;
 			spawnTile.SpawnMax = max;

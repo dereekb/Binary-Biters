@@ -40,9 +40,9 @@ namespace Biters.Game
 	}
 
 	#endregion
-
+	
 	#region Maze
-
+	
 	/*
 	 * Keep elements moving forward as best as possible, and from passing over tile "boundaries".
 	 * 
@@ -50,10 +50,10 @@ namespace Biters.Game
 	 */
 	public class MazeTileAutoPilotFactoryDelegate : CustomTileAutoPilotFactoryDelegate {
 		
-		private readonly static Dictionary<DirectionalGameTileType, IDirectionSuggestion> Suggestions = DefaultSuggestions;
-
+		internal readonly static Dictionary<DirectionalGameTileType, IDirectionSuggestion> Suggestions = DefaultSuggestions;
+		
 		//Static AI Logic
-		private static Dictionary<DirectionalGameTileType, IDirectionSuggestion> DefaultSuggestions {
+		internal static Dictionary<DirectionalGameTileType, IDirectionSuggestion> DefaultSuggestions {
 			get {
 				Dictionary<DirectionalGameTileType, IDirectionSuggestion> s
 					= new Dictionary<DirectionalGameTileType, IDirectionSuggestion>();
@@ -66,7 +66,7 @@ namespace Biters.Game
 				s.Add(DirectionalGameTileType.T_Up, new HeadingSuggestion(WorldDirection.North)
 				      .AllowAllBut(WorldDirection.South)		//If facing south, go east or west.
 				      .Suggest(IfThenSuggestion.Random(WorldDirection.South, WorldDirection.East, WorldDirection.West)));
-
+				
 				s.Add(DirectionalGameTileType.T_Down, new HeadingSuggestion(WorldDirection.South)
 				      .AllowAllBut(WorldDirection.North)		//If facing north, go east or west.
 				      .Suggest(IfThenSuggestion.Random(WorldDirection.North, WorldDirection.East, WorldDirection.West)));
@@ -78,36 +78,36 @@ namespace Biters.Game
 				s.Add(DirectionalGameTileType.T_Right, new HeadingSuggestion(WorldDirection.East)
 				      .AllowAllBut(WorldDirection.West)		//If facing west, go north or south.
 				      .Suggest(IfThenSuggestion.Random(WorldDirection.West, WorldDirection.North, WorldDirection.South)));
-
+				
 				//Corner_Sections
 				s.Add(DirectionalGameTileType.Corner_Top_Left, new HeadingSuggestion()
 				      .Avoid(WorldDirection.South, WorldDirection.East)
 				      .Suggest(new IfThenSuggestion(WorldDirection.South, WorldDirection.West),		//If facing down, go left
-				     				new IfThenSuggestion(WorldDirection.East, WorldDirection.North)));	//If facing right, go up
+				         new IfThenSuggestion(WorldDirection.East, WorldDirection.North)));	//If facing right, go up
 				
 				s.Add(DirectionalGameTileType.Corner_Top_Right, new HeadingSuggestion()
 				      .Avoid(WorldDirection.South, WorldDirection.West)
 				      .Suggest(new IfThenSuggestion(WorldDirection.South, WorldDirection.East),
-				         		new IfThenSuggestion(WorldDirection.West, WorldDirection.North)));	//If facing left, go up
+				         new IfThenSuggestion(WorldDirection.West, WorldDirection.North)));	//If facing left, go up
 				
 				s.Add(DirectionalGameTileType.Corner_Bottom_Left, new HeadingSuggestion()
 				      .Avoid(WorldDirection.North, WorldDirection.East)
 				      .Suggest(new IfThenSuggestion(WorldDirection.North, WorldDirection.West),
-				         		new IfThenSuggestion(WorldDirection.East, WorldDirection.South)));	//If facing right, go down
+				         new IfThenSuggestion(WorldDirection.East, WorldDirection.South)));	//If facing right, go down
 				
 				s.Add(DirectionalGameTileType.Corner_Bottom_Right, new HeadingSuggestion()
 				      .Avoid(WorldDirection.North, WorldDirection.West)
 				      .Suggest(new IfThenSuggestion(WorldDirection.North, WorldDirection.East),
-				         		new IfThenSuggestion(WorldDirection.West, WorldDirection.South)));	//If facing left, go up
-
+				         new IfThenSuggestion(WorldDirection.West, WorldDirection.South)));	//If facing left, go up
+				
 				return s;
 			}
 		}
 		
 		public override Dictionary<DirectionalGameTileType, IDirectionSuggestion> Script { get { return Suggestions; } }
-
+		
 		public MazeTileAutoPilotFactoryDelegate(DirectionalGameTileType Type) : base(Type) {}
-
+		
 	}
 	
 	public static class DirectionalGameTileMazeExtension
@@ -122,7 +122,70 @@ namespace Biters.Game
 		}
 		
 	}
+	
+	#endregion
 
+	#region Rotate
+	
+	/*
+	 * Distributes elements evenly across the possible paths.
+	 */
+	public class RotateTileAutoPilotFactoryDelegate : CustomTileAutoPilotFactoryDelegate {
+
+		//Static AI Logic
+		internal static Dictionary<DirectionalGameTileType, IDirectionSuggestion> DefaultSuggestions {
+			get {
+				//Start with the MazeTileAutoPilotFactoryDelegate Script.
+				Dictionary<DirectionalGameTileType, IDirectionSuggestion> s = MazeTileAutoPilotFactoryDelegate.DefaultSuggestions;
+
+				//T_Sections
+				//TODO: Update script later to instead always rotate between other two exists, not only when at the crossroads.
+				s.Remove(DirectionalGameTileType.T_Up);
+				s.Add(DirectionalGameTileType.T_Up, new HeadingSuggestion(WorldDirection.North)
+				      .AllowAllBut(WorldDirection.South)		//If facing south, go east or west.
+				      .Suggest(IfThenSuggestion.Rotate(WorldDirection.South, WorldDirection.East, WorldDirection.West)));
+
+				s.Remove(DirectionalGameTileType.T_Down);
+				s.Add(DirectionalGameTileType.T_Down, new HeadingSuggestion(WorldDirection.South)
+				      .AllowAllBut(WorldDirection.North)		//If facing north, go east or west.
+				      .Suggest(IfThenSuggestion.Rotate(WorldDirection.North, WorldDirection.East, WorldDirection.West)));
+
+				s.Remove(DirectionalGameTileType.T_Left);
+				s.Add(DirectionalGameTileType.T_Left, new HeadingSuggestion(WorldDirection.West)
+				      .AllowAllBut(WorldDirection.East)		//If facing east, go north or south.
+				      .Suggest(IfThenSuggestion.Rotate(WorldDirection.East, WorldDirection.North, WorldDirection.South)));
+
+				s.Remove(DirectionalGameTileType.T_Right);
+				s.Add(DirectionalGameTileType.T_Right, new HeadingSuggestion(WorldDirection.East)
+				      .AllowAllBut(WorldDirection.West)		//If facing west, go north or south.
+				      .Suggest(IfThenSuggestion.Rotate(WorldDirection.West, WorldDirection.North, WorldDirection.South)));
+
+				return s;
+			}
+		}
+		
+		private readonly Dictionary<DirectionalGameTileType, IDirectionSuggestion> Suggestions = DefaultSuggestions;
+
+		//Script is not a static scrip, since it relys on Rotate.
+		public override Dictionary<DirectionalGameTileType, IDirectionSuggestion> Script { get { return this.Suggestions; } }
+		
+		public RotateTileAutoPilotFactoryDelegate(DirectionalGameTileType Type) : base(Type) {}
+		
+	}
+	
+	public static class DirectionalGameTileRotatingExtension
+	{
+		
+		/*
+		 * Changes the delegate to be a Maze Tile intead.
+		 */
+		public static T MakeRotationTile<T>(this T Tile) where T : DirectionalGameTile {
+			Tile.DirectionDelegate = new RotateTileAutoPilotFactoryDelegate(Tile.TileType);
+			return Tile;
+		}
+		
+	}
+	
 	#endregion
 
 }
