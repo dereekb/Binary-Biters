@@ -30,7 +30,7 @@ namespace Biters
 
 		//Tiles
 		void SetTile (T Element, WorldPosition Position);
-		T RemoveTile (WorldPosition Position);
+		void RemoveTile (WorldPosition Position);
 		
 		//Position
 		IWorldPositionMapper PositionMapper { get; }
@@ -90,6 +90,11 @@ namespace Biters
 			get {
 				return this.positionMapper;
 			}
+
+			set {
+				this.positionMapper = value;
+			}
+
 		}
 		
 		public Vector3 GetPositionVector(WorldPosition Position) {
@@ -121,22 +126,20 @@ namespace Biters
 			return World.ContainsPosition (value);
 		}
 		
-		public void SetTile(T Element, WorldPosition Position) {
+		public virtual void SetTile(T Tile, WorldPosition Position) {
 			this.RemoveTile (Position);
 			
-			if (Element != null) {
-				this.InsertTileAtPosition(Element, Position);
+			if (Tile != null) {
+				this.InsertTileAtPosition(Tile, Position);
 			}
 		}
 
-		public T RemoveTile(WorldPosition Position) {
+		public virtual void RemoveTile(WorldPosition Position) {
 			T removed = this.GetTile(Position);
 			
 			if (removed != null) {
 				this.RemoveTileFromPosition(removed, Position);
 			}
-
-			return removed;
 		}
 		
 		protected virtual void InsertTileAtPosition(T Element, WorldPosition Position) {
@@ -201,7 +204,7 @@ namespace Biters
 			this.mapEvents.RemoveObserver (Listener);
 		}
 		
-		private void BroadcastMapEvent(MapEventInfoBuilder<T> Builder) {
+		protected void BroadcastMapEvent(MapEventInfoBuilder<T> Builder) {
 			this.mapEvents.BroadcastEvent (Builder.MapEvent, Builder.Make ());
 		}
 

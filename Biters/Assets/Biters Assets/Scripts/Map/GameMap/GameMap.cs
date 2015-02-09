@@ -60,8 +60,8 @@ namespace Biters
 		where T : class, IGameMapTile
 		where E : class, IGameMapEntity
 	{
-		private HashSet<E> entities;
-		private IGameMapWatcher<T, E> watcher;
+		protected HashSet<E> entities;
+		protected IGameMapWatcher<T, E> watcher;
 		protected IGameMapDelegate<T, E> mapDelegate;
 		private EventSystem<GameMapEvent, GameMapEventInfo> gameMapEvents;
 		
@@ -123,7 +123,7 @@ namespace Biters
 
 		#region Accessors
 
-		public void AddEntity(E Entity, WorldPosition Position) {
+		public virtual void AddEntity(E Entity, WorldPosition Position) {
 			if (this.ContainsEntity(Entity) == false) {
 				this.entities.Add(Entity);
 				
@@ -140,7 +140,7 @@ namespace Biters
 			}
 		}
 
-		public void RemoveEntity(E Entity) {
+		public virtual void RemoveEntity(E Entity) {
 			if (this.ContainsEntity(Entity)) {
 				this.entities.Remove(Entity);
 
@@ -290,13 +290,13 @@ namespace Biters
 			base.Update();
 		}
 
-		protected void UpdateEntities() {
+		protected virtual void UpdateEntities() {
 			foreach (E entity in this.entities) {
 				entity.Update();
 			}
 		}
 
-		protected void UpdateWatcher() {
+		protected virtual void UpdateWatcher() {
 			IEnumerable<GameMapEventInfoBuilder<T, E>> events = this.watcher.Observe (this);
 
 			foreach (GameMapEventInfoBuilder<T, E> info in events) {
@@ -318,23 +318,23 @@ namespace Biters
 			
 		}
 
-		public void RegisterForGameMapEvent(IEventListener Listener, GameMapEvent EventType) {
+		public virtual void RegisterForGameMapEvent(IEventListener Listener, GameMapEvent EventType) {
 			this.gameMapEvents.AddObserver (Listener, EventType);
 		}
 		
-		public void UnregisterFromGameMapEvent(IEventListener Listener, GameMapEvent EventType) {
+		public virtual void UnregisterFromGameMapEvent(IEventListener Listener, GameMapEvent EventType) {
 			this.gameMapEvents.RemoveObserver (Listener, EventType);
 		}
 		
-		public void UnregisterFromGameMapEvents(IEventListener Listener) {
+		public virtual void UnregisterFromGameMapEvents(IEventListener Listener) {
 			this.gameMapEvents.RemoveObserver (Listener);
 		}
 
-		private void BroadcastGameMapEvent(GameMapEventInfoBuilder<T,E> Builder) {
+		protected virtual void BroadcastGameMapEvent(GameMapEventInfoBuilder<T,E> Builder) {
 			this.gameMapEvents.BroadcastEvent (Builder.GameMapEvent, Builder.Make());
 		}
 		
-		public void BroadcastCustomGameMapEvent(GameMapEventInfoBuilder<T,E> Builder) {
+		public virtual void BroadcastCustomGameMapEvent(GameMapEventInfoBuilder<T,E> Builder) {
 			if (Builder.GameMapEvent == GameMapEvent.Custom) {
 				this.BroadcastGameMapEvent(Builder);
 			}

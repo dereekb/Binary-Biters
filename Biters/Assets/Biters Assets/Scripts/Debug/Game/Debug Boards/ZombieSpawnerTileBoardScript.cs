@@ -19,6 +19,10 @@ namespace AssemblyCSharp
 		public void Awake()
 		{
 			DebugGameBoardFactory BoardFactory = new DebugGameBoardFactory ();
+			
+			BoardFactory.Generator.BoardXSize = 25;
+			BoardFactory.Generator.BoardYSize = 15;
+
 			DebugZombieMapGeneratorFactory zombies = new DebugZombieMapGeneratorFactory ();
 			BoardFactory.Factory = zombies;
 			this.Map = BoardFactory.Make();
