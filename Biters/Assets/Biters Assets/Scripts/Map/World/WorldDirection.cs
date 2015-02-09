@@ -79,6 +79,10 @@ namespace Biters.World
 		public static IfThenSuggestion Random(WorldDirection Direction, params WorldDirection[] Randoms) {
 			return new IfThenSuggestion (Direction, new RandomSuggestion(Randoms));
 		}
+		
+		public static IfThenSuggestion Rotate(WorldDirection Direction, params WorldDirection[] Rotating) {
+			return new IfThenSuggestion (Direction, new RotatingSuggestion(Rotating));
+		}
 
 		public override string ToString ()
 		{
@@ -132,10 +136,65 @@ namespace Biters.World
 		}
 
 	}
-	
-	
-	//TODO: Add "Random" Direction suggestion.
-	public class RandomSuggestion : DirectionSuggestionList {
+
+	/*
+	 * Suggestion that iterates through the Suggestion List.
+	 */
+	public class RotatingSuggestion : DirectionSuggestionList {
+		
+		private int previous = 0;
+
+		public RotatingSuggestion() : base () {}
+		
+		public RotatingSuggestion (params WorldDirection[] Directions) : base () {
+			foreach (WorldDirection Direction in Directions) {
+				this.Suggestions.Add (new DirectionSuggestion (Direction));
+			}
+		}
+		
+		public RotatingSuggestion (params IDirectionSuggestion[] Suggestions) : base () {}
+
+		public virtual int NextIndex {
+			get {
+				int next = (this.previous + 1);
+
+				if (next >= Suggestions.Count) {
+					next = 0;
+				}
+
+				return next;
+			}
+		}
+
+		public int PreviousIndex {
+			get {
+				return this.previous;
+			}
+		}
+
+		public virtual IDirectionSuggestion Next() {
+			int index = this.NextIndex;		//0 -> 1
+			this.previous = index;				//1
+			IDirectionSuggestion suggestion = this.Suggestions [index];
+			return suggestion;
+		}
+		
+		public override WorldDirection? GetSuggestion(WorldDirection Heading) {
+			IDirectionSuggestion next = this.Next ();
+			return next.GetSuggestion (Heading);
+		}
+		
+		public override WorldDirection? GetSuggestion(WorldPositionAlignment Alignment) {
+			IDirectionSuggestion next = this.Next ();
+			return next.GetSuggestion(Alignment);
+		}
+
+	}
+
+	/*
+	 * Returns a random suggestion.
+	 */
+	public class RandomSuggestion : RotatingSuggestion {
 
 		public System.Random Random = new System.Random ();
 
@@ -148,22 +207,20 @@ namespace Biters.World
 		}
 
 		public RandomSuggestion (params IDirectionSuggestion[] Suggestions) : base () {}
-
-		public IDirectionSuggestion Next() {
-			return this.Suggestions [this.Random.Next (0, this.Suggestions.Count)];
-		}
-
-		public override WorldDirection? GetSuggestion(WorldDirection Heading) {
-			IDirectionSuggestion random = this.Next ();
-			return random.GetSuggestion (Heading);
+		
+		public override int NextIndex {
+			get {
+				return this.Random.Next (0, this.Suggestions.Count);
+			}
 		}
 		
-		public override WorldDirection? GetSuggestion(WorldPositionAlignment Alignment) {
-			IDirectionSuggestion random = this.Next ();
-			return random.GetSuggestion(Alignment);
+		public virtual IDirectionSuggestion Next() {
+			int index = this.NextIndex;
+			IDirectionSuggestion suggestion = this.Suggestions [index];
+			return suggestion;
 		}
-	}
 
+	}
 
 	/*
 	 * Tells a possible movement whether or not the current direction is acceptable or not.
@@ -215,6 +272,11 @@ namespace Biters.World
 			this.avoid.Add(WorldDirection.West);
 			return this;
 		}
+		
+		public HeadingSuggestion AvoidAll() {
+			this.avoid = new HashSet<WorldDirection> (WorldDirectionInfo.All);
+			return this;
+		}
 
 		public HeadingSuggestion AvoidAllBut(WorldDirection Direction) {
 			this.avoid = new HashSet<WorldDirection> (Direction.AllExcept());
@@ -227,11 +289,16 @@ namespace Biters.World
 		}
 		
 		public HeadingSuggestion AllowAllBut(WorldDirection Direction) {
-			this.avoid = new HashSet<WorldDirection> ();
+			this.avoid.Clear ();
 			this.Avoid (Direction);
 			return this;
 		}
 		
+		public HeadingSuggestion Suggest(IDirectionSuggestion Suggestion) {
+			this.Suggestions = Suggestion;
+			return this;
+		}
+
 		public HeadingSuggestion Suggest(params IDirectionSuggestion[] Suggestions) {
 			this.Suggestions = new DirectionSuggestionList(Suggestions);
 			return this;
@@ -244,7 +311,11 @@ namespace Biters.World
 				/*
 				 * If the primary Suggestions return null, return the default suggestion's answer, if a Default is set.
 				 */
-				suggestion = this.Suggestions.GetSuggestion (Heading) ?? this.DefaultSuggestion.GetSuggestion (Heading);
+				suggestion = this.Suggestions.GetSuggestion (Heading);
+
+				if (suggestion.HasValue == false) {
+					suggestion = this.DefaultSuggestion.GetSuggestion (Heading);
+				}
 			} else {
 				//Continue on current path.
 				suggestion = Heading;

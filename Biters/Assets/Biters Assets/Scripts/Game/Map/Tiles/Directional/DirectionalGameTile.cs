@@ -115,28 +115,28 @@ namespace Biters.Game
 	public enum DirectionalGameTileType : int {
 
 		//Vertical
-		Vertical,
+		Vertical = 0,
 		
 		//Horizontal
-		Horizontal,
+		Horizontal = 1,
 		
 		/*
 		 * T Intersections. The cross is the directional output.
 		 * 
 		 * Movement is computed based on where the element is entering from.
 		 */
-		T_Up,
-		T_Down,
-		T_Left,
-		T_Right,
+		T_Up = 10,
+		T_Down = 11,
+		T_Left = 12,
+		T_Right = 13,
 		
 		/*
 		 * Corner Pieces.
 		 */
-		Corner_Top_Right,
-		Corner_Top_Left,
-		Corner_Bottom_Right,
-		Corner_Bottom_Left
+		Corner_Top_Right = 20,
+		Corner_Top_Left = 21,
+		Corner_Bottom_Right = 22,
+		Corner_Bottom_Left = 23
 		
 		/*
 		//Ends
@@ -151,7 +151,7 @@ namespace Biters.Game
 	}
 	
 	//Vector Extension 
-	public static class WorldDirectionalGameTileInfo
+	public static class DirectionalGameTileInfo
 	{
 		
 		//TODO: Will later ditch this for a Material Factory that can load Tilesets, but that will be later.
@@ -161,7 +161,17 @@ namespace Biters.Game
 		public static Material VerticalTileMat = ResourceLoader.Load["Tiles_Vertical"].Material;
 		public static Material TIntersectionTileMat = ResourceLoader.Load["Tiles_T_Intersection"].Material;
 		public static Material CornerTileMat = ResourceLoader.Load["Tiles_Corner"].Material;
-		
+
+		public static readonly DirectionalGameTileType[] All = new DirectionalGameTileType[] {
+			DirectionalGameTileType.Vertical, DirectionalGameTileType.Horizontal,
+
+			DirectionalGameTileType.T_Up, DirectionalGameTileType.T_Down, 
+			DirectionalGameTileType.T_Left, DirectionalGameTileType.T_Right,
+
+			DirectionalGameTileType.Corner_Top_Right, DirectionalGameTileType.Corner_Top_Left, 
+			DirectionalGameTileType.Corner_Bottom_Right, DirectionalGameTileType.Corner_Bottom_Left
+		};
+
 		public static Vector3 Vector(this WorldDirection Direction)
 		{
 			WorldPositionChange change = Direction.PositionChange ();
@@ -216,7 +226,7 @@ namespace Biters.Game
 			switch (Type) {
 				
 			case DirectionalGameTileType.Corner_Bottom_Right:
-			case DirectionalGameTileType.T_Up:
+			case DirectionalGameTileType.T_Down:
 				Element.Transform.Rotate(0,0,90);
 				break;
 				
@@ -229,7 +239,7 @@ namespace Biters.Game
 				Element.Transform.Rotate(0,90,0);
 				break;
 			case DirectionalGameTileType.Corner_Top_Left:
-			case DirectionalGameTileType.T_Down:
+			case DirectionalGameTileType.T_Up:
 				Element.Transform.Rotate(0,0,270);
 				break;
 			default:
