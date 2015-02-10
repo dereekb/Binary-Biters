@@ -14,14 +14,18 @@ namespace Biters.Debugging.Zombies
 	 */
 	public class DebugZombieMapGeneratorFactory : DebugRandomTileMapGeneratorFactory {
 
-		public int GraveyardChance = 5;
-		public int GraveyardMax = 1;
+		public int GraveyardChance = 10;
+		public int GraveyardMax = 2;
 		public int GraveyardsSpawned = 0;
+
+		public DebugZombieMapGeneratorFactory() {
+			this.UniiNiliSpawnAmount = 1000;
+		}
 
 		public override BitersGameTile Make() {
 			BitersGameTile tile = null;
 
-			if (GraveyardMax > GraveyardsSpawned && GraveyardChance > this.RandomGenerator.Next(0, 100)) {
+			if ((GraveyardMax > GraveyardsSpawned) && (GraveyardChance > this.RandomGenerator.Next(0, 100))) {
 				tile = new GraveyardTile();
 				this.GraveyardsSpawned += 1;
 			} else {

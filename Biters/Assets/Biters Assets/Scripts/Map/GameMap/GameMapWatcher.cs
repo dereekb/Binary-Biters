@@ -40,6 +40,7 @@ namespace Biters
 		where T : class, IGameMapTile
 		where E : class, IGameMapEntity
 	{
+
 		protected List<EntityPositionTuple<E>> JustAdded = new List<EntityPositionTuple<E>>();
 		protected Dictionary<E, WorldPosition> TrackingMap = new Dictionary<E, WorldPosition>();
 		private GameMap<T, E> map;
@@ -77,7 +78,7 @@ namespace Biters
 		
 		public void DeattachFromMap(GameMap<T, E> Map) {
 			Map.UnregisterFromGameMapEvents (this);
-			this.DeattachFromMap (Map);
+			this.DeattachedFromMap (Map);
 		}
 		
 		#endregion
@@ -107,7 +108,7 @@ namespace Biters
 				this.MoveEntity (info.Entity as E, info.Position.Value);
 				break;
 			case GameMapEvent.EntityOutsideWorld:
-				this.map.RemoveEntity(info.Entity as E);
+				this.HandleEntityOutsideworld(info);
 				break;
 			}
 
@@ -133,6 +134,16 @@ namespace Biters
 		}
 
 		#endregion
+
+		#region Handling
+
+		public virtual void HandleEntityOutsideworld(GameMapEventInfo info) {
+			this.Map.RemoveEntity (info.Entity as E);
+		}
+
+		#endregion
+
+		#region Observe
 
 		//TODO: Instead of this, can possible add a "flag" that will cause the entity to call Entity Entered Tile.
 		private void ObserveMapAdditions(GameMap<T, E> Map, List<GameMapEventInfoBuilder<T,E>> events) {
@@ -195,6 +206,8 @@ namespace Biters
 
 			return events;
 		}
+
+		#endregion
 
 	}
 

@@ -2,10 +2,10 @@ using System;
 using UnityEngine;
 using Biters.Game;
 using Biters;
-using Biters.Debugging.Zombies;
+using Biters.Debugging;
 using Biters.Debugging.Generators;
 
-namespace AssemblyCSharp
+namespace Biters.Debugging.Zombies
 {
 	/*
 	 * Zombies!!!
@@ -26,6 +26,7 @@ namespace AssemblyCSharp
 			DebugZombieMapGeneratorFactory zombies = new DebugZombieMapGeneratorFactory ();
 			BoardFactory.Factory = zombies;
 			this.Map = BoardFactory.Make();
+			this.Map.Watcher = new DebugGameMapWatcher ();
 		}
 		
 		public void Start ()

@@ -66,7 +66,6 @@ namespace Biters.Debugging.Zombies
 
 			switch (Info.GameMapEvent) {
 			case GameMapEvent.RemoveEntity:
-				
 				//Debug.Log(String.Format("Zombies's {0} saw {1} just die.", this, Info.Entity));
 
 				if (Info.Entity == this.ZombieTarget) {
@@ -84,14 +83,29 @@ namespace Biters.Debugging.Zombies
 		#region Update
 		
 		public override void Update() {
-			base.Update ();
+			base.Update ();			//Update movement before checking the target.
 			this.CheckTarget ();
 		}
 		
 		#endregion
 
 		#region Zombie
-			
+		
+		public bool HasTarget {
+			get {
+				return (this.ZombieTarget != null);
+			}
+		}
+
+		//Attempt to eat the target.
+		public void CheckTarget() {
+			if (this.HasTarget && this.Position == this.ZombieTarget.Position) {
+				Debug.Log(String.Format("Zombies {0} caught it's target.", this));
+				this.EatTarget();
+				this.ChaseNewTarget();	//Chase a new target.
+			}
+		}
+
 		public BitersMapEntity FindNewTarget(BitersMapEntity avoid) {
 
 			//Create a new map query.
@@ -117,42 +131,26 @@ namespace Biters.Debugging.Zombies
 		}
 
 		public void ChaseNewTarget(BitersMapEntity avoid) {
-			this.ZombieMovement.Clear ();
 			BitersMapEntity target = this.FindNewTarget (avoid);
+			this.ZombieMovement.Clear();
 			
 			if (target != null && target != this) {
-				this.ZombieMovement.Clear();
-
 				WalkToTargetAutoPilot pilot = new WalkToTargetAutoPilot(target, this);
 				pilot.Speed = (this.Health / 7.5f);
+				
+				Debug.Log(String.Format("Zombies {0} sopped chasing.", this));
 
 				this.ZombieMovement.Enqueue(pilot);
 				this.ZombieTarget = target;
 
-				Debug.Log(String.Format("Zombies {0} found a new target {1}.", this, this.ZombieTarget));
+				Debug.Log(String.Format("Zombies {0} started chasing a new target {1}.", this, this.ZombieTarget));
 			} else {
 				Debug.Log(String.Format("Zombies {0} failed to find a new target.", this));
 			}
 		}
 
-		public bool HasTarget {
-			get {
-				return (this.ZombieTarget != null);
-			}
-		}
-
-		public void CheckTarget() {
-			if (this.HasTarget && this.Position == this.ZombieTarget.Position) {
-				Debug.Log(String.Format("Zombies {0} caught it's target.", this));
-				this.EatTarget();
-				this.ChaseNewTarget();	//Chase a new target.
-			}
-		}
-
 		public void EatTarget() {
-
 			//TODO: Make bigger or whatever.
-
 			Zombie targetZombie = this.ZombieTarget as Zombie;
 
 			if (targetZombie != null) {

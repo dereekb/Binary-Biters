@@ -30,11 +30,31 @@ namespace Biters
 		public SafeGameMap(GameObject GameObject, IMapWorldFactory<T> MapWorldFactory)
 			: base (GameObject, MapWorldFactory) {}
 
+		protected bool Enabled {
+			get {
+				return this.enabled;
+			}
+
+			set {
+				this.enabled = value;
+
+				/*
+				if (this.enabled) {
+					Debug.Log(String.Format("Safeties on."));
+				} else {
+					Debug.Log(String.Format("Safeties off."));
+				}
+				*/
+			}
+		}
+
 		#region Safety
 
 		//Entites
 		public override void AddEntity (E Entity, WorldPosition Position)
 		{
+			//Debug.Log(String.Format("Attempting to add entity {0} at {1} - {2}", Entity, Position, enabled));
+
 			if (this.enabled) {
 				SafeMapEntityChange<T, E> change = new SafeMapEntityChange<T, E>(Entity, ProtectedMapChange.Add);
 				change.Position = Position;
@@ -46,9 +66,12 @@ namespace Biters
 
 		public override void RemoveEntity (E Entity)
 		{
+			//Debug.Log(String.Format("Attempting to remove entity {0} - {1}", Entity, enabled));
+
 			if (this.enabled) {
 				SafeMapEntityChange<T, E> change = new SafeMapEntityChange<T, E>(Entity, ProtectedMapChange.Remove);
 				this.Changes.Enqueue(change);
+				//Debug.Log(String.Format("Enqueued entity removal for entity {0}", Entity));
 			} else {
 				base.RemoveEntity (Entity);
 			}
@@ -115,9 +138,8 @@ namespace Biters
 		 */
 		protected override void UpdateEntities ()
 		{
-			this.enabled = true;
+			this.Enabled = true;
 			base.UpdateEntities ();
-			this.enabled = false;
 			this.RunQueue ();
 		}
 
@@ -126,9 +148,8 @@ namespace Biters
 		 */
 		protected override void UpdateWatcher ()
 		{
-			this.enabled = true;
+			this.Enabled = true;
 			base.UpdateWatcher ();
-			this.enabled = false;
 			this.RunQueue ();
 		}
 
@@ -136,14 +157,15 @@ namespace Biters
 
 		#region Queue
 		
-		public void RunQueue() {
+		public virtual void RunQueue() {
+			this.Enabled = false;	//Disable to prevent elements from just getting re-added...
 			while (this.Changes.Count > 0) {
 				ISafeMapChange<T, E> Change = this.Changes.Dequeue();
 				Change.RunChange(this);
 			}
 		}
 
-		public void Enqueue(ISafeMapChange<T, E> Change) {
+		public virtual void Enqueue(ISafeMapChange<T, E> Change) {
 			this.Changes.Enqueue (Change);
 		}
 

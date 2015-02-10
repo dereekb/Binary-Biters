@@ -10,10 +10,13 @@ namespace Biters.Debugging.Zombies
 	{
 		
 		public const string DirectionalTileId = "Entity.Debug.Graveyard";
+		
+		public Timer SpawnTimer = new Timer(3.5f);
+
+		public int MaxSpawnCount = 1;
+		public int HaveSpawnedCount = 0;
 
 		public int SpawnCount = 1;
-		public int RemovedCount = 0;
-		public int RespawnRemovedRate = 35;
 
 		public GraveyardTile () {}
 		
@@ -42,15 +45,17 @@ namespace Biters.Debugging.Zombies
 		#region Events
 		
 		public override void RegisterForEvents() {
-			this.Map.RegisterForGameMapEvent (this, GameMapEvent.EntityOutsideWorld);
+			this.Map.RegisterForGameMapEvent (this, GameMapEvent.RemoveEntity);
 		}
 		
 		protected override void HandleGameMapEvent(GameMapEventInfo Info) {
 			
 			switch (Info.GameMapEvent) {
-			case GameMapEvent.EntityOutsideWorld:
-				this.RemovedCount += 1;
+			case GameMapEvent.RemoveEntity:
 
+				if (Info.Entity is Zombie) {
+					this.HaveSpawnedCount -= 1;		//Respawn a killed zombie.
+				}
 
 				//this.TryAndSpawn();
 
@@ -78,14 +83,21 @@ namespace Biters.Debugging.Zombies
 		public bool CanSpawn 
 		{
 			get {
-				return (this.RemovedCount > RespawnRemovedRate);
+				return !this.AllZombiedOut && (this.SpawnTimer.UpdateAndCheck ());
+			}
+		}
+
+		public bool AllZombiedOut 
+		{	
+			get {
+				return (this.MaxSpawnCount < this.HaveSpawnedCount);
 			}
 		}
 
 		public void TryAndSpawn()
 		{
 			if (this.CanSpawn) {
-				this.SpawnZombies();
+				this.SpawnZombies ();
 			}
 		}
 
@@ -99,7 +111,8 @@ namespace Biters.Debugging.Zombies
 				this.Map.AddEntity(zombie, this.MapTilePosition);
 			}
 			
-			this.RemovedCount = 0;
+			this.HaveSpawnedCount += 1;
+			this.SpawnTimer.Reset ();
 		}
 
 		#endregion

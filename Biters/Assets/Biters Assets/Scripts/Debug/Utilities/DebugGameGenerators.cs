@@ -17,6 +17,12 @@ namespace Biters.Debugging.Generators
 		
 		public System.Random RandomGenerator = new System.Random();
 
+		public int UniiNiliSpawnAmount = 500;
+
+		public virtual int GetSpawnAmount() {
+			return this.UniiNiliSpawnAmount;
+		}
+
 		public virtual BitersGameTile Make() {
 			BitersGameTile tile = null;
 
@@ -34,7 +40,7 @@ namespace Biters.Debugging.Generators
 			SpawnerGameTileDelegate spawnerDelegate = new SpawnerGameTileDelegate(SpawnFunction);
 
 			float timer = RandomGenerator.Next (2, 25) / 2.5f;	//Between 3 and 20 seconds
-			int max = 10;	// RandomGenerator.Next (20, 500);
+			int max = this.GetSpawnAmount();	// RandomGenerator.Next (20, 500);
 			
 			int directionNumber = RandomGenerator.Next (0, DirectionalGameTileInfo.All.Length);
 			DirectionalGameTileType direction = DirectionalGameTileInfo.All[directionNumber];

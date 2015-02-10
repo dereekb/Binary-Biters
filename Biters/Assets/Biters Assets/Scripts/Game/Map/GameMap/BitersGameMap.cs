@@ -9,6 +9,8 @@ namespace Biters.Game
 	/*
 	 * Biters Game Map.
 	 */
+
+	//TODO: Rename BitersGameTile to BitersGameMapTile, or BitersMapTile
 	public class BitersGameMap : SafeGameMap<BitersGameTile, BitersMapEntity>
 	{
 

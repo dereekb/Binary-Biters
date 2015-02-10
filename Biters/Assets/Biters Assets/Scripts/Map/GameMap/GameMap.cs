@@ -230,7 +230,7 @@ namespace Biters
 					if (this.watcher != null) {
 						this.watcher.DeattachFromMap(this);
 					}
-
+					
 					this.watcher = value;
 					this.watcher.AttachToMap(this);
 				}
