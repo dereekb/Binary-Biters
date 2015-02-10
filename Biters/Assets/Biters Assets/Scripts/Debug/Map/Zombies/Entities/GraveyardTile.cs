@@ -45,13 +45,13 @@ namespace Biters.Debugging.Zombies
 		#region Events
 		
 		public override void RegisterForEvents() {
-			this.Map.RegisterForGameMapEvent (this, GameMapEvent.RemoveEntity);
+			this.Map.RegisterForGameMapEvent (this, GameMapEvent.EntityRemoved);
 		}
 		
 		protected override void HandleGameMapEvent(GameMapEventInfo Info) {
 			
 			switch (Info.GameMapEvent) {
-			case GameMapEvent.RemoveEntity:
+			case GameMapEvent.EntityRemoved:
 
 				if (Info.Entity is Zombie) {
 					this.HaveSpawnedCount -= 1;		//Respawn a killed zombie.

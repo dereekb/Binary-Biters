@@ -128,7 +128,6 @@ namespace Biters
 		#region Queue
 		
 		public void Enqueue(IAutoPilot AutoPilot) {
-			Debug.Log(String.Format("Enqueued new auto pilot: {0}", AutoPilot));
 			this.autoPilotQueue.Enqueue (AutoPilot);
 		}
 		
@@ -484,13 +483,6 @@ namespace Biters
 		{
 			return string.Format ("[AutoPilotQueue: Current={0}, Count={1}, IsEmpty={2}]", Current, this.queue.Count, IsEmpty);
 		}
-
-	}
-
-	/*
-	 * Autopilot queue that supports dynamic actions.
-	 */
-	public class MutableAutoPilotQueue : AutoPilotQueue {
 
 	}
 

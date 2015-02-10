@@ -7,14 +7,14 @@ namespace Biters.Game
 {
 
 	/*
-	 * Basic Game Entity that attaches to a GameMap of BitersGameTiles and BitersMapEntities. 
+	 * Basic Game Element that contains the map and offers some basic handlers.
 	 */
-	public abstract class BitersGameEntity : Entity, IEventListener
+	public abstract class BitersGameElement : Entity, IEventListener
 	{
 		//Game Map of the tile.
 		private BitersGameMap map = null;
 
-		public BitersGameEntity (GameObject GameObject) : base(GameObject) {}
+		public BitersGameElement (GameObject GameObject) : base(GameObject) {}
 
 		#region Accessors
 

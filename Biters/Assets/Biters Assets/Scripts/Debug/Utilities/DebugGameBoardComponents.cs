@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Biters.Debugging
 {
 
-	public class DebugGameMapWatcher : GameMapWatcher<BitersGameTile, BitersMapEntity>
+	public class DebugGameMapWatcher : GameMapWatcher<BitersGameTile, BitersGameEntity>
 	{	
 		public bool PreventEntityOOBRemoval = false;
 

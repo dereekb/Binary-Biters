@@ -6,12 +6,12 @@ namespace Biters.Game
 	/*
 	 * Represents a Default Biters Map Entity.
 	 */ 
-	public abstract class BitersMapEntity : BitersGameEntity, IGameMapEntity
+	public abstract class BitersGameEntity : BitersGameElement, IGameMapEntity
 	{
 
-		public BitersMapEntity () : this (GameObject.CreatePrimitive(PrimitiveType.Cube)) {}
+		public BitersGameEntity () : this (GameObject.CreatePrimitive(PrimitiveType.Cube)) {}
 
-		public BitersMapEntity (GameObject GameObject) : base (GameObject) {}
+		public BitersGameEntity (GameObject GameObject) : base (GameObject) {}
 
 		#region Map
 

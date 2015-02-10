@@ -29,7 +29,7 @@ namespace Biters.Debugging.Generators
 			/*
 			 * Lambda function for spawning elements.
 			 */
-			Func<BitersMapEntity> SpawnFunction = () => {
+			Func<BitersGameEntity> SpawnFunction = () => {
 				if (RandomGenerator.Next(-1, 1) == 0) {
 					return new Unii ();
 				} else {

@@ -97,7 +97,7 @@ namespace Biters
 
 				Entity.AddedToGameMap(Position);
 
-				GameMapEventInfoBuilder<T, E> builder = this.GameMapEventInfoBuilder(GameMapEvent.AddEntity);
+				GameMapEventInfoBuilder<T, E> builder = this.GameMapEventInfoBuilder(GameMapEvent.EntityAdded);
 				builder.Entity = Entity;
 				builder.Position = Position;
 				this.BroadcastGameMapEvent(builder);
@@ -116,7 +116,7 @@ namespace Biters
 					Entity.Transform.parent = null;
 				}
 
-				GameMapEventInfoBuilder<T, E> builder = this.GameMapEventInfoBuilder(GameMapEvent.RemoveEntity);
+				GameMapEventInfoBuilder<T, E> builder = this.GameMapEventInfoBuilder(GameMapEvent.EntityRemoved);
 				builder.Entity = Entity;
 				this.BroadcastGameMapEvent(builder);
 

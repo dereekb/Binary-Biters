@@ -46,7 +46,7 @@ namespace Biters.Debugging.Zombies
 			base.Initialize ();
 
 			this.ChaseNewTarget ();
-			Debug.Log(String.Format("Zombies {0} initalized.", this));
+			//Debug.Log(String.Format("Zombies {0} initalized.", this));
 		}
 
 		public override void RegisterForEvents() {
@@ -54,7 +54,7 @@ namespace Biters.Debugging.Zombies
 			/*
 			 * Register for events that can help us find nearby entities, or if our entity exited the world.
 			 */
-			this.Map.RegisterForGameMapEvent (this, GameMapEvent.RemoveEntity);
+			this.Map.RegisterForGameMapEvent (this, GameMapEvent.EntityRemoved);
 
 		}
 
@@ -65,11 +65,11 @@ namespace Biters.Debugging.Zombies
 		protected override void HandleGameMapEvent(GameMapEventInfo Info) {
 
 			switch (Info.GameMapEvent) {
-			case GameMapEvent.RemoveEntity:
+			case GameMapEvent.EntityRemoved:
 				//Debug.Log(String.Format("Zombies's {0} saw {1} just die.", this, Info.Entity));
 
 				if (Info.Entity == this.ZombieTarget) {
-					Debug.Log(String.Format("Zombies's {0} target '{1}' is exiting the plane of existence...", this, this.ZombieTarget));
+					//Debug.Log(String.Format("Zombies's {0} target '{1}' is exiting the plane of existence...", this, this.ZombieTarget));
 					this.ChaseNewTarget();
 				}
 				break;
@@ -100,7 +100,7 @@ namespace Biters.Debugging.Zombies
 		//Attempt to eat the target.
 		public void CheckTarget() {
 			if (this.HasTarget && this.Position == this.ZombieTarget.Position) {
-				Debug.Log(String.Format("Zombies {0} caught it's target.", this));
+				//Debug.Log(String.Format("Zombies {0} caught it's target.", this));
 				this.EatTarget();
 				this.ChaseNewTarget();	//Chase a new target.
 			}
@@ -138,14 +138,14 @@ namespace Biters.Debugging.Zombies
 				WalkToTargetAutoPilot pilot = new WalkToTargetAutoPilot(target, this);
 				pilot.Speed = (this.Health / 7.5f);
 				
-				Debug.Log(String.Format("Zombies {0} sopped chasing.", this));
+				//Debug.Log(String.Format("Zombies {0} sopped chasing.", this));
 
 				this.ZombieMovement.Enqueue(pilot);
 				this.ZombieTarget = target;
 
-				Debug.Log(String.Format("Zombies {0} started chasing a new target {1}.", this, this.ZombieTarget));
+				//Debug.Log(String.Format("Zombies {0} started chasing a new target {1}.", this, this.ZombieTarget));
 			} else {
-				Debug.Log(String.Format("Zombies {0} failed to find a new target.", this));
+				//Debug.Log(String.Format("Zombies {0} failed to find a new target.", this));
 			}
 		}
 
@@ -172,11 +172,11 @@ namespace Biters.Debugging.Zombies
 				this.Die();
 			}
 			
-			Debug.Log(String.Format("Zombies fought: {0} vs {1}", this, Zombie));
+			//Debug.Log(String.Format("Zombies fought: {0} vs {1}", this, Zombie));
 		}
 
 		public void Die() {
-			Debug.Log(String.Format("Zombies died. {0}", this));
+			//Debug.Log(String.Format("Zombies died. {0}", this));
 			this.Map.RemoveEntity (this);
 
 

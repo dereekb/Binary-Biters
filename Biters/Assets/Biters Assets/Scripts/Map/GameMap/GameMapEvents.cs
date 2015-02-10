@@ -29,18 +29,18 @@ namespace Biters
 		/*
 		 * Called when the map is going to be deleted.
 		 */
-		Delete = 0,
+		MapDeleted = 0,
 
 		//Entities
 		/*
-		 * Called when a map tile is added.
+		 * Called when an entity is added to the map.
 		 */
-		AddEntity = 10,
+		EntityAdded = 10,
 		
 		/*
-		 * Called when a map tile is removed.
+		 * Called when an entity is removed from the map.
 		 */
-		RemoveEntity = 11,
+		EntityRemoved = 11,
 		
 		/*
 		 * Entity entered a tile.
@@ -57,8 +57,6 @@ namespace Biters
 		 */
 		EntityOutsideWorld = 14
 
-		//TODO: Add other game map event types.
-		
 	}
 	
 	public static class GameMapEventEnumInfo
@@ -70,8 +68,8 @@ namespace Biters
 			string name;
 			
 			switch (Event) {
-			case GameMapEvent.AddEntity: name = "game_map_init_event"; break;
-			case GameMapEvent.RemoveEntity: name = "game_map_reset_event"; break;
+			case GameMapEvent.EntityAdded: name = "game_map_init_event"; break;
+			case GameMapEvent.EntityRemoved: name = "game_map_reset_event"; break;
 			default:
 				name = "game_map_custom_event"; break;
 			}

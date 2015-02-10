@@ -67,9 +67,9 @@ namespace Biters
 			this.map = Map;
 
 			//Register for Map Events
-			Map.RegisterForGameMapEvent (this, GameMapEvent.Delete);
-			Map.RegisterForGameMapEvent (this, GameMapEvent.AddEntity);
-			Map.RegisterForGameMapEvent (this, GameMapEvent.RemoveEntity);
+			Map.RegisterForGameMapEvent (this, GameMapEvent.MapDeleted);
+			Map.RegisterForGameMapEvent (this, GameMapEvent.EntityAdded);
+			Map.RegisterForGameMapEvent (this, GameMapEvent.EntityRemoved);
 			Map.RegisterForGameMapEvent (this, GameMapEvent.EntityEnteredTile);
 			Map.RegisterForGameMapEvent (this, GameMapEvent.EntityOutsideWorld);
 
@@ -89,13 +89,13 @@ namespace Biters
 			GameMapEventInfo info = EventInfo as GameMapEventInfo;
 
 			switch (info.GameMapEvent) {
-			case GameMapEvent.Delete:
+			case GameMapEvent.MapDeleted:
 				this.TrackingMap.Clear();
 				break;
-			case GameMapEvent.AddEntity: 
+			case GameMapEvent.EntityAdded: 
 				this.InsertEntity(info.Entity as E, info.Position.Value);
 				break;
-			case GameMapEvent.RemoveEntity:
+			case GameMapEvent.EntityRemoved:
 				this.RemoveEntity(info.Entity as E);
 				break;
 			case GameMapEvent.EntityEnteredTile:
