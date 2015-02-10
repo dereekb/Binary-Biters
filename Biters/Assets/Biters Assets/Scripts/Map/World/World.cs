@@ -12,7 +12,7 @@ namespace Biters
 	 * Used for tiles management.
 	 */
 	public class World<T> : IEnumerable {
-		
+
 		private Dictionary<WorldPosition, T> Everything;
 		
 		public World() {
@@ -154,7 +154,13 @@ namespace Biters
 		//Max position available with Cantor Pairing on 32Bit. More than fine.
 		private static int MIN_POSITION = 0;
 		private static int MAX_POSITION = 65535;
-		
+
+		public static WorldPosition Origin {
+			get {
+				return new WorldPosition(0,0);
+			}
+		}
+
 		private static int SanitizePosition(int X) {
 			return (X <= MAX_POSITION) ? ((X >= MIN_POSITION) ? X : MIN_POSITION) : MAX_POSITION;
 		}

@@ -36,22 +36,6 @@ namespace Biters
 		IGameMapWatcher<T, E> Watcher { get; set; }
 
 	}
-	
-	/*
-	 * Game Map Delegate.
-	 */
-	public interface IGameMapDelegate<T, E> 
-		where T : class, IGameMapTile
-		where E : class, IGameMapEntity {
-		
-		/*
-		 * Generates a new world for the passed map.
-		 * 
-		 * Map elements that depend on the map to function should be set properly.
-		 */
-		World<T> GenerateNewWorld(IGameMap<T, E> GameMap);
-		
-	}
 
 	/*
 	 * Default GameMap Implementation.
@@ -60,41 +44,20 @@ namespace Biters
 		where T : class, IGameMapTile
 		where E : class, IGameMapEntity
 	{
-		private HashSet<E> entities;
-		private IGameMapWatcher<T, E> watcher;
-		protected IGameMapDelegate<T, E> mapDelegate;
-		private EventSystem<GameMapEvent, GameMapEventInfo> gameMapEvents;
+		protected HashSet<E> entities;
+		protected IGameMapWatcher<T, E> watcher;
+		protected EventSystem<GameMapEvent, GameMapEventInfo> gameMapEvents;
 		
-		public GameMap(GameObject GameObject, IGameMapDelegate<T, E> MapDelegate) : this (GameObject, MapDelegate, new GameMapWatcher<T, E>(), new WorldPositionMapper()) {}
+		public GameMap(GameObject GameObject, IMapWorldFactory<T> MapWorldFactory) : this (GameObject, MapWorldFactory, new GameMapWatcher<T, E>()) {}
 
-		public GameMap(GameObject GameObject, IGameMapDelegate<T, E> MapDelegate, IWorldPositionMapper PositionMapper) : this (GameObject, MapDelegate, new GameMapWatcher<T, E>(), PositionMapper) {}
-
-		public GameMap(GameObject GameObject, IGameMapDelegate<T, E> MapDelegate, IGameMapWatcher<T, E> Watcher, IWorldPositionMapper PositionMapper) : base(GameObject, PositionMapper) {
+		public GameMap(GameObject GameObject, IMapWorldFactory<T> MapWorldFactory, IGameMapWatcher<T, E> Watcher) : base(GameObject, MapWorldFactory) {
 			this.gameMapEvents = new EventSystem<GameMapEvent, GameMapEventInfo> ();
 			this.entities = new HashSet<E> ();
-			this.mapDelegate = MapDelegate;
 			this.Watcher = Watcher;
 		}
 
 		#region World
-		
-		/*
-		 * Resets the world to its original state.
-		 */
-		public override void ResetWorld() {
-			base.ResetWorld ();
 
-			World<T> newWorld = this.mapDelegate.GenerateNewWorld(this);
-			
-			if (newWorld == null) {
-				throw new Exception("World was reset with a null world.");
-			}
-			
-			foreach (KeyValuePair<WorldPosition, T> pair in newWorld.ElementPairs) {
-				this.InsertTileAtPosition(pair.Value, pair.Key);
-			}
-		}
-		
 		protected override void InsertTileAtPosition(T Element, WorldPosition Position) {
 			base.InsertTileAtPosition (Element, Position);
 			Element.AddedToGameMap (Position);
@@ -123,8 +86,9 @@ namespace Biters
 
 		#region Accessors
 
-		public void AddEntity(E Entity, WorldPosition Position) {
+		public virtual void AddEntity(E Entity, WorldPosition Position) {
 			if (this.ContainsEntity(Entity) == false) {
+				this.InitializeEntity(Entity, Position);
 				this.entities.Add(Entity);
 				
 				//Set Transform to match map's.
@@ -133,14 +97,18 @@ namespace Biters
 
 				Entity.AddedToGameMap(Position);
 
-				GameMapEventInfoBuilder<T, E> builder = this.GameMapEventInfoBuilder(GameMapEvent.AddEntity);
+				GameMapEventInfoBuilder<T, E> builder = this.GameMapEventInfoBuilder(GameMapEvent.EntityAdded);
 				builder.Entity = Entity;
 				builder.Position = Position;
 				this.BroadcastGameMapEvent(builder);
 			}
 		}
 
-		public void RemoveEntity(E Entity) {
+		protected virtual void InitializeEntity(E Element, WorldPosition Position) {
+			//Override to initialize
+		}
+
+		public virtual void RemoveEntity(E Entity) {
 			if (this.ContainsEntity(Entity)) {
 				this.entities.Remove(Entity);
 
@@ -148,7 +116,7 @@ namespace Biters
 					Entity.Transform.parent = null;
 				}
 
-				GameMapEventInfoBuilder<T, E> builder = this.GameMapEventInfoBuilder(GameMapEvent.RemoveEntity);
+				GameMapEventInfoBuilder<T, E> builder = this.GameMapEventInfoBuilder(GameMapEvent.EntityRemoved);
 				builder.Entity = Entity;
 				this.BroadcastGameMapEvent(builder);
 
@@ -262,7 +230,7 @@ namespace Biters
 					if (this.watcher != null) {
 						this.watcher.DeattachFromMap(this);
 					}
-
+					
 					this.watcher = value;
 					this.watcher.AttachToMap(this);
 				}
@@ -278,19 +246,25 @@ namespace Biters
 		
 		#region Update
 
+		/*
+		 *
+		 * TODO: Protect against state changes during Update stage.
+		 * 
+		 * For example, add an "action queue" that is called at the end of update to apply any game-map related changes.
+		 */
 		public override void Update() {
 			this.UpdateEntities();
 			this.UpdateWatcher();
 			base.Update();
 		}
 
-		protected void UpdateEntities() {	
+		protected virtual void UpdateEntities() {
 			foreach (E entity in this.entities) {
 				entity.Update();
 			}
 		}
 
-		protected void UpdateWatcher() {
+		protected virtual void UpdateWatcher() {
 			IEnumerable<GameMapEventInfoBuilder<T, E>> events = this.watcher.Observe (this);
 
 			foreach (GameMapEventInfoBuilder<T, E> info in events) {
@@ -312,23 +286,23 @@ namespace Biters
 			
 		}
 
-		public void RegisterForGameMapEvent(IEventListener Listener, GameMapEvent EventType) {
+		public virtual void RegisterForGameMapEvent(IEventListener Listener, GameMapEvent EventType) {
 			this.gameMapEvents.AddObserver (Listener, EventType);
 		}
 		
-		public void UnregisterFromGameMapEvent(IEventListener Listener, GameMapEvent EventType) {
+		public virtual void UnregisterFromGameMapEvent(IEventListener Listener, GameMapEvent EventType) {
 			this.gameMapEvents.RemoveObserver (Listener, EventType);
 		}
 		
-		public void UnregisterFromGameMapEvents(IEventListener Listener) {
+		public virtual void UnregisterFromGameMapEvents(IEventListener Listener) {
 			this.gameMapEvents.RemoveObserver (Listener);
 		}
 
-		private void BroadcastGameMapEvent(GameMapEventInfoBuilder<T,E> Builder) {
+		protected virtual void BroadcastGameMapEvent(GameMapEventInfoBuilder<T,E> Builder) {
 			this.gameMapEvents.BroadcastEvent (Builder.GameMapEvent, Builder.Make());
 		}
 		
-		public void BroadcastCustomGameMapEvent(GameMapEventInfoBuilder<T,E> Builder) {
+		public virtual void BroadcastCustomGameMapEvent(GameMapEventInfoBuilder<T,E> Builder) {
 			if (Builder.GameMapEvent == GameMapEvent.Custom) {
 				this.BroadcastGameMapEvent(Builder);
 			}

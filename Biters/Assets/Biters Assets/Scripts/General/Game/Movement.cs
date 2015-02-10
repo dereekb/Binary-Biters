@@ -10,20 +10,34 @@ namespace Biters
 	#region Movement
 
 	/*
+	 * Movement with an AutoPilot.
+	 */
+	public interface IMovement : ITransformableElement, IPositionalElement, IUpdatingElement {
+		
+		IAutoPilot AutoPilot { get; set; }
+
+		bool CanSetMovement();
+
+	}
+
+	/*
 	 * Acts as the movement of a game object. Is moved via autopilots.
 	 * 
 	 * Wraps a Transformable element to performe movements.
 	 */
-	public class Movement : ITransformableElement, IPositionalElement, IUpdatingElement {
+	public class Movement : IMovement {
 		
 		private IAutoPilot autoPilot;
 		private ITransformableElement element;
 		
-		public Movement(ITransformableElement Element) {
-			this.element = Element;
-		}
+		public Movement(ITransformableElement Element) : this (Element, null) {}
 		
-		public IAutoPilot AutoPilot {
+		protected Movement(ITransformableElement Element, IAutoPilot AutoPilot) {
+			this.element = Element;
+			this.autoPilot = AutoPilot;
+		}
+
+		public virtual IAutoPilot AutoPilot {
 
 			get {
 				return this.autoPilot;
@@ -31,7 +45,7 @@ namespace Biters
 			
 			set {
 				if (this.autoPilot != null) {
-					this.autoPilot.CancelAutoPilot();
+					this.autoPilot.DestroyAutoPilot();
 				}
 
 				this.autoPilot = value;
@@ -54,6 +68,10 @@ namespace Biters
 			}
 			
 		}
+
+		public virtual bool CanSetMovement() {
+			return true;
+		}
 		
 		public virtual void Update() {
 			this.UpdateWithAutoPilot ();
@@ -74,8 +92,53 @@ namespace Biters
 
 	}
 
-	//TODO: Consider extending Movement with a class that supports a queue of auto pilots.
-	
+	/*
+	 * Movement that has a single, locked AutoPilot. 
+	 */
+	public class ProtectedMovement : Movement {
+
+		private AutoPilotQueue autoPilotQueue;
+
+		public ProtectedMovement(ITransformableElement Element) : this (Element, new AutoPilotQueue()) {}
+
+		protected ProtectedMovement(ITransformableElement Element, AutoPilotQueue AutoPilot) : base (Element, AutoPilot) {
+			this.autoPilotQueue = AutoPilot;
+		}
+		
+		public override IAutoPilot AutoPilot {
+
+			set {
+				//Prevent overriding of Auto Pilot. 
+			}
+			
+		}
+		
+		public override bool CanSetMovement() {
+			return false;
+		}
+
+		#region Update
+		
+		protected override void UpdateWithAutoPilot() {
+			this.autoPilotQueue.AutoMove (this);
+		}
+
+		#endregion
+
+		#region Queue
+		
+		public void Enqueue(IAutoPilot AutoPilot) {
+			this.autoPilotQueue.Enqueue (AutoPilot);
+		}
+		
+		public void Clear() {
+			this.autoPilotQueue.Clear ();
+		}
+		
+		#endregion
+
+	}
+
 	#endregion
 
 	#region Auto Pilot
@@ -100,7 +163,7 @@ namespace Biters
 		/*
 		 * Called to cancel/end the current AutoPilot.
 		 */
-		void CancelAutoPilot();
+		void DestroyAutoPilot();
 
 	}
 
@@ -141,9 +204,7 @@ namespace Biters
 
 		protected virtual Vector3 GetNextMovePosition(Movement Movement) {
 			Vector3 position = Movement.Transform.position;
-			position.x += direction.x * Time.deltaTime;
-			position.y += direction.y * Time.deltaTime;
-			position.z += direction.z * Time.deltaTime;
+			position += (direction * Time.deltaTime);
 			return position;
 		}
 
@@ -151,7 +212,7 @@ namespace Biters
 			return false; //Never ends.
 		}
 		
-		public virtual void CancelAutoPilot() {
+		public virtual void DestroyAutoPilot() {
 			//Nothing to do.
 		}
 
@@ -218,6 +279,11 @@ namespace Biters
 			}
 		}
 		
+		public override string ToString ()
+		{
+			return string.Format ("[PositionalVectorWrapper: Position={0}]", position);
+		}
+
 	}
 	
 	/*
@@ -225,20 +291,25 @@ namespace Biters
 	 */
 	public struct PositionalElementOffset : IPositionalElement
 	{
-		private readonly IPositionalElement element;
-		private readonly Vector3 offset;
+		public readonly IPositionalElement Element;
+		public readonly Vector3 Offset;
 		
 		public PositionalElementOffset(IPositionalElement Element, Vector3 Offset) {
-			this.element = Element;
-			this.offset = Offset;
+			this.Element = Element;
+			this.Offset = Offset;
 		}
 		
 		public Vector3 Position {
 			get {
-				return (this.element.Position + this.offset);
+				return (this.Element.Position + this.Offset);
 			}
 		}
-		
+
+		public override string ToString ()
+		{
+			return string.Format ("[PositionalElementOffset: Element={0}, Offset={1}]", Element, Offset);
+		}
+
 	}
 
 	/*
@@ -276,8 +347,14 @@ namespace Biters
 			return Element.Position == Target.Position; 
 		}
 		
-		public virtual void CancelAutoPilot() {
-			//Nothing to do.
+		public virtual void DestroyAutoPilot() {
+			this.Target = null;
+			this.Element = null;
+		}
+		
+		public override string ToString ()
+		{
+			return string.Format ("[WalkToTargetAutoPilot: Target={0}, Element={1}], Speed={2}", this.Target, this.Element, this.Speed);
 		}
 
 	}
@@ -285,7 +362,8 @@ namespace Biters
 	#endregion
 	
 	#region Auto Pilot Queue
-	
+
+
 	/*
 	 * AutoPilot that has a queue of AutoPilots to run.
 	 */
@@ -296,27 +374,28 @@ namespace Biters
 
 		public AutoPilotQueue() {}
 
-		public IAutoPilot Current {
+		public virtual IAutoPilot Current {
 			get {
 				return this.current;
 			}
 		}
 
-		public bool Empty {
+		public bool HasCurrent {
 			get {
-				return (this.queue.Count == 0);
+				return this.current != null;
 			}
 		}
 
-		private IAutoPilot DequeueNextPilot() {
-			IAutoPilot next = null;
-
-			if (this.Empty == false) {
-				next = queue.Dequeue();
+		public bool HasRemaining {
+			get {
+				return (this.HasCurrent || (this.IsEmpty == false));
 			}
+		}
 
-			current = next;
-			return next;
+		public bool IsEmpty {
+			get {
+				return (this.queue.Count == 0);
+			}
 		}
 
 		#region Auto Pilot
@@ -344,22 +423,66 @@ namespace Biters
 		}
 
 		public virtual bool IsComplete() {
-			return (current == null || current.IsComplete ()) && (queue.Count == 0);
+			return (current == null || current.IsComplete ()) && this.IsEmpty;
 		}
 		
-		public void CancelAutoPilot() {
-			this.queue.Clear();
+		public void DestroyAutoPilot() {
+			this.Clear ();
 		}
 
 		#endregion
 
 		#region Queue
+		
+		public virtual void Enqueue(IAutoPilot AutoPilot) {
+			if (this.HasCurrent) {
+				this.queue.Enqueue(AutoPilot);
+			} else {
+				this.SetCurrentPilot(AutoPilot);
+			}
+		}
+		
+		protected virtual IAutoPilot DequeueNextPilot() {
+			IAutoPilot next = null;
+			
+			if (this.IsEmpty == false) {
+				next = queue.Dequeue();
+			}
 
-		public void Add(IAutoPilot AutoPilot) {
-			queue.Enqueue (AutoPilot);
+			return this.SetCurrentPilot(next);
+		}
+
+		protected virtual IAutoPilot SetCurrentPilot(IAutoPilot Next) {
+			if (this.current != null) {
+				this.current.DestroyAutoPilot ();
+			}
+
+			this.current = Next;
+			return Next;
+		}
+
+		public virtual void Clear() {
+
+			if (this.current != null) {
+				this.current.DestroyAutoPilot();
+				this.current = null;
+			}
+
+			if (this.IsEmpty == false) {
+				foreach (IAutoPilot pilot in this.queue) {
+					pilot.DestroyAutoPilot ();
+				}
+
+				this.queue.Clear();
+			}
 		}
 
 		#endregion
+
+		public override string ToString ()
+		{
+			return string.Format ("[AutoPilotQueue: Current={0}, Count={1}, IsEmpty={2}]", Current, this.queue.Count, IsEmpty);
+		}
 
 	}
 

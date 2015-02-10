@@ -8,7 +8,7 @@ namespace Biters.Game
 	/*
 	 * Base class for Biters game tiles. 
 	 */
-	public abstract class BitersGameTile : BitersGameEntity, IGameMapTile 
+	public abstract class BitersGameTile : BitersGameElement, IGameMapTile 
 	{
 
 		public const float BitersGameTileZOffset = 2.0f;
