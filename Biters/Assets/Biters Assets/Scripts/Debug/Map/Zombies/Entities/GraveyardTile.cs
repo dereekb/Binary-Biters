@@ -5,12 +5,23 @@ using Biters.Utility;
 
 namespace Biters.Debugging.Zombies
 {
-
+	/*
+	 * Debug/Demonstration Tile used for spawning Zombie entities.
+	 * 
+	 * It is recommended you first look at the Zombie class.
+	 */
 	public class GraveyardTile : BitersGameTile
 	{
 		
 		public const string DirectionalTileId = "Entity.Debug.Graveyard";
 		
+		public static readonly Material SpawnerMat = ResourceLoader.Load["Tiles_Concrete"].Material;
+
+		/*
+		 * Timer helper class. 
+		 * 
+		 * Use this incase you need to increase a value periodically and do something at a point.
+		 */
 		public Timer SpawnTimer = new Timer(3.5f);
 
 		public int MaxSpawnCount = 1;
@@ -19,15 +30,20 @@ namespace Biters.Debugging.Zombies
 		public int SpawnCount = 1;
 
 		public GraveyardTile () {}
-		
-		public static readonly Material SpawnerMat = ResourceLoader.Load["Tiles_Concrete"].Material;
-		
+
 		#region Initialize
-		
+
+		/*
+		 * Called when the element is first added to the map. 
+		 * 
+		 * The Map and TilePosition are available at this point.
+		 * 
+		 * See description in Zombie class for more info.
+		 */
 		public override void Initialize ()
 		{
-			base.Initialize ();
 			this.GameObject.renderer.material = SpawnerMat;
+			base.Initialize ();
 		}
 		
 		#endregion
@@ -43,7 +59,10 @@ namespace Biters.Debugging.Zombies
 		#endregion
 
 		#region Events
-		
+
+		/*
+		 * Register for map events here.
+		 */
 		public override void RegisterForEvents() {
 			this.Map.RegisterForGameMapEvent (this, GameMapEvent.EntityRemoved);
 		}
@@ -53,17 +72,12 @@ namespace Biters.Debugging.Zombies
 			switch (Info.GameMapEvent) {
 			case GameMapEvent.EntityRemoved:
 
-				if (Info.Entity is Zombie) {
-					this.HaveSpawnedCount -= 1;		//Respawn a killed zombie.
-				}
-
-				//this.TryAndSpawn();
-
 				/*
-				 * TODO: This is not allowed here, as it will cause another event to fire while in the events.
-				 * 
-				 * Figure out a way to safely fire events, or queue up events in the EventSystem.
+				 * When a zombie dies, reduce the counter to allow another zombie to spawn.
 				 */
+				if (Info.Entity is Zombie) {
+					this.HaveSpawnedCount -= 1;
+				}
 				break;
 			}
 			
@@ -71,6 +85,9 @@ namespace Biters.Debugging.Zombies
 
 		#region Update
 
+		/*
+		 * Try to spawn a zombie each update cycle.
+		 */
 		public override void Update ()
 		{
 			this.TryAndSpawn();
@@ -101,13 +118,17 @@ namespace Biters.Debugging.Zombies
 			}
 		}
 
+		/*
+		 * Shows how to add entities to the map.
+		 */
 		public void SpawnZombies ()
 		{
 			for (int i = 0; i < SpawnCount; i += 1) {
-				
+
+				/*
+				 * To add an entity at this position, this is all you need to do! Pretty simple.
+				 */
 				Zombie zombie = new Zombie ();
-				zombie.Map = this.Map;	//Share the map.
-				
 				this.Map.AddEntity(zombie, this.MapTilePosition);
 			}
 			

@@ -9,15 +9,32 @@ namespace Biters.Debugging.Zombies
 	/*
 	 * Debug/Demonstration zombie character.
 	 * 
-	 * Chases other nearby map entities and eat them. After eating, gets slightly bigger.
+	 * This character is highly commented for explaining how entities in this system work.
+	 * 
+	 * This entity will chases other nearby map entities and eat them. 
+	 * After eating, gets slightly bigger and faster.
+	 * If it fights another zombie, the two will fight and lose health equal to the weakest zombie.
 	 */
 	public class Zombie : BitersGameEntity {
 		
 		public static readonly string ZombieId = "Entity.Debug.Zombie";
 		public static readonly Vector3 ZombieScale = new Vector3 (2.5f, 2.5f, 2.5f);
+
+		/*
+		 * Static material to append to the GameObject.
+		 * 
+		 * Is loaded using the ResourceLoader utility that automatically searches and casts the correct type.
+		 */
 		public static readonly Material ZombieMat = ResourceLoader.Load["Entity_Zombie"].Material;
 
+		/*
+		 * ProtectedMovement. Is explained more in ChaseNewTarget() function.
+		 */
 		public ProtectedMovement ZombieMovement;
+
+		/*
+		 * The current zombie's target.
+		 */
 		public BitersGameEntity ZombieTarget;
 		public int Health = 10;
 
@@ -25,21 +42,16 @@ namespace Biters.Debugging.Zombies
 			this.ZombieMovement = new ProtectedMovement (this);
 			this.movement = this.ZombieMovement;
 		}
-		
-		#region Entity
-		
-		public override string EntityId {
-		
-			get {
-				return ZombieId;
-			}
-		
-		}
-		
-		#endregion
 
 		#region Initialization
 
+		/*
+		 * Initialize is called when the entity is added to the map.
+		 * 
+		 * At this point, the entity has access to the Map, its Movement and its GameObject.
+		 * 
+		 * Override this function to setup the object's visual components and any other initialization logic.
+		 */
 		public override void Initialize() {
 			this.gameObject.renderer.material = ZombieMat;
 			this.gameObject.transform.localScale = ZombieScale;
@@ -48,11 +60,18 @@ namespace Biters.Debugging.Zombies
 			this.ChaseNewTarget ();
 			//Debug.Log(String.Format("Zombies {0} initalized.", this));
 		}
-
+		
+		/*
+		 * Also called when the entity is added to the map.
+		 * 
+		 * Override to register for any map events that may be necessary.
+		 * 
+		 * Register for events that can help us find nearby entities, or if our entity exited the world.
+		 */
 		public override void RegisterForEvents() {
 
 			/*
-			 * Register for events that can help us find nearby entities, or if our entity exited the world.
+			 * The zombie entity registers for when entities are removed to make sure it's target still exists.
 			 */
 			this.Map.RegisterForGameMapEvent (this, GameMapEvent.EntityRemoved);
 
@@ -61,7 +80,12 @@ namespace Biters.Debugging.Zombies
 		#endregion
 
 		#region Events
-		
+
+		/*
+		 * Called when a GameMapEvent that this object has registered for is signaled.
+		 * 
+		 * Depending on the event, the GameMapEventInfo that is passed with it has a name, type, entity, and/or position.
+		 */
 		protected override void HandleGameMapEvent(GameMapEventInfo Info) {
 
 			switch (Info.GameMapEvent) {
@@ -81,9 +105,17 @@ namespace Biters.Debugging.Zombies
 		#endregion
 		
 		#region Update
-		
+
+		/*
+		 * The zombie's update loop.
+		 * 
+		 * The BitersGameEntity base class and it's base class update the entity's Movement.
+		 */
 		public override void Update() {
-			base.Update ();			//Update movement before checking the target.
+			//Update movement before checking the target.
+			base.Update ();
+
+
 			this.CheckTarget ();
 		}
 		
@@ -106,13 +138,20 @@ namespace Biters.Debugging.Zombies
 			}
 		}
 
+		/*
+		 * We find a new target using a map query.
+		 * 
+		 * Map queries are very effective ways of finding entities within a the map.
+		 * 
+		 * Check the IEntityWorldPositionQuery for more available functions.
+		 */
 		public BitersGameEntity FindNewTarget(BitersGameEntity avoid) {
 
-			//Create a new map query.
+			//Create a new map query to search for a new target.
 			IEntityWorldPositionQuery<BitersGameEntity> query = this.Map.EntityPositionQuery;
 			query.TargetPosition = this.Position;
 
-			//Don't want to eat ourselves!
+			//The zombie doesn't want to eat itself.
 			query.Exclude = new System.Collections.Generic.HashSet<BitersGameEntity>();
 			query.Exclude.Add (this);
 
@@ -130,6 +169,21 @@ namespace Biters.Debugging.Zombies
 			this.ChaseNewTarget (this.ZombieTarget);
 		}
 
+		/*
+		 * Chases after the new target.
+		 * 
+		 * Each Entity has a Movement class that handles moving the element.
+		 * 
+		 * The Movement has instances that implement the IAutoPilot interface.
+		 * 
+		 * There are various types of AutoPilots already provideded:
+		 * - Walk
+		 * - WalkForTime
+		 * - WalkToTarget
+		 * 
+		 * Other elements can influence this element's AutoPilot freely. 
+		 * The Zombie class has a ProtectedAutoPilot that only it can edit; any attempted external changes will be ignored.
+		 */
 		public void ChaseNewTarget(BitersGameEntity avoid) {
 			BitersGameEntity target = this.FindNewTarget (avoid);
 			this.ZombieMovement.Clear();
@@ -149,13 +203,30 @@ namespace Biters.Debugging.Zombies
 			}
 		}
 
+		/*
+		 * After the zombie reaches the target, we should remove the target from the map.
+		 * 
+		 * We can also try casting the target using the as keyword to see if it is another type.
+		 */
 		public void EatTarget() {
-			//TODO: Make bigger or whatever.
+
+			/*
+			 * Check if the current target that we reached is another zombie. If so, fight it!
+			 */
 			Zombie targetZombie = this.ZombieTarget as Zombie;
 
 			if (targetZombie != null) {
 				this.Fight (targetZombie);
 			} else {
+
+				/*
+				 * Removes the entity from the map.
+				 * 
+				 * This entity will be removed at the end of the current Map's Update cycle,
+				 * but before map events are processed.
+				 * 
+				 * See the SafeGameMap and GameMap's Update() functions for more info.
+				 */
 				this.Map.RemoveEntity (this.ZombieTarget);
 				this.Health += 1;
 			}
@@ -175,15 +246,32 @@ namespace Biters.Debugging.Zombies
 			//Debug.Log(String.Format("Zombies fought: {0} vs {1}", this, Zombie));
 		}
 
+		/*
+		 * Remove the zombie from the map.
+		 */
 		public void Die() {
 			//Debug.Log(String.Format("Zombies died. {0}", this));
 			this.Map.RemoveEntity (this);
-
-
-			//TODO: Do other things. Maybe spawn a Graveyard?
-
 		}
 
+		#endregion
+		
+		#region Entity
+		
+		/*
+		 * String identifier to uniquely identify an element.
+		 * 
+		 * Can be used in a switch statement, insteadof/unlike the C# as keyword, if looking for a particular type in an event.
+		 * 
+		 */
+		public override string EntityId {
+			
+			get {
+				return ZombieId;
+			}
+			
+		}
+		
 		#endregion
 
 		public override string ToString ()
