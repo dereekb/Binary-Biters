@@ -11,14 +11,14 @@ namespace Biters.Game
 	 */
 
 	//TODO: Rename BitersGameTile to BitersGameMapTile, or BitersMapTile
-	public class BitersGameMap : SafeGameMap<BitersGameTile, BitersMapEntity>
+	public class BitersGameMap : SafeGameMap<BitersGameTile, BitersGameEntity>
 	{
 
 		public BitersGameMap(GameObject GameObject, IMapWorldFactory<BitersGameTile> MapWorldFactory) : base (GameObject, MapWorldFactory) {}
 
 		#region Element Initialization
 
-		protected override void InitializeEntity (BitersMapEntity Element, WorldPosition Position)
+		protected override void InitializeEntity (BitersGameEntity Element, WorldPosition Position)
 		{
 			Element.Map = this;
 			base.InitializeEntity (Element, Position);

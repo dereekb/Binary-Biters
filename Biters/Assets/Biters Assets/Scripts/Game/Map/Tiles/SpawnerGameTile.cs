@@ -55,7 +55,7 @@ namespace Biters.Game
 		}
 
 		public virtual void SpawnEntity() {
-			BitersMapEntity entity = this.SpawnDelegate.Make ();
+			BitersGameEntity entity = this.SpawnDelegate.Make ();
 			this.Map.AddEntity(entity, this.MapTilePosition);
 			this.SpawnTimer.Reset ();
 			this.SpawnCount += 1;
@@ -68,20 +68,20 @@ namespace Biters.Game
 	/*
 	 * Factory for entities that are spawned.
 	 */
-	public interface ISpawnerGameTileDelegate : IFactory<BitersMapEntity> {}
+	public interface ISpawnerGameTileDelegate : IFactory<BitersGameEntity> {}
 
 	/*
 	 * Default class that uses a Lambda expression to spawn elements.
 	 */
 	public class SpawnerGameTileDelegate : ISpawnerGameTileDelegate {
 
-		private readonly Func<BitersMapEntity> SpawnFunction;
+		private readonly Func<BitersGameEntity> SpawnFunction;
 
-		public SpawnerGameTileDelegate(Func<BitersMapEntity> SpawnFunction) {
+		public SpawnerGameTileDelegate(Func<BitersGameEntity> SpawnFunction) {
 			this.SpawnFunction = SpawnFunction;
 		}
 
-		public BitersMapEntity Make() {
+		public BitersGameEntity Make() {
 			return this.SpawnFunction.Invoke ();
 		}
 	}

@@ -4,7 +4,7 @@ using Biters.Utility;
 
 namespace Biters.Game
 {
-	public class Unii : BitersMapEntity {
+	public class Unii : BitersGameEntity {
 		
 		public static readonly string UniiId = "Entity.Unii";
 		public static readonly Vector3 UniiScale = new Vector3 (2.5f, 2.5f, 2.5f);
@@ -40,7 +40,7 @@ namespace Biters.Game
 
 	}
 
-	public class Nili : BitersMapEntity {
+	public class Nili : BitersGameEntity {
 
 		public static readonly string NiliId = "Entity.Nili";
 		public static readonly Vector3 NiliScale = new Vector3 (2.5f, 2.5f, 2.5f);

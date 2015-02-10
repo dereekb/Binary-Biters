@@ -11,14 +11,14 @@ namespace Biters.Debugging.Zombies
 	 * 
 	 * Chases other nearby map entities and eat them. After eating, gets slightly bigger.
 	 */
-	public class Zombie : BitersMapEntity {
+	public class Zombie : BitersGameEntity {
 		
 		public static readonly string ZombieId = "Entity.Debug.Zombie";
 		public static readonly Vector3 ZombieScale = new Vector3 (2.5f, 2.5f, 2.5f);
 		public static readonly Material ZombieMat = ResourceLoader.Load["Entity_Zombie"].Material;
 
 		public ProtectedMovement ZombieMovement;
-		public BitersMapEntity ZombieTarget;
+		public BitersGameEntity ZombieTarget;
 		public int Health = 10;
 
 		public Zombie() : base () {
@@ -106,14 +106,14 @@ namespace Biters.Debugging.Zombies
 			}
 		}
 
-		public BitersMapEntity FindNewTarget(BitersMapEntity avoid) {
+		public BitersGameEntity FindNewTarget(BitersGameEntity avoid) {
 
 			//Create a new map query.
-			IEntityWorldPositionQuery<BitersMapEntity> query = this.Map.EntityPositionQuery;
+			IEntityWorldPositionQuery<BitersGameEntity> query = this.Map.EntityPositionQuery;
 			query.TargetPosition = this.Position;
 
 			//Don't want to eat ourselves!
-			query.Exclude = new System.Collections.Generic.HashSet<BitersMapEntity>();
+			query.Exclude = new System.Collections.Generic.HashSet<BitersGameEntity>();
 			query.Exclude.Add (this);
 
 			//Avoid that other thing too!
@@ -122,7 +122,7 @@ namespace Biters.Debugging.Zombies
 			}
 
 			//Find the closest entity.
-			BitersMapEntity newTarget = query.SearchClosestEntity ();
+			BitersGameEntity newTarget = query.SearchClosestEntity ();
 			return newTarget;
 		}
 		
@@ -130,8 +130,8 @@ namespace Biters.Debugging.Zombies
 			this.ChaseNewTarget (this.ZombieTarget);
 		}
 
-		public void ChaseNewTarget(BitersMapEntity avoid) {
-			BitersMapEntity target = this.FindNewTarget (avoid);
+		public void ChaseNewTarget(BitersGameEntity avoid) {
+			BitersGameEntity target = this.FindNewTarget (avoid);
 			this.ZombieMovement.Clear();
 			
 			if (target != null && target != this) {
