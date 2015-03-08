@@ -53,7 +53,7 @@ namespace Biters.Debugging.Zombies
 		 * Override this function to setup the object's visual components and any other initialization logic.
 		 */
 		public override void Initialize() {
-			this.gameObject.renderer.material = ZombieMat;
+			this.gameObject.GetComponent<Renderer>().material = ZombieMat;
 			this.gameObject.transform.localScale = ZombieScale;
 			base.Initialize ();
 

@@ -16,7 +16,7 @@ namespace Biters.Game
 		
 		public override void Initialize ()
 		{
-			this.gameObject.renderer.material = UniiMat;
+			this.gameObject.GetComponent<Renderer>().material = UniiMat;
 			this.gameObject.transform.localScale = UniiScale;
 			base.Initialize ();
 		}
@@ -52,7 +52,7 @@ namespace Biters.Game
 		
 		public override void Initialize ()
 		{
-			this.gameObject.renderer.material = NiliMat;
+			this.gameObject.GetComponent<Renderer>().material = NiliMat;
 			this.gameObject.transform.localScale = NiliScale;
 			base.Initialize ();
 		}

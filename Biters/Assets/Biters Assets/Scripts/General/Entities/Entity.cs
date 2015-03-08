@@ -58,11 +58,11 @@ namespace Biters
 		public Material Material {
 
 			get {
-				return GameObject.renderer.material;
+				return GameObject.GetComponent<Renderer>().material;
 			}
 
 			set {
-				GameObject.renderer.material = value;
+				GameObject.GetComponent<Renderer>().material = value;
 			}
 
 		}

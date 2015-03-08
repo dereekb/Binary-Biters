@@ -97,7 +97,7 @@ namespace Biters.Game
 		
 		public void SetTileType(DirectionalGameTileType Type) {
 			this.tileType = Type;
-			this.GameObject.renderer.material = Type.TileMaterial();
+			this.GameObject.GetComponent<Renderer>().material = Type.TileMaterial();
 			Type.RotateTileObject(this);
 		}
 

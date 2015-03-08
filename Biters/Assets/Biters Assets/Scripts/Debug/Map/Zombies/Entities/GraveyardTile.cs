@@ -42,7 +42,7 @@ namespace Biters.Debugging.Zombies
 		 */
 		public override void Initialize ()
 		{
-			this.GameObject.renderer.material = SpawnerMat;
+			this.GameObject.GetComponent<Renderer>().material = SpawnerMat;
 			base.Initialize ();
 		}
 		
